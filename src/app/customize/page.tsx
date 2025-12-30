@@ -7,7 +7,13 @@ export const metadata: Metadata = {
   description: "Create a unique, hand-woven keychain with your name and favorite colors.",
 };
 
-export default function CustomizePage() {
+import { getAllProducts } from "../../lib/shopify";
+
+export default async function CustomizePage() {
+  const products = await getAllProducts();
+  const baseProduct = products[0]?.node;
+  const baseVariantId = baseProduct?.variants?.edges[0]?.node?.id;
+
   return (
     <div className="min-h-screen pb-24">
       <Navbar />
@@ -16,7 +22,7 @@ export default function CustomizePage() {
       <div className="h-32"></div>
 
       <main className="px-6">
-        <KeychainBuilder />
+        <KeychainBuilder baseVariantId={baseVariantId} />
       </main>
     </div>
   );

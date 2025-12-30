@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ShoppingBag } from 'lucide-react';
+import { Check, ShoppingBag, Loader2 } from 'lucide-react';
+import { createCart, addToCart } from '../../lib/shopify';
 
 const THREAD_COLORS = [
   { id: 'purple', name: 'Royal Purple', hex: '#7e22ce' },
@@ -18,10 +19,49 @@ const CHARMS = [
   { id: 'heart', name: 'Heart', icon: '❤️' },
 ];
 
-export default function KeychainBuilder() {
+interface KeychainBuilderProps {
+  baseVariantId?: string;
+}
+
+export default function KeychainBuilder({ baseVariantId }: KeychainBuilderProps) {
   const [text, setText] = useState('');
   const [selectedColor, setSelectedColor] = useState(THREAD_COLORS[0]);
   const [selectedCharm, setSelectedCharm] = useState(CHARMS[0]);
+  const [isAdding, setIsAdding] = useState(false);
+
+  const handleAddToCart = async () => {
+    if (!baseVariantId) {
+      alert("Store configuration error: No base product found.");
+      return;
+    }
+    
+    setIsAdding(true);
+    try {
+      // 1. Create a fresh cart (or retrieval logic would go here)
+      const cart = await createCart();
+      
+      // 2. Add item with custom attributes
+      const lines = [{
+        merchandiseId: baseVariantId,
+        quantity: 1,
+        attributes: [
+          { key: "Custom Name", value: text || "NO NAME" },
+          { key: "Thread Color", value: selectedColor.name },
+          { key: "Charm", value: selectedCharm.name }
+        ]
+      }];
+
+      const updatedCart = await addToCart(cart.id, lines);
+      
+      // 3. Redirect to checkout (for MVP simplicity)
+      window.location.href = updatedCart.checkoutUrl;
+      
+    } catch (e) {
+      console.error(e);
+      alert("Failed to add to cart. Please try again.");
+      setIsAdding(false);
+    }
+  };
 
   return (
     <div className="grid md:grid-cols-2 gap-12 items-start max-w-5xl mx-auto">
