@@ -44,8 +44,8 @@ export default function Navbar() {
                 isScrolled ? 'opacity-100' : 'opacity-0 hidden'
               }`}
             >
-              <a href="#" className="hover:text-purple-700 transition-colors">SHOP</a>
-              <a href="#" className="hover:text-purple-700 transition-colors">CUSTOMIZE</a>
+              <a href="/" className="hover:text-purple-700 transition-colors">SHOP</a>
+              <a href="/customize" className="hover:text-purple-700 transition-colors">CUSTOMIZE</a>
             </div>
 
             {/* LOGO */}
