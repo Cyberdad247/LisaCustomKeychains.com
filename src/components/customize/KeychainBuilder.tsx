@@ -67,7 +67,7 @@ export default function KeychainBuilder({ baseVariantId }: KeychainBuilderProps)
     <div className="grid md:grid-cols-2 gap-12 items-start max-w-5xl mx-auto">
       
       {/* LEFT: PREVIEW AREA */}
-      <div className="bg-white p-8 rounded-3xl shadow-xl border border-stone-100 sticky top-24">
+      <div className="bg-white p-8 rounded-3xl shadow-xl border border-stone-100 md:sticky md:top-24">
         <h3 className="text-center font-serif text-slate-400 mb-8 tracking-widest text-sm">LIVE PREVIEW</h3>
         
         <div className="relative h-96 bg-stone-50 rounded-2xl flex items-center justify-center overflow-hidden border border-stone-200">
@@ -186,12 +186,25 @@ export default function KeychainBuilder({ baseVariantId }: KeychainBuilderProps)
         <div className="pt-8 border-t border-stone-100">
            <div className="flex justify-between items-center mb-6">
              <span className="text-sm text-slate-500">Total</span>
-             <span className="text-3xl font-serif text-slate-900">$15.00</span>
+             <span className="text-3xl font-serif text-slate-900">$9.95</span>
            </div>
            
-           <button className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold tracking-widest uppercase hover:bg-purple-900 transition-colors flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-             <ShoppingBag className="w-5 h-5" />
-             Add Custom Order
+           <button 
+             onClick={handleAddToCart}
+             disabled={isAdding}
+             className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold tracking-widest uppercase hover:bg-purple-900 transition-colors flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-70 disabled:cursor-not-allowed"
+           >
+             {isAdding ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Weaving...
+                </>
+             ) : (
+                <>
+                  <ShoppingBag className="w-5 h-5" />
+                  Add Custom Order
+                </>
+             )}
            </button>
            <p className="text-center text-xs text-slate-400 mt-4">Custom orders take 2-3 days to craft.</p>
         </div>

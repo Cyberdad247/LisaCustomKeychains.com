@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
+export const dynamic = 'force-dynamic';
 import Navbar from "../../components/Navbar";
 import KeychainBuilder from "../../components/customize/KeychainBuilder";
 
 export const metadata: Metadata = {
   title: "Design Your Own | Lisa's Custom Keychains",
-  description: "Create a unique, hand-woven keychain with your name and favorite colors.",
+  description: "Create a unique, hand-woven keychain with your name and favorite colors. Perfect for backpacks, gifts, and more.",
+  openGraph: {
+    title: "Design Your Own Custom Keychain",
+    description: "Hand-woven, personalized keychains made just for you. Choose your colors and charm!",
+    images: ["/images/Lisa'sSelfie.jpg"], // Using the selfie as a placeholder for the maker vibe
+    type: "website",
+  },
 };
 
 import { getAllProducts } from "../../lib/shopify";
