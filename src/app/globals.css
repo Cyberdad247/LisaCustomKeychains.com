@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #fdfbf7;
+  --foreground: #171717;
+  --rotation: 0deg;
+}
+
+body {
+  color: var(--foreground);
+  background-color: var(--background);
+  font-family: var(--font-quicksand), sans-serif;
+  background-image: radial-gradient(
+      at 10% 10%,
+      rgba(230, 230, 250, 0.5) 0px,
+      transparent 50%
+    ),
+    radial-gradient(at 90% 0%, rgba(216, 191, 216, 0.4) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(255, 255, 255, 0.9) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+h1,
+h2,
+h3,
+.font-serif {
+  font-family: var(--font-playfair), serif;
+}
+
+/* --- POLAROID COMPONENT --- */
+@layer components {
+  .polaroid {
+    @apply bg-white shadow-md transition-all duration-300 ease-out;
+    padding: 1rem 1rem 3rem 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: rotate(var(--rotation));
+  }
+
+  .polaroid:hover {
+    transform: scale(1.02) rotate(0deg) !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+      0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    z-index: 10;
+  }
+}
