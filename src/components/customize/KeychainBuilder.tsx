@@ -200,14 +200,11 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
             animate={{ y: [0, -20, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           >
-            <div
-              className="w-24 h-[400px] rounded-b-3xl shadow-2xl flex flex-col items-center gap-1.5 pt-8 overflow-hidden border-x-4"
-              style={{
-                background: (selectedColor as any).isRainbow
-                  ? selectedColor.hex
-                  : selectedColor.hex,
-                borderColor: "rgba(0,0,0,0.1)",
-              }}
+            <motion.div
+              className={`w-24 h-[400px] rounded-b-3xl shadow-2xl flex flex-col items-center gap-1.5 pt-8 overflow-hidden border-x-4 border-black/10 ${
+                (selectedColor as any).isRainbow ? "bg-rainbow" : "yarn-hex-bg"
+              }`}
+              animate={{ "--yarn-color": selectedColor.hex } as any}
             >
               <div className="w-12 h-12 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mb-4 shadow-md transform rotate-6 text-2xl">
                 {charmInfo.icon}
@@ -219,8 +216,9 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
                     key={`b1-${i}-${char}`}
                     initial={{ opacity: 0, scale: 0.5, y: -20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    className="w-12 h-12 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm text-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-1.5"
-                    style={{ rotate: `${i % 2 === 0 ? 2 : -2}deg` }}
+                    className={`w-12 h-12 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm text-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-1.5 ${
+                      i % 2 === 0 ? "rotate-2" : "-rotate-2"
+                    }`}
                   >
                     {char.toUpperCase()}
                   </motion.div>
@@ -240,15 +238,14 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
               animate={{ y: [-20, 0, -20] }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             >
-              <div
-                className="w-24 h-[400px] rounded-b-3xl shadow-2xl flex flex-col items-center gap-1.5 pt-8 relative overflow-hidden border-x-4"
-                style={{
-                  background: (selectedColor as any).isRainbow
-                    ? selectedColor.hex
-                    : selectedColor.hex,
-                  borderColor: "rgba(0,0,0,0.1)",
-                }}
-              >
+                <motion.div
+                  className={`w-24 h-[400px] rounded-b-3xl shadow-2xl flex flex-col items-center gap-1.5 pt-8 relative overflow-hidden border-x-4 border-black/10 ${
+                    (selectedColor as any).isRainbow
+                      ? "bg-rainbow"
+                      : "yarn-hex-bg"
+                  }`}
+                  animate={{ "--yarn-color": selectedColor.hex } as any}
+                >
                 <div className="w-12 h-12 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mb-4 shadow-md transform rotate-6 text-2xl">
                   {charmInfo.icon}
                 </div>
@@ -259,8 +256,9 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
                       key={`b2-${i}-${char}`}
                       initial={{ opacity: 0, scale: 0.5, y: -20 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
-                      className="w-12 h-12 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm text-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-1.5"
-                      style={{ rotate: `${i % 2 === 0 ? -2 : 2}deg` }}
+                      className={`w-12 h-12 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm text-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-1.5 ${
+                        i % 2 === 0 ? "-rotate-2" : "rotate-2"
+                      }`}
                     >
                       {char.toUpperCase()}
                     </motion.div>
@@ -302,20 +300,19 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
                   type="button"
                   onClick={() => setSelectedColor(color)}
                   title={color.name}
+                  aria-label={`Select ${color.name} color`}
                   className={`w-10 h-10 rounded-full border-2 transition-all p-1 ${
                     selectedColor.id === color.id
                       ? "border-purple-600 scale-110 shadow-lg"
                       : "border-transparent hover:border-stone-200"
                   }`}
                 >
-                  <div
-                    className="w-full h-full rounded-full border border-black/5"
-                    style={{
-                      background: (color as any).isRainbow
-                        ? "linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet)"
-                        : color.hex,
-                    }}
-                  ></div>
+                  <motion.div
+                    className={`w-full h-full rounded-full border border-black/5 ${
+                      (color as any).isRainbow ? "bg-rainbow" : "yarn-hex-bg"
+                    }`}
+                    animate={{ "--yarn-color": color.hex } as any}
+                  ></motion.div>
                 </button>
               ))}
             </div>
@@ -336,6 +333,8 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
                   type="button"
                   onClick={handleAiSynthesis}
                   disabled={isAiLoading}
+                  title="Generate Design with AI"
+                  aria-label="Generate Design with AI"
                   className="p-3 bg-white text-purple-600 rounded-xl hover:scale-110 transition-all shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
                 >
                   {isAiLoading ? (

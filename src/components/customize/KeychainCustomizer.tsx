@@ -289,14 +289,13 @@ export default function KeychainCustomizer({
                     ease: "easeInOut",
                   }}
                 >
-                  <div
-                    className="w-20 h-[420px] rounded-b-3xl shadow-xl flex flex-col items-center gap-1 pt-6 pb-2 overflow-hidden border-x-4 bg-stone-50"
-                    style={{
-                      background: (selectedColor as any).isRainbow
-                        ? selectedColor.hex
-                        : selectedColor.hex,
-                      borderColor: "rgba(0,0,0,0.1)",
-                    }}
+                  <motion.div
+                    className={`w-20 h-[420px] rounded-b-3xl shadow-xl flex flex-col items-center gap-1 pt-6 pb-2 overflow-hidden border-x-4 border-black/10 bg-stone-50 ${
+                      (selectedColor as any).isRainbow
+                        ? "bg-rainbow"
+                        : "yarn-hex-bg"
+                    }`}
+                    animate={{ "--yarn-color": selectedColor.hex } as any}
                   >
                     <div className="w-8 h-8 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mb-2 shadow-md flex-shrink-0 text-sm">
                       {selectedCharm.icon}
@@ -308,8 +307,9 @@ export default function KeychainCustomizer({
                           key={`s1-${i}-${char}`}
                           initial={{ opacity: 0, scale: 0.5, y: -10 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
-                          className="w-8 h-8 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm text-sm shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-1"
-                          style={{ rotate: `${(i % 2 === 0 ? 1 : -1) * 2}deg` }}
+                          className={`w-8 h-8 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm text-sm shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-1 ${
+                            i % 2 === 0 ? "rotate-2" : "-rotate-2"
+                          }`}
                         >
                           {char.toUpperCase()}
                         </motion.div>
@@ -334,14 +334,13 @@ export default function KeychainCustomizer({
                       delay: 0.5,
                     }}
                   >
-                    <div
-                      className="w-20 h-[420px] rounded-b-3xl shadow-xl flex flex-col items-center gap-1 pt-6 pb-2 overflow-hidden border-x-4 bg-stone-50"
-                      style={{
-                        background: (selectedColor as any).isRainbow
-                          ? selectedColor.hex
-                          : selectedColor.hex,
-                        borderColor: "rgba(0,0,0,0.1)",
-                      }}
+                    <motion.div
+                      className={`w-20 h-[420px] rounded-b-3xl shadow-xl flex flex-col items-center gap-1 pt-6 pb-2 overflow-hidden border-x-4 border-black/10 bg-stone-50 ${
+                        (selectedColor as any).isRainbow
+                          ? "bg-rainbow"
+                          : "yarn-hex-bg"
+                      }`}
+                      animate={{ "--yarn-color": selectedColor.hex } as any}
                     >
                       <div className="w-8 h-8 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mb-2 shadow-md flex-shrink-0 text-sm">
                         {selectedCharm.icon}
@@ -353,10 +352,9 @@ export default function KeychainCustomizer({
                             key={`s2-${i}-${char}`}
                             initial={{ opacity: 0, scale: 0.5, y: -10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
-                            className="w-8 h-8 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm text-sm shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-1"
-                            style={{
-                              rotate: `${(i % 2 === 0 ? -1 : 1) * 2}deg`,
-                            }}
+                            className={`w-8 h-8 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm text-sm shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-1 ${
+                              i % 2 === 0 ? "-rotate-2" : "rotate-2"
+                            }`}
                           >
                             {char.toUpperCase()}
                           </motion.div>
@@ -404,20 +402,21 @@ export default function KeychainCustomizer({
                           type="button"
                           onClick={() => setSelectedColor(color)}
                           title={color.name}
+                          aria-label={`Select ${color.name} color`}
                           className={`w-9 h-9 rounded-full border-2 transition-all duration-300 p-0.5 ${
                             selectedColor.id === color.id
                               ? "border-purple-600 scale-110 shadow-lg ring-2 ring-purple-100"
                               : "border-transparent hover:border-stone-200 hover:scale-105"
                           }`}
                         >
-                          <div
-                            className="w-full h-full rounded-full border border-black/5 shadow-inner"
-                            style={{
-                              background: (color as any).isRainbow
-                                ? "linear-gradient(135deg, #ff0000 0%, #00ff00 50%, #0000ff 100%)"
-                                : color.hex,
-                            }}
-                          ></div>
+                          <motion.div
+                            className={`w-full h-full rounded-full border border-black/5 shadow-inner ${
+                              (color as any).isRainbow
+                                ? "bg-rainbow"
+                                : "yarn-hex-bg"
+                            }`}
+                            animate={{ "--yarn-color": color.hex } as any}
+                          ></motion.div>
                         </button>
                       ))}
                     </div>
