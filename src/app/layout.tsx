@@ -4,6 +4,7 @@ import { Playfair_Display, Quicksand } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "../components/CartProvider";
 import CartDrawer from "../components/CartDrawer";
+import Footer from "../components/Footer";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -29,11 +30,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${quicksand.variable} ${playfair.variable} font-sans antialiased text-slate-800 selection:bg-purple-200 selection:text-purple-900 overflow-x-hidden`}
+        className={`${quicksand.variable} ${playfair.variable} font-sans antialiased text-slate-800 selection:bg-purple-200 selection:text-purple-900 overflow-x-hidden min-h-screen flex flex-col`}
       >
         <CartProvider>
           {children}
           <CartDrawer />
+          <Footer />
         </CartProvider>
       </body>
     </html>

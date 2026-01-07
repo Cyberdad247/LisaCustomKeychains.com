@@ -1,7 +1,6 @@
 // 🐝 [HIVE_SWARM_STAMP] Autonomously Audited by Lukas Swarm
 'use client';
 
-
 import { useState, useEffect } from 'react';
 import { ShoppingBag, Menu, X } from 'lucide-react';
 import { useCart } from './CartProvider';
@@ -27,46 +26,30 @@ export default function Navbar() {
       <nav
         className={`fixed top-0 w-full z-50 transition-[height,background-color] duration-600 ${
           isScrolled 
-            ? 'h-20 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-sm' 
-            : 'h-[40vh] bg-transparent'
+            ? 'h-20 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)]' 
+            : 'h-24 md:h-32 bg-transparent'
         }`}
-        style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
       >
         <div className="max-w-7xl mx-auto px-6 h-full">
-          <div 
-            className={`flex items-center h-full transition-all duration-600 ${
-              isScrolled ? 'flex-row justify-between' : 'flex-col justify-center'
-            }`}
-          >
+          <div className="flex items-center justify-between h-full">
+            
             {/* LEFT LINKS */}
-            <div 
-              className={`hidden md:flex flex-1 justify-start space-x-8 text-sm font-medium tracking-widest text-slate-600 transition-opacity duration-300 ${
-                isScrolled ? 'opacity-100' : 'opacity-0 hidden'
-              }`}
-            >
+            <div className="hidden md:flex flex-1 justify-start space-x-8 text-sm font-medium tracking-widest text-slate-600">
               <a href="/" className="hover:text-purple-700 transition-colors">SHOP</a>
               <a href="/customize" className="hover:text-purple-700 transition-colors">CUSTOMIZE</a>
             </div>
 
             {/* LOGO */}
-            <div 
-              className={`flex-shrink-0 transition-transform duration-500 ${
-                isScrolled ? 'scale-100' : 'scale-150'
-              }`}
-            >
+            <div className={`flex-shrink-0 transition-transform duration-500 ${isScrolled ? 'scale-90' : 'scale-110'}`}>
               <img
                 src="https://i.postimg.cc/cvyv100W/Untitled_design_(2).png"
                 alt="Lisa's Logo"
-                className="h-24 w-auto object-contain drop-shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+                className="h-20 w-auto object-contain"
               />
             </div>
 
             {/* RIGHT LINKS */}
-            <div 
-              className={`hidden md:flex flex-1 justify-end items-center space-x-4 transition-opacity duration-300 ${
-                isScrolled ? 'opacity-100' : 'opacity-0 hidden'
-              }`}
-            >
+            <div className="hidden md:flex flex-1 justify-end items-center space-x-8 transition-opacity duration-300">
               <button 
                 onClick={toggleCart}
                 className="text-slate-600 hover:text-purple-700 transition-colors relative"
@@ -78,17 +61,15 @@ export default function Navbar() {
                   </span>
                 )}
               </button>
-              <div className="text-sm font-medium tracking-widest text-slate-600 ml-4">
-                <a href="#" className="hover:text-purple-700 transition-colors">ABOUT</a>
+              <div className="text-sm font-medium tracking-widest text-slate-600">
+                <a href="#about" className="hover:text-purple-700 transition-colors uppercase">ABOUT</a>
               </div>
             </div>
 
             {/* MOBILE TOGGLE */}
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`md:hidden absolute right-6 text-purple-900 transition-opacity duration-300 ${
-                isScrolled ? 'opacity-100' : 'opacity-0'
-              }`}
+              className="md:hidden text-purple-900"
             >
               {isMobileMenuOpen ? <X /> : <Menu />}
             </button>
@@ -101,11 +82,9 @@ export default function Navbar() {
         className={`fixed inset-0 bg-white z-40 flex flex-col items-center justify-center space-y-8 text-xl font-serif text-slate-900 transition-all duration-300 md:hidden ${
           isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
-        style={{ top: '80px' }}
       >
-        <a href="#" className="hover:text-purple-700 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>SHOP</a>
-        <a href="#" className="hover:text-purple-700 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>CUSTOMIZE</a>
-        <a href="#" className="hover:text-purple-700 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>ABOUT</a>
+        <a href="/" className="hover:text-purple-700 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>SHOP</a>
+        <a href="/customize" className="hover:text-purple-700 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>CUSTOMIZE</a>
         <button onClick={() => { setIsMobileMenuOpen(false); toggleCart(); }} className="flex items-center gap-2 text-purple-700">
            <ShoppingBag /> Bag ({quantity})
         </button>
