@@ -61,13 +61,13 @@ export const CharmOptionSchema = z.object({
 
 /**
  * Complete keychain design schema.
- * Enforces physical constraints (8-bead limit for yarn stability).
+ * Enforces physical constraints (8-bead limit per strand, 16 total for Premium).
  */
 export const KeychainDesignSchema = z.object({
   text: z
     .string()
     .min(1, "Name is required")
-    .max(8, "Maximum 8 beads allowed for physical stability")
+    .max(16, "Maximum 16 beads allowed for Premium Dual Strand designs")
     .regex(
       /^[A-Z0-9 ]+$/,
       "Only uppercase letters, numbers, and spaces allowed"
@@ -93,11 +93,12 @@ export const VibeNotesSchema = z.object({
 
 /**
  * Line item properties for Shopify checkout.
+ * Standardized keys for LCK production flow.
  */
 export const LineItemPropertiesSchema = z.object({
   text: z.string().optional(),
   color: z.string().optional(),
-  vibe_notes: z.string().optional(),
+  vibe_notes: z.string().optional(), // Stores JSON blob of vibe/charm data
 });
 
 /**

@@ -36,12 +36,11 @@ export default function CartDrawer() {
 
     setIsSubmitting(true);
 
-    // CRM: Capture email before redirect
+    // CRM: Capture email before redirect (Non-Blocking)
     if (email) {
-      // Simulate a verification delay/process
-      await retrieveEmail(email, cart?.id);
+      retrieveEmail(email, cart?.id).catch((err) => console.warn("CRM Background Sync:", err));
       setIsVerified(true);
-      // Small delay to let the user see the "Verified" state
+      // UX Delay only
       await new Promise((resolve) => setTimeout(resolve, 800));
     }
 
@@ -63,31 +62,34 @@ export default function CartDrawer() {
 
   // Helper to extract vibe/icon from attributes
   const getVibeDisplay = (attributes: any[]) => {
-    // Standardized Keys (Primary)
-    const customName =
-      attributes.find((a) => a.key === "Custom Name")?.value ||
-      attributes.find((a) => a.key === "text")?.value ||
-      "";
+    // Standardized Keys
+    const textAttr = attributes.find((a) => a.key === "text")?.value;
+    const legacyNameAttr = attributes.find(
+      (a) => a.key === "Custom Name"
+    )?.value;
+    const customName = textAttr || legacyNameAttr || "";
 
-    const vibe =
-      attributes.find((a) => a.key === "Vibe")?.value ||
-      attributes.find((a) => a.key === "vibe_notes")?.value ||
-      "";
+    const vibeNotesAttr = attributes.find((a) => a.key === "vibe_notes")?.value;
+    const legacyVibeAttr = attributes.find((a) => a.key === "Vibe")?.value;
+    const legacyIconAttr = attributes.find(
+      (a) => a.key === "_Vibe_Icon"
+    )?.value;
 
-    const icon = attributes.find((a) => a.key === "_Vibe_Icon")?.value || "";
+    let vibe = legacyVibeAttr || "";
+    let icon = legacyIconAttr || "";
 
-    // Check if vibe is a JSON string (Safe fallback)
-    let displayVibe = vibe;
-    if (vibe.startsWith("{")) {
+    if (vibeNotesAttr) {
       try {
-        const parsed = JSON.parse(vibe);
-        displayVibe = parsed.vibe_text || parsed.label || "Custom";
+        const parsed = JSON.parse(vibeNotesAttr);
+        vibe = parsed.charm || parsed.vibe_text || vibe;
+        icon = parsed.icon || icon;
       } catch (e) {
-        displayVibe = "Custom";
+        // Fallback for non-JSON vibe_notes if any exist
+        vibe = vibeNotesAttr;
       }
     }
 
-    return { customName, vibe: displayVibe, icon };
+    return { customName, vibe, icon };
   };
 
   return (

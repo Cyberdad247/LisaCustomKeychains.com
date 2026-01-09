@@ -83,7 +83,7 @@ async function ShopifyData<T>(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ query, variables }),
-    next: { revalidate: 0 },
+    next: { revalidate: 3600 },
   };
 
   try {
@@ -108,7 +108,7 @@ async function ShopifyData<T>(
 export async function getAllProducts(): Promise<ShopifyProdocutEdge[]> {
   const query = `
   {
-    products(first: 20) {
+    products(first: 250) {
       edges {
         node {
           id

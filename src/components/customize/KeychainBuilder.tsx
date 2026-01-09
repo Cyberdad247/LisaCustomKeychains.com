@@ -6,6 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, Loader2, Sparkles } from "lucide-react";
 import { useCart } from "../CartProvider";
 import { validateKeychain } from "../../lib/validation/keychain";
+import {
+  getTierByPrice,
+  getCharLimit,
+  getTierDescription,
+} from "../../lib/camelot/tiers";
 
 interface KeychainBuilderProps {
   product?: any;
@@ -50,9 +55,10 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
     "9.95";
   const priceNum = parseFloat(productPrice);
 
-  const isTier1 = priceNum <= 2.95; // Only color changes
-  const isTier2 = priceNum > 2.95 && priceNum <= 5.95; // Color + 1 strand (max 8)
-  const isTier3 = priceNum > 5.95; // Color + 2 strands (max 16)
+  const tier = getTierByPrice(priceNum);
+  const isTier1 = tier === 1;
+  const isTier2 = tier === 2;
+  const isTier3 = tier === 3;
 
   const getCharmInfo = (title: string) => {
     const t = title.toLowerCase();
@@ -122,7 +128,7 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
     const inputText = (formData.get("text") as string) || text;
 
     if (!isTier1) {
-      const limit = isTier3 ? 16 : 8;
+      const limit = getCharLimit(tier);
       if (inputText.length > limit) {
         alert(`Maximum ${limit} characters allowed.`);
         return;
@@ -140,18 +146,18 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
     try {
       await addItemToCart(currentVariantId, 1, [
         {
-          key: "Custom Name",
+          key: "text",
           value: isTier1 ? "No Name" : inputText.toUpperCase(),
         },
-        { key: "Color", value: selectedColor.name },
-        { key: "Charm", value: charmInfo.name },
+        { key: "color", value: selectedColor.name },
         {
-          key: "Style",
-          value: isTier3 ? "Premium Dual Strand" : "Single Strand",
-        },
-        {
-          key: "_Visual_Verification",
-          value: `${selectedColor.name} with ${charmInfo.icon}`,
+          key: "vibe_notes",
+          value: JSON.stringify({
+            charm: charmInfo.name,
+            icon: charmInfo.icon,
+            style: isTier3 ? "Premium Dual Strand" : "Single Strand",
+            visual: `${selectedColor.name} with ${charmInfo.icon}`,
+          }),
         },
       ]);
     } catch (e) {
@@ -228,7 +234,7 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
               <div className="w-12 h-12 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mt-auto mb-8 shadow-md transform -rotate-3 text-2xl">
                 {charmInfo.icon}
               </div>
-            </div>
+            </motion.div>
           </motion.div>
 
           {/* Strand 2 (Tier 3 Only) */}
@@ -238,14 +244,14 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
               animate={{ y: [-20, 0, -20] }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             >
-                <motion.div
-                  className={`w-24 h-[400px] rounded-b-3xl shadow-2xl flex flex-col items-center gap-1.5 pt-8 relative overflow-hidden border-x-4 border-black/10 ${
-                    (selectedColor as any).isRainbow
-                      ? "bg-rainbow"
-                      : "yarn-hex-bg"
-                  }`}
-                  animate={{ "--yarn-color": selectedColor.hex } as any}
-                >
+              <motion.div
+                className={`w-24 h-[400px] rounded-b-3xl shadow-2xl flex flex-col items-center gap-1.5 pt-8 relative overflow-hidden border-x-4 border-black/10 ${
+                  (selectedColor as any).isRainbow
+                    ? "bg-rainbow"
+                    : "yarn-hex-bg"
+                }`}
+                animate={{ "--yarn-color": selectedColor.hex } as any}
+              >
                 <div className="w-12 h-12 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mb-4 shadow-md transform rotate-6 text-2xl">
                   {charmInfo.icon}
                 </div>
@@ -268,7 +274,7 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
                 <div className="w-12 h-12 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mt-auto mb-8 shadow-md transform -rotate-3 text-2xl">
                   {charmInfo.icon}
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
           )}
         </div>
@@ -356,7 +362,7 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
                   type="text"
                   value={text}
                   onChange={(e) => {
-                    const limit = isTier3 ? 16 : 8;
+                    const limit = getCharLimit(tier);
                     const val = e.target.value.toUpperCase().slice(0, limit);
                     setText(val);
                     startTransition(() => {

@@ -6,6 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, X, Loader2, Sparkles } from "lucide-react";
 import { useCart } from "../CartProvider";
 import { validateKeychain } from "../../lib/validation/keychain";
+import {
+  getTierByPrice,
+  getCharLimit,
+  getTierDescription,
+} from "../../lib/camelot/tiers";
 import SEOWrapper from "../SEOWrapper";
 import VibeInput from "../VibeInput";
 import { Sheet, SheetContent, SheetTitle } from "../ui/sheet";
@@ -59,9 +64,10 @@ export default function KeychainCustomizer({
     "9.95";
   const priceNum = parseFloat(productPrice);
 
-  const isTier1 = priceNum <= 3.0; // Only color changes
-  const isTier2 = priceNum > 3.0 && priceNum <= 7.0; // Color + 1 strand
-  const isTier3 = priceNum > 7.0; // Color + 2 strands
+  const tier = getTierByPrice(priceNum);
+  const isTier1 = tier === 1;
+  const isTier2 = tier === 2;
+  const isTier3 = tier === 3;
 
   const getCharmInfo = (title: string) => {
     const t = title.toLowerCase();
@@ -120,6 +126,7 @@ export default function KeychainCustomizer({
   );
   const [selectedCharm, setSelectedCharm] = useState(initialCharm);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [suggestedIcons, setSuggestedIcons] = useState<any[]>([]);
   const [isPending, startTransition] = useTransition();
   const { addItemToCart } = useCart();
@@ -133,6 +140,7 @@ export default function KeychainCustomizer({
   // 🛡️ Persistence Logic: Push State on Open
   useEffect(() => {
     if (isOpen) {
+      setErrorMessage(null);
       window.history.pushState(
         { drawerOpen: true },
         "",
@@ -176,16 +184,15 @@ export default function KeychainCustomizer({
     });
 
     if (!validationResult.success) {
-      // Defensive error handling - error is already a string from validateKeychain
-      alert(validationResult.error || "Validation failed");
+      setErrorMessage(validationResult.error || "Please verify your customization.");
       return;
     }
 
     // Custom tier validation logic (redundant safeguard)
     if (!isTier1) {
-      const limit = isTier3 ? 16 : 8;
+      const limit = getCharLimit(tier);
       if (inputText.length > limit) {
-        alert(`Maximum ${limit} characters for this product.`);
+        setErrorMessage(`Maximum ${limit} characters for this product.`);
         return;
       }
     }
@@ -200,37 +207,32 @@ export default function KeychainCustomizer({
 
     if (!currentVariantId) {
       console.error("Variant ID missing");
+      setErrorMessage("Configuration error: Variant not found.");
       return;
     }
 
     try {
+      setErrorMessage(null); // Clear errors
       await addItemToCart(currentVariantId, 1, [
         {
-          key: "Custom Name",
+          key: "text",
           value: isTier1 ? "No Name" : inputText.toUpperCase(),
         },
-        { key: "Color", value: selectedColor.name },
-        { key: "Vibe", value: selectedCharm.name },
-        { key: "_Vibe_Icon", value: selectedCharm.icon },
-        {
-          key: "Style",
-          value: isTier3 ? "Premium Dual Strand" : "Single Strand",
-        },
+        { key: "color", value: selectedColor.name },
         {
           key: "vibe_notes",
           value: JSON.stringify({
-            vibe_text: inputText.toLowerCase(), // Store raw vibe intent
-            icon_id: selectedCharm.id, // Store specific icon ID
+            charm: selectedCharm.name,
+            icon: selectedCharm.icon,
+            icon_id: selectedCharm.id,
+            style: isTier3 ? "Premium Dual Strand" : "Single Strand",
+            visual: `${selectedColor.name} with ${selectedCharm.icon}`,
           }),
-        },
-        {
-          key: "_Visual_Verification",
-          value: `${selectedColor.name} with ${selectedCharm.icon}`,
         },
       ]);
       onClose(); // Close drawer on success
     } catch (e) {
-      alert("Failed to add to bag.");
+      setErrorMessage("Failed to add to bag. Please try again.");
     }
   };
 
@@ -319,7 +321,7 @@ export default function KeychainCustomizer({
                     <div className="w-8 h-8 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mt-auto mb-4 shadow-md flex-shrink-0 text-sm">
                       {selectedCharm.icon}
                     </div>
-                  </div>
+                  </motion.div>
                 </motion.div>
 
                 {/* Strand 2 (Tier 3 Only) */}
@@ -364,7 +366,7 @@ export default function KeychainCustomizer({
                       <div className="w-8 h-8 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mt-auto mb-4 shadow-md flex-shrink-0 text-sm">
                         {selectedCharm.icon}
                       </div>
-                    </div>
+                    </motion.div>
                   </motion.div>
                 )}
               </div>
@@ -491,12 +493,12 @@ export default function KeychainCustomizer({
                           </label>
                           <span
                             className={`text-[10px] font-bold font-mono ${
-                              text.length > (isTier3 ? 16 : 8)
+                              text.length > getCharLimit(tier)
                                 ? "text-red-500"
                                 : "text-slate-300"
                             }`}
                           >
-                            {text.length}/{isTier3 ? 16 : 8}
+                            {text.length}/{getCharLimit(tier)}
                           </span>
                         </div>
                         <input
@@ -504,7 +506,7 @@ export default function KeychainCustomizer({
                           type="text"
                           value={text}
                           onChange={(e) => {
-                            const limit = isTier3 ? 16 : 8;
+                            const limit = getCharLimit(tier);
                             const val = e.target.value
                               .toUpperCase()
                               .slice(0, limit);
@@ -539,6 +541,12 @@ export default function KeychainCustomizer({
                         </span>
                       </div>
                     </div>
+
+                    {errorMessage && (
+                      <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-xs font-bold text-center mb-4">
+                        ⚠️ {errorMessage}
+                      </div>
+                    )}
 
                     <button
                       type="submit"
