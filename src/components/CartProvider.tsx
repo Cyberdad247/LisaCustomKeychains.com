@@ -58,12 +58,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
     
     try {
-      const updatedCart = await addToCart(currentCartId, [{ merchandiseId: variantId, quantity, attributes }]);
+      const { cart: updatedCart, userErrors } = await addToCart(currentCartId, [{ merchandiseId: variantId, quantity, attributes }]);
+      
+      if (userErrors && userErrors.length > 0) {
+        throw new Error(userErrors[0].message);
+      }
+
       setCart(updatedCart);
       setCheckoutUrl(updatedCart.checkoutUrl);
       setCartOpen(true);
     } catch (e) {
       console.error("Failed to add to cart:", e);
+      throw e; // Re-throw to be caught by UI
     }
   };
 
@@ -82,7 +88,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (!cart?.id) return;
     try {
       const { updateCartLineQuantity } = await import('../lib/shopify');
-      const updatedCart = await updateCartLineQuantity(cart.id, lineId, quantity);
+      const { cart: updatedCart, userErrors } = await updateCartLineQuantity(cart.id, lineId, quantity);
+      
+      if (userErrors && userErrors.length > 0) {
+        console.error("Shopify User Error:", userErrors[0].message);
+        // Optional: Add a toast notification here
+        return; 
+      }
+
       setCart(updatedCart);
       setCheckoutUrl(updatedCart.checkoutUrl);
     } catch (e) {
