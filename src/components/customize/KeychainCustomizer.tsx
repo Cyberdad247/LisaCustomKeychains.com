@@ -3,7 +3,7 @@
 
 import { useState, useOptimistic, useTransition, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, X, Loader2, Sparkles } from "lucide-react";
+import { ShoppingBag, X, Loader2, Sparkles, Check } from "lucide-react";
 import { useCart } from "../CartProvider";
 import { validateKeychain } from "../../lib/validation/keychain";
 import {
@@ -412,13 +412,28 @@ export default function KeychainCustomizer({
                           }`}
                         >
                           <motion.div
-                            className={`w-full h-full rounded-full border border-black/5 shadow-inner ${
+                            className={`w-full h-full rounded-full border border-black/5 shadow-inner flex items-center justify-center ${
                               (color as any).isRainbow
                                 ? "bg-rainbow"
                                 : "yarn-hex-bg"
                             }`}
                             animate={{ "--yarn-color": color.hex } as any}
-                          ></motion.div>
+                          >
+                            {selectedColor.id === color.id && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                              >
+                                <Check 
+                                  className={`w-4 h-4 ${
+                                    color.id === 'white' || color.id === 'lavender' || color.id === 'peach' 
+                                      ? 'text-slate-900' 
+                                      : 'text-white'
+                                  }`} 
+                                />
+                              </motion.div>
+                            )}
+                          </motion.div>
                         </button>
                       ))}
                     </div>
