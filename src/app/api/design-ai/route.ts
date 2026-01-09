@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     const pythonCommand = process.platform === 'win32' ? 'python' : 'python3';
 
     // 🕸️ SPIDER MODE: Switch to spawn (No Shell = No Injection)
-    return new Promise((resolve) => {
+    return new Promise<NextResponse>((resolve) => {
       const child = spawn(pythonCommand, [scriptPath, prompt]);
       let stdout = '';
       let stderr = '';
