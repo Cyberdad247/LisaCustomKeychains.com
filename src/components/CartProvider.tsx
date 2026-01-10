@@ -58,12 +58,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
     
     try {
+      console.log(`[Cart] Adding item. CartID: ${currentCartId}, Variant: ${variantId}, Qty: ${quantity}`);
       const { cart: updatedCart, userErrors } = await addToCart(currentCartId, [{ merchandiseId: variantId, quantity, attributes }]);
       
       if (userErrors && userErrors.length > 0) {
         throw new Error(userErrors[0].message);
       }
 
+      console.log(`[Cart] Item added successfully. Total Qty: ${updatedCart.totalQuantity}`);
       setCart(updatedCart);
       setCheckoutUrl(updatedCart.checkoutUrl);
       setCartOpen(true);
