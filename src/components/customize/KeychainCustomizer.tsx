@@ -204,6 +204,26 @@ export default function KeychainCustomizer({
       ) || variants[0];
 
     const currentVariantId = matchedVariant?.node?.id;
+    const isAvailable = matchedVariant?.node?.availableForSale;
+    const qty = matchedVariant?.node?.quantityAvailable || 0;
+
+    // Logic: 
+    // If !available -> Sold Out (Blocked)
+    // If available AND qty <= 0 -> Made to Order (Allowed)
+    // If available AND qty > 0 -> In Stock (Allowed)
+
+    let buttonText = "Process Transaction";
+    let isDisabled = isPending;
+
+    if (!matchedVariant) {
+        buttonText = "Unavailable";
+        isDisabled = true;
+    } else if (!isAvailable) {
+        buttonText = "Sold Out";
+        isDisabled = true;
+    } else if (qty <= 0) {
+        buttonText = "Order (Made to Order)";
+    }
 
     if (!currentVariantId) {
       console.error("Variant ID missing");
@@ -212,6 +232,11 @@ export default function KeychainCustomizer({
     }
 
     try {
+      if (!isAvailable) {
+         setErrorMessage("This combination is currently sold out.");
+         return;
+      }
+      
       setErrorMessage(null); // Clear errors
       await addItemToCart(currentVariantId, 1, [
         {
@@ -231,10 +256,28 @@ export default function KeychainCustomizer({
         },
       ]);
       onClose(); // Close drawer on success
-    } catch (e) {
-      setErrorMessage("Failed to add to bag. Please try again.");
+    } catch (e: any) {
+      setErrorMessage(e.message || "Failed to add to bag. Please try again.");
     }
   };
+
+  // Determine button state for render (outside handleAddToCartAction scope)
+  const variants = product.variants?.edges || [];
+  const matchedVariant =
+      variants.find((v: any) =>
+        v.node.title.toLowerCase().includes(selectedColor.name.toLowerCase())
+      ) || variants[0];
+  
+  const isAvailable = matchedVariant?.node?.availableForSale;
+  const qty = matchedVariant?.node?.quantityAvailable ?? 0; // Default to 0 if undefined
+
+  let renderButtonText = isPending ? "" : "Process Transaction";
+  if (!isPending) {
+      if (!matchedVariant) renderButtonText = "Unavailable";
+      else if (!isAvailable) renderButtonText = "Sold Out";
+      else if (qty <= 0) renderButtonText = "Order (Made to Order)";
+  }
+
 
   // For Tier 3, split text into two strands (8 chars each max)
   const strand1 = isTier3 ? optimisticText.slice(0, 8) : optimisticText;
@@ -565,15 +608,17 @@ export default function KeychainCustomizer({
 
                     <button
                       type="submit"
-                      disabled={isPending}
-                      className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black text-[11px] tracking-[0.25em] uppercase hover:bg-purple-700 transition-all flex items-center justify-center gap-3 shadow-xl hover:shadow-2xl active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed group"
+                      disabled={isPending || (matchedVariant && !isAvailable)}
+                      className={`w-full py-5 text-white rounded-2xl font-black text-[11px] tracking-[0.25em] uppercase transition-all flex items-center justify-center gap-3 shadow-xl hover:shadow-2xl active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed group ${
+                        !isAvailable ? "bg-stone-400" : "bg-slate-900 hover:bg-purple-700"
+                      }`}
                     >
                       {isPending ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
                       ) : (
                         <>
-                          <ShoppingBag className="w-5 h-5 group-hover:animate-bounce" />
-                          <span>Process Transaction</span>
+                          {isAvailable && <ShoppingBag className="w-5 h-5 group-hover:animate-bounce" />}
+                          <span>{renderButtonText}</span>
                         </>
                       )}
                     </button>

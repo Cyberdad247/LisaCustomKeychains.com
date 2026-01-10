@@ -20,6 +20,8 @@ export interface ShopifyProductVariant {
   id: string;
   title: string;
   price: ShopifyMoney;
+  availableForSale: boolean;
+  quantityAvailable?: number;
   product?: {
     title: string;
     featuredImage: ShopifyImage;
@@ -139,6 +141,8 @@ export async function getAllProducts(): Promise<ShopifyProdocutEdge[]> {
               node {
                 id
                 title
+                availableForSale
+                quantityAvailable
                 price {
                   amount
                   currencyCode
