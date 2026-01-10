@@ -287,16 +287,14 @@ export default function KeychainCustomizer({
     <>
       <SEOWrapper product={product} />
       <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <SheetContent className="w-full sm:max-w-xl md:max-w-2xl p-0 gap-0 overflow-hidden bg-white border-l border-white/20 shadow-2xl flex flex-col">
+        <SheetContent className="w-full md:max-w-[90vw] lg:max-w-6xl p-0 gap-0 overflow-hidden bg-white border-l border-white/20 shadow-2xl flex flex-col">
           <SheetTitle className="sr-only">Customize {product.title}</SheetTitle>
 
           {/* Custom Header / Close */}
-          {/* We can rely on standard SheetClose, but preserving the aesthetic */}
           <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-start z-50 pointer-events-none">
             <div className="pointer-events-auto">
               {/* Optional interactive elements */}
             </div>
-            {/* Visual Close Button for styling consistency */}
             <button
               onClick={onClose}
               aria-label="Close customizer"
@@ -306,10 +304,11 @@ export default function KeychainCustomizer({
             </button>
           </div>
 
-          {/* Split Layout: Visual (Top) + Controls (Bottom) */}
-          <div className="flex flex-col h-full w-full">
-            {/* TOP: Visual Forge (Crochet Texture) */}
-            <div className="relative h-[45vh] flex-shrink-0 crochet-yarn-light flex items-center justify-center p-8 border-b-4 border-stone-100">
+          {/* Responsive Layout: Vertical Mobile, Split Desktop */}
+          <div className="flex flex-col md:grid md:grid-cols-12 h-full w-full">
+            
+            {/* LEFT: Visual Forge (Preview) - Takes 7/12 cols on Desktop */}
+            <div className="relative h-[45vh] md:h-full md:col-span-7 flex-shrink-0 crochet-yarn-light flex items-center justify-center p-8 border-b-4 md:border-b-0 md:border-r-4 border-stone-100 bg-stone-50 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none"></div>
 
               {/* Live Preview Badge */}
@@ -323,7 +322,8 @@ export default function KeychainCustomizer({
                 </span>
               </div>
 
-              <div className="flex gap-4 items-center scale-90 md:scale-100 transition-transform">
+              {/* Centered Preview Content */}
+              <div className="flex gap-4 items-center scale-90 md:scale-125 transition-transform h-full justify-center">
                 {/* Strand 1 */}
                 <motion.div
                   className="relative flex flex-col items-center"
@@ -415,9 +415,9 @@ export default function KeychainCustomizer({
               </div>
             </div>
 
-            {/* BOTTOM: Scrollable Controls */}
-            <div className="flex-1 overflow-y-auto p-8 bg-white">
-              <div className="max-w-md mx-auto pb-24">
+            {/* RIGHT: Controls - Takes 5/12 cols on Desktop */}
+            <div className="flex-1 md:col-span-5 overflow-y-auto p-8 bg-white h-full relative">
+              <div className="max-w-md mx-auto pb-24 md:pt-12">
                 <div className="mb-8">
                   <h2 className="text-3xl font-serif text-slate-900 mb-1">
                     {product.title}
