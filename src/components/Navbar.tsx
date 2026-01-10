@@ -36,7 +36,6 @@ export default function Navbar() {
             {/* LEFT LINKS */}
             <div className="hidden md:flex flex-1 justify-start space-x-8 text-sm font-medium tracking-widest text-slate-600">
               <a href="/" className="hover:text-purple-700 transition-colors">SHOP</a>
-              <a href="/customize" className="hover:text-purple-700 transition-colors">CUSTOMIZE</a>
             </div>
 
             {/* LOGO */}
@@ -84,7 +83,6 @@ export default function Navbar() {
         }`}
       >
         <a href="/" className="hover:text-purple-700 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>SHOP</a>
-        <a href="/customize" className="hover:text-purple-700 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>CUSTOMIZE</a>
         <button onClick={() => { setIsMobileMenuOpen(false); toggleCart(); }} className="flex items-center gap-2 text-purple-700">
            <ShoppingBag /> Bag ({quantity})
         </button>
