@@ -34,7 +34,7 @@ export default function AboutSection() {
         <div className="relative group">
           <div className="relative h-[500px] w-full rounded-2xl overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700 ease-out border-8 border-white">
             <Image
-              src="/images/Lisa'sSelfie.jpg"
+              src="/images/lisa_maker_profile.png"
               alt="Lisa - The Maker"
               fill
               className="object-cover"
