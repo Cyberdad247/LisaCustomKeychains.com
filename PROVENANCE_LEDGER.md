@@ -35,6 +35,8 @@
 | 029 | **UI/UX: Heritage Reordering** | N/A | ✅ ACTUATED | Reordered home page sections to move Heritage storytelling above the product gallery. Cleaned up redundant headers. |
 | 030 | **Consolidation & Reorder** | Antigravity | ✅ VERIFIED | Centralized Shopify types, fixed build-breaking imports, and finalized home page section order (Hero -> Heritage -> Gallery). |
 | 031 | **Type Safety Audit** | Antigravity | ✅ VERIFIED | Fixed missing type exports in shopify.ts and updated CartProvider/SEOWrapper imports. Build successful. |
+| 032 | **Gallery Reorder (Final)** | Antigravity | ✅ ACTUATED | Finalized sequence: Hero → Heritage → Gallery → About Us. Injected updated metadata and pacing. |
+
 
  ---
 

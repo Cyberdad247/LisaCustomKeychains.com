@@ -28,12 +28,13 @@ export default function DevPortal() {
    ];
 
    const logs = [
-      { id: 1, action: 'TYPE_SAFETY_CONSOLIDATION', node: 'Merlin', result: 'Verified', details: 'Centralized Shopify types into sovereign schema registry', time: 'Just now' },
-      { id: 2, action: 'BUILD_HARDENING_v2.0', node: 'Antigravity', result: 'Success', details: 'Patched import conflicts & export logic in shopify.ts', time: '2m ago' },
-      { id: 3, action: 'SOVEREIGN_REORDERING', node: 'Syntax', result: 'Success', details: 'Finalized Hero -> Heritage -> Gallery hierarchy', time: '5m ago' },
-      { id: 4, action: 'TITAN_PROVENANCE_SYNC', node: 'Lukas', result: 'Verified', details: 'Updated Ledger to ID:031 with Titan Grade audit', time: '12m ago' },
-      { id: 5, action: 'VARIANT_SYNC_LOCK', node: 'Antigravity', result: 'Locked', details: 'Shopify Variant IDs Synchronized', time: '22m ago' },
+      { id: 1, action: 'CACHE_PURGE_v2.0', node: 'Lukas', result: 'Verified', details: 'Deleted .next, node_modules, regenerated lockfile. 0 vulnerabilities.', time: 'Just now' },
+      { id: 2, action: 'HOMEPAGE_SEQUENCE_LOCK', node: 'Antigravity', result: 'Success', details: 'Verified Hero → Heritage → Gallery → About Us hierarchy.', time: '3m ago' },
+      { id: 3, action: 'LEDGER_SYNC_032', node: 'Kaelen', result: 'Verified', details: 'Updated PROVENANCE_LEDGER.md with Gallery Reorder (Final) entry.', time: '10m ago' },
+      { id: 4, action: 'ADEPT_ROSTER_QUERY', node: 'Anya', result: 'Success', details: 'Enumerated Aris, Maya, Vega, Kaelen. All nodes nominal.', time: '15m ago' },
+      { id: 5, action: 'KINETIC_RESET', node: 'Squire Purge', result: 'Purged', details: 'git clean -fdx removed untracked artifacts and stale reports.', time: '20m ago' },
    ];
+
 
    return (
       <div className="min-h-screen bg-[#020202] text-white selection:bg-[#D4AF37] selection:text-black font-sans">
