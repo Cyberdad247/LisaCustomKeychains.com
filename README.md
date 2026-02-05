@@ -110,6 +110,15 @@ Ensure these are set in your Vercel project settings:
 - **SSL**: Automatically provisioned by Vercel
 - **CDN**: Global edge network for optimal performance
 
+## 🛠️ Development Workflows
+
+For detailed instructions on premium development patterns (Mock Engines, UI Audits, and Component Forge), refer to the [workflows.md](./workflows.md) file. 
+
+Available Slash Commands (in-agent):
+- `/mock-reforge`: Transform raw data into Singularity Lattice mock formats.
+- `/blueprint-forge`: Standardized feature engineering.
+- `/deploy`: Production deployment protocol.
+
 ## 🛡️ Security Note
 
 This repository is configured to **never** track Shopify Admin API keys or local credentials. All scripts in `.hive/` and environment files are ignored by Git to ensure store safety. Use the provided template in `.env.example` (if available) to set up your own environment.

@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { getAllProducts } from "../lib/shopify";
+import { type ShopifyProductEdge } from "../lib/shopify/types";
 
 export const dynamic = "force-dynamic";
 const BASE_URL = "https://lisascustomkeychains.com";
@@ -7,7 +8,7 @@ const BASE_URL = "https://lisascustomkeychains.com";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const products = await getAllProducts();
 
-  const productUrls: MetadataRoute.Sitemap = products.map((product: any) => ({
+  const productUrls: MetadataRoute.Sitemap = products.map((product: ShopifyProductEdge) => ({
     url: `${BASE_URL}/product/${product.node.handle}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,

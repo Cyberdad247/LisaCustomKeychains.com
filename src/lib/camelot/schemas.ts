@@ -73,7 +73,8 @@ export const KeychainDesignSchema = z.object({
       "Only uppercase letters, numbers, and spaces allowed"
     ),
   color: ColorOptionSchema,
-  charm: CharmOptionSchema,
+  charm: CharmOptionSchema.optional(),
+  charms: z.array(CharmOptionSchema).max(3).optional(),
 });
 
 /**

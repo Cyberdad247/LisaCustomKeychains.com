@@ -14,14 +14,29 @@ import {
 import SEOWrapper from "../SEOWrapper";
 import VibeInput from "../VibeInput";
 import { Sheet, SheetContent, SheetTitle } from "../ui/sheet";
+import { type ShopifyProduct } from "../../lib/shopify/types";
 
 interface KeychainCustomizerProps {
-  product: any;
+  product: ShopifyProduct;
   isOpen: boolean;
   onClose: () => void;
 }
 
-const THREAD_COLORS = [
+interface ThreadColor {
+  id: string;
+  name: string;
+  hex: string;
+  isRainbow?: boolean;
+}
+
+interface Charm {
+  id: string;
+  name: string;
+  icon: string;
+  color?: ThreadColor;
+}
+
+const THREAD_COLORS: ThreadColor[] = [
   { id: "purple", name: "Royal Purple", hex: "#9333ea" },
   { id: "pink", name: "Soft Pink", hex: "#ec4899" },
   { id: "blue", name: "Sky Blue", hex: "#3b82f6" },
@@ -69,7 +84,7 @@ export default function KeychainCustomizer({
   const isTier2 = tier === 2;
   const isTier3 = tier === 3;
 
-  const getCharmInfo = (title: string) => {
+  const getCharmInfo = (title: string): Charm => {
     const t = title.toLowerCase();
     if (t.includes("tennis"))
       return {
@@ -116,6 +131,7 @@ export default function KeychainCustomizer({
     return { id: "heart", name: "Heart", icon: "❤️", color: THREAD_COLORS[0] };
   };
 
+  const isEarring = product.productType === "Earrings";
   const initialCharm = getCharmInfo(product.title || "");
 
   const [text, setText] = useState(
@@ -124,10 +140,15 @@ export default function KeychainCustomizer({
   const [selectedColor, setSelectedColor] = useState(
     initialCharm.color || THREAD_COLORS[0]
   );
-  const [selectedCharm, setSelectedCharm] = useState(initialCharm);
+  const [selectedCharms, setSelectedCharms] = useState<Charm[]>(
+    isEarring
+      ? [initialCharm, { id: "star", name: "Star", icon: "⭐" }, { id: "sparkles", name: "Sparkles", icon: "✨" }]
+      : [initialCharm]
+  );
+  const [activeCharmIndex, setActiveCharmIndex] = useState(0);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [suggestedIcons, setSuggestedIcons] = useState<any[]>([]);
+  const [suggestedIcons, setSuggestedIcons] = useState<Charm[]>([]);
   const [isPending, startTransition] = useTransition();
   const { addItemToCart } = useCart();
 
@@ -180,7 +201,7 @@ export default function KeychainCustomizer({
     const validationResult = validateKeychain({
       text: isTier1 ? "COLORONLY" : inputText.toUpperCase(),
       color: selectedColor,
-      charm: selectedCharm,
+      charms: selectedCharms,
     });
 
     if (!validationResult.success) {
@@ -199,7 +220,7 @@ export default function KeychainCustomizer({
 
     const variants = product.variants?.edges || [];
     const matchedVariant =
-      variants.find((v: any) =>
+      variants.find((v: { node: { title: string } }) =>
         v.node.title.toLowerCase().includes(selectedColor.name.toLowerCase())
       ) || variants[0];
 
@@ -216,13 +237,13 @@ export default function KeychainCustomizer({
     let isDisabled = isPending;
 
     if (!matchedVariant) {
-        buttonText = "Unavailable";
-        isDisabled = true;
+      buttonText = "Unavailable";
+      isDisabled = true;
     } else if (!isAvailable) {
-        buttonText = "Sold Out";
-        isDisabled = true;
+      buttonText = "Sold Out";
+      isDisabled = true;
     } else if (qty <= 0) {
-        buttonText = "Order (Made to Order)";
+      buttonText = "Order (Made to Order)";
     }
 
     if (!currentVariantId) {
@@ -233,10 +254,10 @@ export default function KeychainCustomizer({
 
     try {
       if (!isAvailable) {
-         setErrorMessage("This combination is currently sold out.");
-         return;
+        setErrorMessage("This combination is currently sold out.");
+        return;
       }
-      
+
       setErrorMessage(null); // Clear errors
       await addItemToCart(currentVariantId, 1, [
         {
@@ -247,35 +268,36 @@ export default function KeychainCustomizer({
         {
           key: "vibe_notes",
           value: JSON.stringify({
-            charm: selectedCharm.name,
-            icon: selectedCharm.icon,
-            icon_id: selectedCharm.id,
-            style: isTier3 ? "Premium Dual Strand" : "Single Strand",
-            visual: `${selectedColor.name} with ${selectedCharm.icon}`,
+            charms: selectedCharms.map(c => c.name).join(", "),
+            charm_icons: selectedCharms.map(c => c.icon).join(" "),
+            tier: tier,
+            style: isTier3 ? "Premium Dual Strand" : (isEarring ? "Heritage Earrings" : "Single Strand"),
+            visual: `${selectedColor.name} with ${selectedCharms.map(c => c.icon).join(" ")}`,
           }),
         },
       ]);
       onClose(); // Close drawer on success
-    } catch (e: any) {
-      setErrorMessage(e.message || "Failed to add to bag. Please try again.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to add to bag. Please try again.";
+      setErrorMessage(msg);
     }
   };
 
   // Determine button state for render (outside handleAddToCartAction scope)
   const variants = product.variants?.edges || [];
   const matchedVariant =
-      variants.find((v: any) =>
-        v.node.title.toLowerCase().includes(selectedColor.name.toLowerCase())
-      ) || variants[0];
-  
+    variants.find((v: { node: { title: string } }) =>
+      v.node.title.toLowerCase().includes(selectedColor.name.toLowerCase())
+    ) || variants[0];
+
   const isAvailable = matchedVariant?.node?.availableForSale;
   const qty = matchedVariant?.node?.quantityAvailable ?? 0; // Default to 0 if undefined
 
   let renderButtonText = isPending ? "" : "Process Transaction";
   if (!isPending) {
-      if (!matchedVariant) renderButtonText = "Unavailable";
-      else if (!isAvailable) renderButtonText = "Sold Out";
-      else if (qty <= 0) renderButtonText = "Order (Made to Order)";
+    if (!matchedVariant) renderButtonText = "Unavailable";
+    else if (!isAvailable) renderButtonText = "Sold Out";
+    else if (qty <= 0) renderButtonText = "Order (Made to Order)";
   }
 
 
@@ -306,7 +328,7 @@ export default function KeychainCustomizer({
 
           {/* Responsive Layout: Vertical Mobile, Split Desktop */}
           <div className="flex flex-col md:grid md:grid-cols-12 h-full w-full">
-            
+
             {/* LEFT: Visual Forge (Preview) - Takes 7/12 cols on Desktop */}
             <div className="relative h-[45vh] md:h-full md:col-span-7 flex-shrink-0 crochet-yarn-light flex items-center justify-center p-8 border-b-4 md:border-b-0 md:border-r-4 border-stone-100 bg-stone-50 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none"></div>
@@ -335,15 +357,14 @@ export default function KeychainCustomizer({
                   }}
                 >
                   <motion.div
-                    className={`w-20 h-[420px] rounded-b-3xl shadow-xl flex flex-col items-center gap-1 pt-6 pb-2 overflow-hidden border-x-4 border-black/10 bg-stone-50 ${
-                      (selectedColor as any).isRainbow
-                        ? "bg-rainbow"
-                        : "yarn-hex-bg"
-                    }`}
+                    className={`w-20 h-[420px] rounded-b-3xl shadow-xl flex flex-col items-center gap-1 pt-6 pb-2 overflow-hidden border-x-4 border-black/10 bg-stone-50 ${selectedColor.isRainbow
+                      ? "bg-rainbow"
+                      : "yarn-hex-bg"
+                      }`}
                     animate={{ "--yarn-color": selectedColor.hex } as any}
                   >
                     <div className="w-8 h-8 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mb-2 shadow-md flex-shrink-0 text-sm">
-                      {selectedCharm.icon}
+                      {selectedCharms[0]?.icon}
                     </div>
 
                     <AnimatePresence mode="popLayout">
@@ -352,9 +373,8 @@ export default function KeychainCustomizer({
                           key={`s1-${i}-${char}`}
                           initial={{ opacity: 0, scale: 0.5, y: -10 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
-                          className={`w-8 h-8 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm text-sm shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-1 ${
-                            i % 2 === 0 ? "rotate-2" : "-rotate-2"
-                          }`}
+                          className={`w-8 h-8 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm text-sm shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-1 ${i % 2 === 0 ? "rotate-2" : "-rotate-2"
+                            }`}
                         >
                           {char.toUpperCase()}
                         </motion.div>
@@ -362,7 +382,7 @@ export default function KeychainCustomizer({
                     </AnimatePresence>
 
                     <div className="w-8 h-8 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mt-auto mb-4 shadow-md flex-shrink-0 text-sm">
-                      {selectedCharm.icon}
+                      {selectedCharms[0]?.icon}
                     </div>
                   </motion.div>
                 </motion.div>
@@ -380,15 +400,14 @@ export default function KeychainCustomizer({
                     }}
                   >
                     <motion.div
-                      className={`w-20 h-[420px] rounded-b-3xl shadow-xl flex flex-col items-center gap-1 pt-6 pb-2 overflow-hidden border-x-4 border-black/10 bg-stone-50 ${
-                        (selectedColor as any).isRainbow
-                          ? "bg-rainbow"
-                          : "yarn-hex-bg"
-                      }`}
+                      className={`w-20 h-[420px] rounded-b-3xl shadow-xl flex flex-col items-center gap-1 pt-6 pb-2 overflow-hidden border-x-4 border-black/10 bg-stone-50 ${selectedColor.isRainbow
+                        ? "bg-rainbow"
+                        : "yarn-hex-bg"
+                        }`}
                       animate={{ "--yarn-color": selectedColor.hex } as any}
                     >
                       <div className="w-8 h-8 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mb-2 shadow-md flex-shrink-0 text-sm">
-                        {selectedCharm.icon}
+                        {selectedCharms[0]?.icon}
                       </div>
 
                       <AnimatePresence mode="popLayout">
@@ -397,17 +416,25 @@ export default function KeychainCustomizer({
                             key={`s2-${i}-${char}`}
                             initial={{ opacity: 0, scale: 0.5, y: -10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
-                            className={`w-8 h-8 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm text-sm shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-1 ${
-                              i % 2 === 0 ? "-rotate-2" : "rotate-2"
-                            }`}
+                            className={`w-8 h-8 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm text-sm shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-1 ${i % 2 === 0 ? "-rotate-2" : "rotate-2"
+                              }`}
                           >
                             {char.toUpperCase()}
                           </motion.div>
                         ))}
                       </AnimatePresence>
 
-                      <div className="w-8 h-8 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mt-auto mb-4 shadow-md flex-shrink-0 text-sm">
-                        {selectedCharm.icon}
+                      <div className="flex gap-2 mt-auto mb-4">
+                        {selectedCharms.map((charm, idx) => (
+                          <motion.div
+                            key={idx}
+                            layoutId={`preview-charm-${idx}`}
+                            className={`w-8 h-8 bg-white flex items-center justify-center font-bold rounded-sm shadow-md flex-shrink-0 text-sm ${isEarring && activeCharmIndex === idx ? "ring-2 ring-purple-500 scale-110" : ""
+                              } ${charm.id === 'heart' || charm.id === 'star' ? 'text-rose-500' : 'text-slate-900'}`}
+                          >
+                            {charm.icon}
+                          </motion.div>
+                        ))}
                       </div>
                     </motion.div>
                   </motion.div>
@@ -426,8 +453,8 @@ export default function KeychainCustomizer({
                     {isTier1
                       ? "Basic Collection: Color Only"
                       : isTier3
-                      ? "Premium Dual-Core Bundle"
-                      : "Classic Signature Collection"}
+                        ? "Premium Dual-Core Bundle"
+                        : "Classic Signature Collection"}
                   </p>
                 </div>
 
@@ -448,18 +475,16 @@ export default function KeychainCustomizer({
                           onClick={() => setSelectedColor(color)}
                           title={color.name}
                           aria-label={`Select ${color.name} color`}
-                          className={`w-9 h-9 rounded-full border-2 transition-all duration-300 p-0.5 ${
-                            selectedColor.id === color.id
-                              ? "border-purple-600 scale-110 shadow-lg ring-2 ring-purple-100"
-                              : "border-transparent hover:border-stone-200 hover:scale-105"
-                          }`}
+                          className={`w-9 h-9 rounded-full border-2 transition-all duration-300 p-0.5 ${selectedColor.id === color.id
+                            ? "border-purple-600 scale-110 shadow-lg ring-2 ring-purple-100"
+                            : "border-transparent hover:border-stone-200 hover:scale-105"
+                            }`}
                         >
                           <motion.div
-                            className={`w-full h-full rounded-full border border-black/5 shadow-inner flex items-center justify-center ${
-                              (color as any).isRainbow
-                                ? "bg-rainbow"
-                                : "yarn-hex-bg"
-                            }`}
+                            className={`w-full h-full rounded-full border border-black/5 shadow-inner flex items-center justify-center ${color.isRainbow
+                              ? "bg-rainbow"
+                              : "yarn-hex-bg"
+                              }`}
                             animate={{ "--yarn-color": color.hex } as any}
                           >
                             {selectedColor.id === color.id && (
@@ -467,12 +492,11 @@ export default function KeychainCustomizer({
                                 initial={{ opacity: 0, scale: 0.5 }}
                                 animate={{ opacity: 1, scale: 1 }}
                               >
-                                <Check 
-                                  className={`w-4 h-4 ${
-                                    color.id === 'white' || color.id === 'lavender' || color.id === 'peach' 
-                                      ? 'text-slate-900' 
-                                      : 'text-white'
-                                  }`} 
+                                <Check
+                                  className={`w-4 h-4 ${color.id === 'white' || color.id === 'lavender' || color.id === 'peach'
+                                    ? 'text-slate-900'
+                                    : 'text-white'
+                                    }`}
                                 />
                               </motion.div>
                             )}
@@ -495,7 +519,13 @@ export default function KeychainCustomizer({
                               icon: data.icon,
                               color: selectedColor,
                             };
-                            setSelectedCharm(newCharm);
+
+                            setSelectedCharms(prev => {
+                              const next = [...prev];
+                              next[activeCharmIndex] = newCharm;
+                              return next;
+                            });
+
                             // Add to suggestions if not already there
                             setSuggestedIcons((prev) => {
                               const exists = prev.find(
@@ -507,6 +537,26 @@ export default function KeychainCustomizer({
                           }
                         }}
                       />
+
+                      {/* Multi-Charm Selector Tabs for Earrings */}
+                      {isEarring && (
+                        <div className="flex gap-2 p-1 bg-stone-100 rounded-xl">
+                          {[0, 1, 2].map((idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => setActiveCharmIndex(idx)}
+                              className={`flex-1 py-2 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${activeCharmIndex === idx
+                                ? "bg-white text-purple-600 shadow-sm"
+                                : "text-slate-400 hover:text-slate-600"
+                                }`}
+                            >
+                              Charm {idx + 1}
+                              <span className="ml-1 text-[12px]">{selectedCharms[idx]?.icon}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
 
                       <AnimatePresence>
                         {suggestedIcons.length > 0 && (
@@ -521,13 +571,16 @@ export default function KeychainCustomizer({
                                 key={idx}
                                 type="button"
                                 onClick={() => {
-                                  setSelectedCharm(charm);
+                                  setSelectedCharms(prev => {
+                                    const next = [...prev];
+                                    next[activeCharmIndex] = charm;
+                                    return next;
+                                  });
                                 }}
-                                className={`flex flex-col items-center gap-1 p-2 bg-stone-50 border rounded-lg transition-colors text-xs text-slate-600 group ${
-                                  selectedCharm.icon === charm.icon
-                                    ? "border-purple-600 bg-purple-50"
-                                    : "border-stone-100 hover:border-purple-200 hover:bg-purple-50"
-                                }`}
+                                className={`flex flex-col items-center gap-1 p-2 bg-stone-50 border rounded-lg transition-colors text-xs text-slate-600 group ${selectedCharms[activeCharmIndex]?.icon === charm.icon
+                                  ? "border-purple-600 bg-purple-50"
+                                  : "border-stone-100 hover:border-purple-200 hover:bg-purple-50"
+                                  }`}
                               >
                                 <div className="w-6 h-6 text-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
                                   {charm.icon}
@@ -550,11 +603,10 @@ export default function KeychainCustomizer({
                               : "Identifier (Max 8)"}
                           </label>
                           <span
-                            className={`text-[10px] font-bold font-mono ${
-                              text.length > getCharLimit(tier)
-                                ? "text-red-500"
-                                : "text-slate-300"
-                            }`}
+                            className={`text-[10px] font-bold font-mono ${text.length > getCharLimit(tier)
+                              ? "text-red-500"
+                              : "text-slate-300"
+                              }`}
                           >
                             {text.length}/{getCharLimit(tier)}
                           </span>
@@ -609,9 +661,8 @@ export default function KeychainCustomizer({
                     <button
                       type="submit"
                       disabled={isPending || (matchedVariant && !isAvailable)}
-                      className={`w-full py-5 text-white rounded-2xl font-black text-[11px] tracking-[0.25em] uppercase transition-all flex items-center justify-center gap-3 shadow-xl hover:shadow-2xl active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed group ${
-                        !isAvailable ? "bg-stone-400" : "bg-slate-900 hover:bg-purple-700"
-                      }`}
+                      className={`w-full py-5 text-white rounded-2xl font-black text-[11px] tracking-[0.25em] uppercase transition-all flex items-center justify-center gap-3 shadow-xl hover:shadow-2xl active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed group ${!isAvailable ? "bg-stone-400" : "bg-slate-900 hover:bg-purple-700"
+                        }`}
                     >
                       {isPending ? (
                         <Loader2 className="w-5 h-5 animate-spin" />

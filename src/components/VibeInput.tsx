@@ -1,6 +1,6 @@
 "use client";
 
-import { resolveVibe } from "@/lib/vibeEngine";
+import { resolveVibe, type VibeData } from "@/lib/vibeEngine";
 import { Sparkles, Loader2 } from "lucide-react";
 import { useState } from "react";
 
@@ -19,7 +19,7 @@ function useDebounce(callback: (input: string) => void, delay: number) {
 export default function VibeInput({
   onVibeChange,
 }: {
-  onVibeChange: (data: any) => void;
+  onVibeChange: (data: VibeData) => void;
 }) {
   const [loading, setLoading] = useState(false);
 

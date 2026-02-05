@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Quicksand } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "../components/CartProvider";
+import { NotificationProvider } from "../components/NotificationSentry";
 import CartDrawer from "../components/CartDrawer";
 import Footer from "../components/Footer";
 
@@ -32,11 +33,13 @@ export default function RootLayout({
       <body
         className={`${quicksand.variable} ${playfair.variable} font-sans antialiased text-slate-800 selection:bg-purple-200 selection:text-purple-900 overflow-x-hidden min-h-screen flex flex-col`}
       >
-        <CartProvider>
-          {children}
-          <CartDrawer />
-          <Footer />
-        </CartProvider>
+        <NotificationProvider>
+          <CartProvider>
+            {children}
+            <CartDrawer />
+            <Footer />
+          </CartProvider>
+        </NotificationProvider>
       </body>
     </html>
   );
