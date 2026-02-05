@@ -36,6 +36,10 @@
 | 030 | **Consolidation & Reorder** | Antigravity | ✅ VERIFIED | Centralized Shopify types, fixed build-breaking imports, and finalized home page section order (Hero -> Heritage -> Gallery). |
 | 031 | **Type Safety Audit** | Antigravity | ✅ VERIFIED | Fixed missing type exports in shopify.ts and updated CartProvider/SEOWrapper imports. Build successful. |
 | 032 | **Gallery Reorder (Final)** | Antigravity | ✅ ACTUATED | Finalized sequence: Hero → Heritage → Gallery → About Us. Injected updated metadata and pacing. |
+| 033 | **Inspiration Gallery Copy** | Antigravity | ✅ ACTUATED | Renamed "The Collection" to "Inspiration Gallery" with new UX-focused description. |
+| 034 | **Dev Portal Refresh** | Kaelen | ✅ SYNCED | Repopulated kinetic trace logs with fresh cache purge, sequence lock, and roster query data. |
+| 035 | **Vercel Deploy Sync** | Lukas | ✅ DEPLOYED | Pushed commit d51f9c3 to origin/main. Vercel auto-deploy triggered. |
+
 
 
  ---
