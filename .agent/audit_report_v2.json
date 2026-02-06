@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "target": "LisaCustomKeychains.com",
+    "date": "2026-02-05T22:57:01.785377",
+    "auditor": "Nano-CLI v1.0"
+  },
+  "phases": {
+    "architecture": {
+      "type": "Service/App",
+      "stack": [
+        "Node.js"
+      ]
+    },
+    "quality": {
+      "score": 70,
+      "style": "Lacks Linters",
+      "configs": []
+    },
+    "testing": {
+      "frameworks": [],
+      "test_count": 0
+    },
+    "security": {
+      "vulnerabilities": 3,
+      "critical_findings": [
+        "Potential secret in [root-of-the-server]__1690ee0d._.js",
+        "Potential secret in a6dad97d9634a72d.js",
+        "Potential secret in [root-of-the-server]__f408c708._.js"
+      ]
+    },
+    "documentation": {
+      "grade": "B",
+      "missing": [
+        "CONTRIBUTING.md"
+      ]
+    }
+  },
+  "score": {
+    "overall": 73,
+    "grade": "B"
+  }
+}
