@@ -52,16 +52,7 @@ export default function HeritageSection() {
                         </div>
 
                         <div className="space-y-6 text-lg text-slate-600 leading-relaxed font-sans">
-                            <p>
-                                This collection of assorted charms holds a special place in my heart.
-                                It traces back through my family, representing the small tokens of
-                                joy and memories passed down from my grandfather.
-                            </p>
-                            <p>
-                                He taught me that even the smallest object can carry the weight
-                                of a lifetime of stories. Every charm we offer today is selected
-                                with that same spirit—to be a tiny anchor for your own adventures.
-                            </p>
+                            Various charms to pick from and if you don't see it, don't worry just ask...
                         </div>
 
                         <div className="pt-6 flex flex-col sm:flex-row gap-6 items-start">

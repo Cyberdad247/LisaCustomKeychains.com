@@ -5,20 +5,28 @@ import https from 'https';
 
 // Manual .env.local parsing since dotenv might not be available
 const envPath = path.resolve(process.cwd(), '.env.local');
+console.log(`📂 Loading .env from: ${envPath}`);
 let env: Record<string, string> = {};
 try {
-  const envFile = fs.readFileSync(envPath, 'utf-8');
-  envFile.split('\n').forEach(line => {
-    const match = line.match(/^([^=]+)=(.*)$/);
-    if (match) {
-      env[match[1].trim()] = match[2].trim().replace(/^['"]|['"]$/g, '');
-    }
-  });
+  if (fs.existsSync(envPath)) {
+    const envFile = fs.readFileSync(envPath, 'utf-8');
+    envFile.split('\n').forEach(line => {
+      const match = line.match(/^([^=]+)=(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        const value = match[2].trim().replace(/^['"]|['"]$/g, '');
+        env[key] = value;
+      }
+    });
+    console.log("Keys found:", Object.keys(env));
+  } else {
+    console.error("❌ .env.local file not found at path!");
+  }
 } catch (e) {
-  console.error("Could not read .env.local");
+  console.error("Could not read .env.local", e);
 }
 
-const shopifyStoreDomain = env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN || process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN;
+const shopifyStoreDomain = env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN || env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN || process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN;
 const shopifyAccessToken = env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN || process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN;
 
 if (!shopifyStoreDomain || !shopifyAccessToken) {
