@@ -4,9 +4,9 @@ import { ShopifyProductEdge } from "./types";
 export const mockProducts: ShopifyProductEdge[] = [
     {
         node: {
-            id: "gid://shopify/Product/mock-earrings-1",
-            title: "Signature Heritage Earrings",
-            handle: "signature-heritage-earrings",
+            id: "gid://shopify/Product/20180711_211046",
+            title: "Dangle in style",
+            handle: "dangle-in-style-20180711_211046",
             description: "Hand-crafted premium earrings at a special value price. Perfect for gifting or completing your look.",
             productType: "Earrings",
             featuredImage: {
