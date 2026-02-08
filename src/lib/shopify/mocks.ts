@@ -10,7 +10,7 @@ export const mockProducts: ShopifyProductEdge[] = [
             description: "Hand-crafted premium earrings at a special value price. Perfect for gifting or completing your look.",
             productType: "Earrings",
             featuredImage: {
-                url: "/images/featured_model_earrings.jpg",
+                url: "/images/heart_earrings_close_up.jpg",
                 altText: "Signature Heritage Earrings",
             },
             priceRange: {
