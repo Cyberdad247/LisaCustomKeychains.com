@@ -5,6 +5,7 @@ import { getAllProducts } from "../lib/shopify";
 import { type ShopifyProductEdge } from "../lib/shopify/types";
 import AboutSection from "../components/AboutSection";
 import HeritageSection from "../components/HeritageSection";
+import DedicationSection from "../components/DedicationSection";
 import ProductJSONLD from "../components/ProductJSONLD";
 import { Metadata } from "next";
 
@@ -59,6 +60,9 @@ export default async function Home() {
 
         {/* About Us - Fourth/Last */}
         <AboutSection />
+
+        {/* Dedication - Footer Lead-in */}
+        <DedicationSection />
       </main>
 
       <div className="h-20"></div>

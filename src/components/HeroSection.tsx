@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { Sparkles, Heart, HeartHandshake } from "lucide-react";
 import { type ShopifyProduct } from "../lib/shopify/types";
+import PolaroidWrapper from "@/components/PolaroidWrapper";
 
 interface HeroSectionProps {
     featuredProduct?: ShopifyProduct;
@@ -68,7 +69,7 @@ export default function HeroSection({ featuredProduct }: HeroSectionProps) {
             >
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-300 to-pink-300 rounded-full blur-3xl opacity-20"></div>
                 {featuredProduct && (
-                    <div className="polaroid relative z-10 mx-auto md:mr-0 max-w-sm">
+                    <PolaroidWrapper className="mx-auto md:mr-0 max-w-sm">
                         <div className="aspect-square bg-stone-100 overflow-hidden mb-4 border border-stone-200 relative">
                             {featuredProduct.featuredImage && (
                                 <Image
@@ -88,7 +89,7 @@ export default function HeroSection({ featuredProduct }: HeroSectionProps) {
                                 {featuredProduct.title}
                             </p>
                         </div>
-                    </div>
+                    </PolaroidWrapper>
                 )}
             </motion.div>
         </div>
