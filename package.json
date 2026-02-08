@@ -13,6 +13,7 @@
     "@radix-ui/react-slot": "^1.2.4",
     "@shopify/shopify-api": "^12.2.0",
     "@supabase/supabase-js": "^2.89.0",
+    "@vercel/analytics": "^1.6.1",
     "autoprefixer": "^10.4.23",
     "axios": "^1.13.2",
     "class-variance-authority": "^0.7.1",
