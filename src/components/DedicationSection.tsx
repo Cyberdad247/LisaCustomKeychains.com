@@ -17,12 +17,21 @@ export default function DedicationSection() {
 
                 <div className="space-y-6 text-slate-600 leading-relaxed font-light text-lg">
                     <p>
-                        This collection is a tribute to the beautiful spirits of <strong>Ann and Lashawn</strong>.
-                        Participating in the <strong>Cancer Walk</strong> in their honor reminds us that love and hope endure.
+                        This website is dedicated to <strong>Ms. Anna and Ms. Lashawn</strong>. Two of the many inspirational women in my life.
+                        They have reignited my creative brain this past year. I started a new job, and was welcomed with open arms; they inspire me to be the absolute best me that I can be.
                     </p>
                     <p>
-                        Their legacy is woven into every thread, and we walk together to celebrate their lives
-                        and support the fight for a cure.
+                        They are both breast cancer survivors, and while they were telling me about their journey, my creative brain went into a frenzy.
+                        I decided to make and donate some breast cancer inspired keychains for their friends and family as we walked the <strong>American Breast Cancer Society's walk</strong> together.
+                    </p>
+                    <p>
+                        Before this, my creative brain was lying dormant for the past few years. I am super thankful for them, and super excited to finally do what I have dreamed to do:
+                        Have my own business, and make keychains that inspire.
+                    </p>
+                    <p>
+                        This website is for the people who have trouble finding accessories with their name on them, because they have a unique spelling.
+                        This website creates a space for everyone to be their unique selves, because life isn't cookie cutter and neither should our accessories.
+                        So if you are looking for something uniquely you, this is the right place to be.
                     </p>
                 </div>
 
