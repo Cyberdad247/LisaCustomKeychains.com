@@ -73,69 +73,47 @@ export const mockProducts: ShopifyProductEdge[] = [
     },
     {
         node: {
-            id: "gid://shopify/Product/mock-woven-1",
-            title: "Classic Woven Heritage Keychain",
-            handle: "classic-woven-heritage",
-            description: "Timeless woven design, handcrafted for durability and style.",
-            productType: "Woven",
+            id: "gid://shopify/Product/mock-bracelet-1",
+            title: "Classic Woven Heritage Bracelet",
+            handle: "classic-woven-heritage-bracelet",
+            description: "Timeless woven design, handcrafted for durability and style. Perfect for any wrist.",
+            productType: "Bracelets",
             featuredImage: {
                 url: "/images/20180228_134138.jpg",
-                altText: "Woven Heritage",
+                altText: "Woven Heritage Bracelet",
             },
             priceRange: {
                 minVariantPrice: { amount: "12.95", currencyCode: "USD" },
             },
             images: {
-                edges: [{ node: { url: "/images/20180228_134138.jpg", altText: "Woven Heritage" } }],
+                edges: [{ node: { url: "/images/20180228_134138.jpg", altText: "Woven Heritage Bracelet" } }],
             },
             variants: {
-                edges: [{ node: { id: "gid://shopify/ProductVariant/m-w-1", title: "Default", availableForSale: true, price: { amount: "12.95", currencyCode: "USD" } } }],
+                edges: [{ node: { id: "gid://shopify/ProductVariant/m-b-1", title: "Default", availableForSale: true, price: { amount: "12.95", currencyCode: "USD" } } }],
             },
         },
     },
     {
         node: {
-            id: "gid://shopify/Product/mock-sports-1",
-            title: "Victory Sports Keychain",
-            handle: "victory-sports",
-            description: "Show your team spirit with our durable sports-themed keychains.",
-            productType: "Sports",
+            id: "gid://shopify/Product/mock-bracelet-2",
+            title: "Victory Sports Bracelet",
+            handle: "victory-sports-bracelet",
+            description: "Show your team spirit with our durable sports-themed woven bracelets.",
+            productType: "Bracelets",
             featuredImage: {
                 url: "/images/20180605_225108.jpg",
-                altText: "Sports Heritage",
+                altText: "Sports Heritage Bracelet",
             },
             priceRange: {
                 minVariantPrice: { amount: "10.95", currencyCode: "USD" },
             },
             images: {
-                edges: [{ node: { url: "/images/20180605_225108.jpg", altText: "Sports Heritage" } }],
+                edges: [{ node: { url: "/images/20180605_225108.jpg", altText: "Sports Heritage Bracelet" } }],
             },
             variants: {
-                edges: [{ node: { id: "gid://shopify/ProductVariant/m-s-1", title: "Default", availableForSale: true, price: { amount: "10.95", currencyCode: "USD" } } }],
+                edges: [{ node: { id: "gid://shopify/ProductVariant/m-b-2", title: "Default", availableForSale: true, price: { amount: "10.95", currencyCode: "USD" } } }],
             },
         },
-    },
-    {
-        node: {
-            id: "gid://shopify/Product/mock-sets-1",
-            title: "Heritage Gift Set (Trio)",
-            handle: "heritage-gift-set",
-            description: "A bundled set of our most popular designs, ready for gifting.",
-            productType: "Sets",
-            featuredImage: {
-                url: "/images/20180707_193545.jpg",
-                altText: "Heritage Gift Set",
-            },
-            priceRange: {
-                minVariantPrice: { amount: "24.95", currencyCode: "USD" },
-            },
-            images: {
-                edges: [{ node: { url: "/images/20180707_193545.jpg", altText: "Heritage Gift Set" } }],
-            },
-            variants: {
-                edges: [{ node: { id: "gid://shopify/ProductVariant/m-set-1", title: "Default", availableForSale: true, price: { amount: "24.95", currencyCode: "USD" } } }],
-            },
-        },
-    },
+    }
 
 ];
