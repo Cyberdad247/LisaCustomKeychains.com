@@ -483,4 +483,77 @@ export const mockProducts: ShopifyProductEdge[] = [
             },
         },
     },
+    {
+        node: {
+            id: "gid://shopify/Product/14929842012530",
+            title: "Handmade Heart Earrings",
+            handle: "handmade-heart-earrings",
+            description: "Authentic Lisa Custom Earrings. Handcrafted heart design.",
+            productType: "Earrings",
+            featuredImage: {
+                url: "/images/earrings_1.jpg",
+                altText: "Handmade Heart Earrings",
+            },
+            priceRange: {
+                minVariantPrice: { amount: "15.00", currencyCode: "USD" },
+            },
+            images: {
+                edges: [
+                    { node: { url: "/images/earrings_1.jpg", altText: "Handmade Heart Earrings" } }
+                ],
+            },
+            variants: {
+                edges: [{ node: { id: "gid://shopify/ProductVariant/v1-earrings-1", title: "Default", availableForSale: true, price: { amount: "15.00", currencyCode: "USD" } } }],
+            },
+        },
+    },
+    {
+        node: {
+            id: "gid://shopify/Product/14929842045298",
+            title: "Custom Charm Earrings",
+            handle: "custom-charm-earrings",
+            description: "Authentic Lisa Custom Earrings. Personalize with your choice of charms.",
+            productType: "Earrings",
+            featuredImage: {
+                url: "/images/earrings_2.jpg",
+                altText: "Custom Charm Earrings",
+            },
+            priceRange: {
+                minVariantPrice: { amount: "15.00", currencyCode: "USD" },
+            },
+            images: {
+                edges: [
+                    { node: { url: "/images/earrings_2.jpg", altText: "Custom Charm Earrings" } }
+                ],
+            },
+            variants: {
+                edges: [{ node: { id: "gid://shopify/ProductVariant/v2-earrings-2", title: "Default", availableForSale: true, price: { amount: "15.00", currencyCode: "USD" } } }],
+            },
+        },
+    },
+    {
+        node: {
+            id: "gid://shopify/Product/14929842078066",
+            title: "Boho Weave Earrings",
+            handle: "boho-weave-earrings",
+            description: "Authentic Lisa Custom Earrings. Intricate woven pattern.",
+            productType: "Earrings",
+            featuredImage: {
+                url: "/images/earrings_3.jpg",
+                altText: "Boho Weave Earrings",
+            },
+            priceRange: {
+                minVariantPrice: { amount: "15.00", currencyCode: "USD" },
+            },
+            images: {
+                edges: [
+                    { node: { url: "/images/earrings_3.jpg", altText: "Boho Weave Earrings" } }
+                ],
+            },
+            variants: {
+                edges: [{ node: { id: "gid://shopify/ProductVariant/v3-earrings-3", title: "Default", availableForSale: true, price: { amount: "15.00", currencyCode: "USD" } } }],
+            },
+        },
+    },
 ];
+
