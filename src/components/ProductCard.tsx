@@ -23,10 +23,12 @@ export default function ProductCard({
   const [isCustomizing, setIsCustomizing] = useState(false);
   const { title } = product;
   const image = product.featuredImage || product.images?.edges[0]?.node;
+  const isEarring = product.productType?.toLowerCase().includes("earring") || product.title?.toLowerCase().includes("earring");
+  const defaultPrice = isEarring ? "15.00" : "9.95";
   const price =
     product.priceRange?.minVariantPrice?.amount ||
     product.variants?.edges[0]?.node?.price?.amount ||
-    "9.95";
+    defaultPrice;
 
   const handleOpenCustomizer = (e: React.MouseEvent) => {
     e.preventDefault();

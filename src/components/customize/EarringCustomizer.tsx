@@ -342,9 +342,17 @@ export default function EarringCustomizer({
                                             }`}
                                         animate={{ "--yarn-color": selectedColor.hex } as any}
                                     >
-                                        {/* Top Charm Slot - REMOVED for Mirror Earring */}
+                                        {/* Top Charm Slot - Mirrored */}
                                         <div className="h-10 w-full flex items-center justify-center -mt-2 mb-1">
-                                            {/* Mirrored Empty Space */}
+                                            {selectedTopCharm.id !== "none" && (
+                                                <motion.div
+                                                    initial={{ scale: 0 }}
+                                                    animate={{ scale: 1 }}
+                                                    className="w-8 h-8 bg-white/90 backdrop-blur-sm flex items-center justify-center font-bold rounded-full shadow-lg text-sm border border-stone-100"
+                                                >
+                                                    {selectedTopCharm.icon}
+                                                </motion.div>
+                                            )}
                                         </div>
 
                                         <AnimatePresence mode="popLayout">
@@ -361,9 +369,17 @@ export default function EarringCustomizer({
                                             ))}
                                         </AnimatePresence>
 
-                                        {/* Bottom Charm Slot - REMOVED for Mirror Earring */}
+                                        {/* Bottom Charm Slot - Mirrored */}
                                         <div className="mt-auto mb-2 h-10 w-full flex items-center justify-center">
-                                            {/* Mirrored Empty Space */}
+                                            {selectedBottomCharm.id !== "none" && (
+                                                <motion.div
+                                                    initial={{ scale: 0 }}
+                                                    animate={{ scale: 1 }}
+                                                    className="w-10 h-10 bg-white flex items-center justify-center font-bold rounded-full shadow-lg text-xl border border-stone-100"
+                                                >
+                                                    {selectedBottomCharm.icon}
+                                                </motion.div>
+                                            )}
                                         </div>
                                     </motion.div>
                                 </motion.div>
