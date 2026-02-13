@@ -161,6 +161,13 @@ export async function getAllProducts(): Promise<ShopifyProductEdge[]> {
     logRune(KINETIC_RUNES.BYPASS, "Shopify live fetch failed.");
   }
 
+  // Fallback to mocks if no live products found
+  if (shopifyProducts.length === 0) {
+    logRune(KINETIC_RUNES.BYPASS, "Sovereign Backup: Loading Mock Products");
+    const { mockProducts } = await import("@/lib/shopify/mocks");
+    return mockProducts;
+  }
+
   return shopifyProducts;
 }
 
