@@ -1,0 +1,20 @@
+﻿=== Existing Product Listings ===
+Found 34 product listings.
+Earring listings: 1
+  - Dangle in style - price per pair 20180711_211046 (ID: 14929842438514)
+
+=== Creating Product Listings ===
+Publishing 14976140837234...
+  Γ£à Listed: Handmade Heart Earrings
+Publishing 14976140870002...
+  Γ£à Listed: Custom Charm Earrings
+Publishing 14976140902770...
+  Γ£à Listed: Boho Weave Earrings
+
+=== Verification ===
+Total listings: 37
+Earring listings: 4
+  - Boho Weave Earrings (ID: 14976140902770, Price: 15.00)
+  - Custom Charm Earrings (ID: 14976140870002, Price: 15.00)
+  - Handmade Heart Earrings (ID: 14976140837234, Price: 15.00)
+  - Dangle in style - price per pair 20180711_211046 (ID: 14929842438514, Price: 6.95)

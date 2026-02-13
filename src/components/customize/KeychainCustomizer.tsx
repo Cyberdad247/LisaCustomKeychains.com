@@ -142,7 +142,7 @@ export default function KeychainCustomizer({
   );
   const [selectedCharms, setSelectedCharms] = useState<Charm[]>(
     isEarring
-      ? [initialCharm, { id: "star", name: "Star", icon: "⭐" }, { id: "sparkles", name: "Sparkles", icon: "✨" }]
+      ? [initialCharm, { id: "star", name: "Star", icon: "⭐" }]
       : [initialCharm]
   );
   const [activeCharmIndex, setActiveCharmIndex] = useState(0);
@@ -211,7 +211,7 @@ export default function KeychainCustomizer({
 
     // Custom tier validation logic (redundant safeguard)
     if (!isTier1) {
-      const limit = getCharLimit(tier);
+      const limit = isEarring ? 4 : getCharLimit(tier);
       if (inputText.length > limit) {
         setErrorMessage(`Maximum ${limit} characters for this product.`);
         return;
@@ -541,7 +541,7 @@ export default function KeychainCustomizer({
                       {/* Multi-Charm Selector Tabs for Earrings */}
                       {isEarring && (
                         <div className="flex gap-2 p-1 bg-stone-100 rounded-xl">
-                          {[0, 1, 2].map((idx) => (
+                          {[0, 1].map((idx) => (
                             <button
                               key={idx}
                               type="button"
@@ -603,12 +603,12 @@ export default function KeychainCustomizer({
                               : "Identifier (Max 8)"}
                           </label>
                           <span
-                            className={`text-[10px] font-bold font-mono ${text.length > getCharLimit(tier)
+                            className={`text-[10px] font-bold font-mono ${text.length > (isEarring ? 4 : getCharLimit(tier))
                               ? "text-red-500"
                               : "text-slate-300"
                               }`}
                           >
-                            {text.length}/{getCharLimit(tier)}
+                            {text.length}/{isEarring ? 4 : getCharLimit(tier)}
                           </span>
                         </div>
                         <input
@@ -616,7 +616,7 @@ export default function KeychainCustomizer({
                           type="text"
                           value={text}
                           onChange={(e) => {
-                            const limit = getCharLimit(tier);
+                            const limit = isEarring ? 4 : getCharLimit(tier);
                             const val = e.target.value
                               .toUpperCase()
                               .slice(0, limit);

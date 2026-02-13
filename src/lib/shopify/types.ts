@@ -58,6 +58,11 @@ export interface CartLineItem {
     merchandise: ShopifyProductVariant;
 }
 
+
+export interface ShopifyCartCost {
+    totalAmount: ShopifyMoney;
+}
+
 export interface ShopifyCart {
     id: string;
     checkoutUrl: string;
@@ -65,6 +70,7 @@ export interface ShopifyCart {
     lines: {
         edges: { node: CartLineItem }[];
     };
+    cost: ShopifyCartCost;
 }
 
 export interface ShopifyError {

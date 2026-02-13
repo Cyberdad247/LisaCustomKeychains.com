@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import { retrieveEmail } from "../lib/crm";
+import { updateCartBuyerIdentity } from "../lib/shopify";
 import { type CartLineItem } from "../lib/shopify/types";
 
 export default function CartDrawer() {
@@ -48,16 +49,37 @@ export default function CartDrawer() {
     if (!checkoutUrl) return;
 
     setIsSubmitting(true);
+    let targetUrl = checkoutUrl;
 
     // CRM: Capture email before redirect (Non-Blocking)
     if (email) {
       retrieveEmail(email, cart?.id).catch((err) => console.warn("CRM Background Sync:", err));
+
+      // Update Shopify Cart with Email
+      if (cart?.id) {
+        try {
+          const result = await updateCartBuyerIdentity(cart.id, email);
+          // If we got a valid cart back with a fresh checkout URL, use it
+          if (result?.cart?.checkoutUrl && result.cart.checkoutUrl !== "/checkout-fallback") {
+            targetUrl = result.cart.checkoutUrl;
+          }
+        } catch (err) {
+          console.warn("Identity Update Failed", err);
+        }
+      }
+
       setIsVerified(true);
       // UX Delay only
       await new Promise((resolve) => setTimeout(resolve, 800));
     }
 
-    window.location.href = checkoutUrl;
+    if (targetUrl && targetUrl !== "/checkout-fallback") {
+      window.location.href = targetUrl;
+    } else {
+      console.error("Checkout Unavailable. URL is invalid or fallback.");
+      setIsSubmitting(false); // Reset UI so user isn't stuck
+      // Ideally show a toast here, but console error is strictly safer for now
+    }
   };
 
   const handleQuantityChange = async (
@@ -83,6 +105,10 @@ export default function CartDrawer() {
     const legacyVibeAttr = attributes.find((a) => a.key === "Vibe")?.value;
     const legacyIconAttr = attributes.find((a) => a.key === "_Vibe_Icon")?.value;
 
+    // New Earring Charm attributes
+    const topCharm = attributes.find((a) => a.key === "Top Charm")?.value;
+    const bottomCharm = attributes.find((a) => a.key === "Bottom Charm")?.value;
+
     let vibe = legacyVibeAttr || "";
     let icon = legacyIconAttr || "";
 
@@ -96,7 +122,7 @@ export default function CartDrawer() {
       }
     }
 
-    return { customName, vibe, icon };
+    return { customName, vibe, icon, topCharm, bottomCharm };
   };
 
   return (
@@ -171,7 +197,7 @@ export default function CartDrawer() {
                       </button>
                     </div>
                     {lines.map(({ node }: { node: CartLineItem }) => {
-                      const { customName, vibe, icon } = getVibeDisplay(
+                      const { customName, vibe, icon, topCharm, bottomCharm } = getVibeDisplay(
                         node.attributes || []
                       );
 
@@ -206,7 +232,7 @@ export default function CartDrawer() {
                             </div>
 
                             {/* Display Custom Name and Vibe/Icon */}
-                            {(customName || vibe) && (
+                            {(customName || vibe || topCharm || bottomCharm) && (
                               <div className="mt-2 space-y-1">
                                 {customName && customName !== "No Name" && (
                                   <div className="flex items-center gap-2">
@@ -215,6 +241,26 @@ export default function CartDrawer() {
                                     </span>
                                     <span className="text-xs font-black text-purple-700">
                                       {customName}
+                                    </span>
+                                  </div>
+                                )}
+                                {topCharm && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[9px] uppercase font-bold text-slate-400">
+                                      Top Charm:
+                                    </span>
+                                    <span className="text-xs font-bold text-slate-600">
+                                      {topCharm}
+                                    </span>
+                                  </div>
+                                )}
+                                {bottomCharm && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[9px] uppercase font-bold text-slate-400">
+                                      Bottom Charm:
+                                    </span>
+                                    <span className="text-xs font-bold text-slate-600">
+                                      {bottomCharm}
                                     </span>
                                   </div>
                                 )}
@@ -285,15 +331,17 @@ export default function CartDrawer() {
                     </span>
                     <span className="text-xl font-serif text-slate-900" aria-live="polite">
                       $
-                      {lines
-                        .reduce(
-                          (acc: number, { node }: { node: CartLineItem }) =>
-                            acc +
-                            parseFloat(node.merchandise?.price?.amount || "0") *
-                            node.quantity,
-                          0
-                        )
-                        .toFixed(2)}
+                      {cart?.cost?.totalAmount?.amount
+                        ? parseFloat(cart.cost.totalAmount.amount).toFixed(2)
+                        : lines
+                          .reduce(
+                            (acc: number, { node }: { node: CartLineItem }) =>
+                              acc +
+                              parseFloat(node.merchandise?.price?.amount || "0") *
+                              node.quantity,
+                            0
+                          )
+                          .toFixed(2)}
                     </span>
                   </div>
                   <form onSubmit={handleCheckout} className="space-y-4">

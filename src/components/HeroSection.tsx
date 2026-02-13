@@ -68,29 +68,26 @@ export default function HeroSection({ featuredProduct }: HeroSectionProps) {
                 className="relative"
             >
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-300 to-pink-300 rounded-full blur-3xl opacity-20"></div>
-                {featuredProduct && (
-                    <PolaroidWrapper className="mx-auto md:mr-0 max-w-sm">
-                        <div className="aspect-square bg-stone-100 overflow-hidden mb-4 border border-stone-200 relative">
-                            {featuredProduct.featuredImage && (
-                                <Image
-                                    src={featuredProduct.featuredImage.url}
-                                    alt={featuredProduct.title}
-                                    fill
-                                    priority
-                                    className="object-cover transition-transform duration-700 hover:scale-110"
-                                />
-                            )}
-                        </div>
-                        <div className="text-center">
-                            <h3 className="font-bold text-slate-900 text-xl font-serif">
-                                Featured This Week
-                            </h3>
-                            <p className="text-slate-600 text-sm italic">
-                                {featuredProduct.title}
-                            </p>
-                        </div>
-                    </PolaroidWrapper>
-                )}
+
+                <PolaroidWrapper className="mx-auto md:mr-0 max-w-sm">
+                    <div className="aspect-square bg-stone-100 overflow-hidden mb-4 border border-stone-200 relative">
+                        <Image
+                            src="/featured-earrings.jpg"
+                            alt="Featured Handmade Earrings"
+                            fill
+                            priority
+                            className="object-cover transition-transform duration-700 hover:scale-110"
+                        />
+                    </div>
+                    <div className="text-center">
+                        <h3 className="font-bold text-slate-900 text-xl font-serif">
+                            Featured This Week
+                        </h3>
+                        <p className="text-slate-600 text-sm italic">
+                            Handcrafted Heart Bead Earrings
+                        </p>
+                    </div>
+                </PolaroidWrapper>
             </motion.div>
         </div>
     );

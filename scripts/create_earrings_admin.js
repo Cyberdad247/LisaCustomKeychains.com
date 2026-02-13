@@ -19,7 +19,8 @@ if (fs.existsSync(envPath)) {
     });
 }
 
-const domain = env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN;
+const rawDomain = env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN;
+const domain = rawDomain ? rawDomain.replace(/^https?:\/\//, '').replace(/\/$/, '') : null;
 const accessToken = env.SHOPIFY_ADMIN_API_ACCESS_TOKEN || process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN;
 
 console.log(`🔍 Domain: ${domain}`);
@@ -138,38 +139,71 @@ async function createCollection() {
 }
 
 function makeRequest(endpoint, method, data) {
-    return new Promise((resolve, reject) => {
-        const options = {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Shopify-Access-Token': accessToken
-            }
-        };
+    const apiKey = env.SHOPIFY_API_KEY || process.env.SHOPIFY_API_KEY;
+    const apiSecret = env.SHOPIFY_API_SECRET || process.env.SHOPIFY_API_SECRET;
 
-        console.log(`📡 Requesting: ${BASE_URL}${endpoint} [${method}]`);
-        const req = https.request(`${BASE_URL}${endpoint}`, options, (res) => {
-            let body = '';
-            res.on('data', chunk => body += chunk);
-            res.on('end', () => {
-                if (res.statusCode >= 200 && res.statusCode < 300) {
-                    try {
-                        resolve(JSON.parse(body));
-                    } catch (e) {
-                        reject(e);
+    // Retry Logic with Different Auth Strategies
+    async function executeRequest(strategies) {
+        for (const strategy of strategies) {
+            try {
+                return await new Promise((resolve, reject) => {
+                    const options = {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...strategy.headers
+                        }
+                    };
+
+                    if (strategy.name === 'Basic Auth' && !strategy.headers.Authorization) {
+                        // Skip if missing credentials
+                        reject(new Error('Missing Basic Auth Credentials'));
+                        return;
                     }
-                } else {
-                    reject(new Error(`Request failed with status ${res.statusCode}: ${body}`));
-                }
-            });
-        });
 
-        req.on('error', (e) => reject(e));
-        if (data) {
-            req.write(JSON.stringify(data));
+                    console.log(`📡 Requesting via ${strategy.name}: ${BASE_URL}${endpoint}`);
+                    const req = https.request(`${BASE_URL}${endpoint}`, options, (res) => {
+                        let body = '';
+                        res.on('data', chunk => body += chunk);
+                        res.on('end', () => {
+                            if (res.statusCode >= 200 && res.statusCode < 300) {
+                                try {
+                                    resolve(JSON.parse(body));
+                                } catch (e) {
+                                    reject(e);
+                                }
+                            } else {
+                                reject(new Error(`Request failed with status ${res.statusCode}: ${body}`));
+                            }
+                        });
+                    });
+
+                    req.on('error', (e) => reject(e));
+                    if (data) req.write(JSON.stringify(data));
+                    req.end();
+                });
+            } catch (e) {
+                console.warn(`⚠️ ${strategy.name} failed: ${e.message}`);
+                // Continue to next strategy
+            }
         }
-        req.end();
-    });
+        throw new Error('All authentication strategies failed. Please check .env.local for SHOPIFY_ADMIN_API_ACCESS_TOKEN (shpat_) or SHOPIFY_API_KEY/SECRET.');
+    }
+
+    const strategies = [];
+    if (accessToken) strategies.push({ name: 'Header Auth', headers: { 'X-Shopify-Access-Token': accessToken } });
+    if (apiKey && apiSecret) {
+        const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64');
+        strategies.push({ name: 'Basic Auth (Key:Secret)', headers: { 'Authorization': `Basic ${auth}` } });
+    }
+    // Fallback: Try AccessToken as Key? 
+    if (accessToken && apiSecret) {
+        const auth = Buffer.from(`${accessToken}:${apiSecret}`).toString('base64');
+        strategies.push({ name: 'Basic Auth (Token:Secret)', headers: { 'Authorization': `Basic ${auth}` } });
+    }
+
+    return executeRequest(strategies);
+
 }
 
 (async () => {

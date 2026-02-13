@@ -1,0 +1,47 @@
+﻿Reading .env.local from: C:\Users\vizio\Downloads\LisaCustomKeychains.com\.env.local
+File read, 9 lines.
+Keys loaded: [
+  'NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN',
+  'NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN',
+  'SHOPIFY_ADMIN_API_ACCESS_TOKEN',
+  'SHOPIFY_API_KEY',
+  'SHOPIFY_API_SECRET'
+]
+Domain found: lisascustomkeychains.myshopify.com
+Token found: 4e309...
+≡ƒöì Probing Shopify: lisascustomkeychains.myshopify.com
+Γ£à Connection Successful! Found 34 products.
+1. [Woven] Personal Care - 1000011817 (5.95)
+2. [Woven] Personal Care - 1000012019 (5.95)
+3. [Woven] Personal Care - 1000012138 (5.95)
+4. [Woven] Personal Care - 1000012195 (5.95)
+5. [Woven] Personal Care - 1000012197 (5.95)
+6. [Woven] Personal Care - 1473986136160 (5.95)
+7. [Woven] Personal Care - 1474164466462 (5.95)
+8. [Woven] Epic Custom - 1529285017581-529 (9.95)
+9. [Woven] Purely Basic - 20180228_134138 (2.95)
+10. [Woven] Purely Basic - 20180228_134358 (2.95)
+11. [Woven] Personal Care - 20180419_165849 (5.95)
+12. [Woven] Purely Basic - 20180605_225108 (2.95)
+13. [Woven] Epic Custom - 20180605_225132 (9.95)
+14. [Woven] Epic Custom - 20180707_193545 (9.95)
+15. [Woven] Personal Care - 20180711_211046 (5.95)
+16. [Keychain] Personal Care - 1000011817 (5.95)
+17. [Keychain] Personal Care - 1000012019 (5.95)
+18. [Keychain] Personal Care - 1000012138 (5.95)
+19. [Keychain] Personal Care - 1000012195 (5.95)
+20. [Keychain] Personal Care - 1000012197 (5.95)
+21. [Keychain] Personal Care - 1000020990 (5.95)
+22. [Keychain] Personal Care - 1000020991 (5.95)
+23. [Keychain] Epic Custom - 1000020992 (9.95)
+24. [Keychain] Personal Care - 1000020993 (5.95)
+25. [Keychain] Personal Care - 1473986136160 (5.95)
+26. [Keychain] Personal Care - 1474164466462 (5.95)
+27. [Keychain] Epic Custom - 1529285017581-529 (9.95)
+28. [Keychain] Purely Basic - 20180228_134138 (2.95)
+29. [Keychain] Purely Basic - 20180228_134358 (2.95)
+30. [Keychain] Epic Custom - 20180419_165849 (9.95)
+31. [Keychain] Personal Care - 20180605_225108 (5.95)
+32. [Keychain] Personal Care - 20180605_225132 (5.95)
+33. [Keychain] Personal Care - 20180707_193545 (5.95)
+34. [Earrings] Dangle in style - price per pair 20180711_211046 (6.95)

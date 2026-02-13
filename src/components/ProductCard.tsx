@@ -7,6 +7,7 @@ import Image from "next/image";
 import { type ShopifyProduct } from "../lib/shopify/types";
 import { ShoppingBag, Sparkles } from "lucide-react";
 import KeychainCustomizer from "./customize/KeychainCustomizer";
+import EarringCustomizer from "./customize/EarringCustomizer";
 
 interface ProductCardProps {
   product: ShopifyProduct;
@@ -102,11 +103,23 @@ export default function ProductCard({
       </motion.div>
 
       {isCustomizing && (
-        <KeychainCustomizer
-          product={product}
-          isOpen={isCustomizing}
-          onClose={() => setIsCustomizing(false)}
-        />
+        <>
+          {/* Detect if this is an earring product */}
+          {(product.productType?.toLowerCase().includes("earring") ||
+            product.title?.toLowerCase().includes("earring")) ? (
+            <EarringCustomizer
+              product={product}
+              isOpen={isCustomizing}
+              onClose={() => setIsCustomizing(false)}
+            />
+          ) : (
+            <KeychainCustomizer
+              product={product}
+              isOpen={isCustomizing}
+              onClose={() => setIsCustomizing(false)}
+            />
+          )}
+        </>
       )}
     </>
   );

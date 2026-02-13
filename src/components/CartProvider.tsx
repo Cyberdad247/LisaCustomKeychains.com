@@ -67,14 +67,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         throw new Error(userErrors[0].message);
       }
 
+      // If addToCart auto-recovered with a new cart (mock-cart-id → real cart),
+      // the returned cart ID will differ. Sync localStorage + state.
+      if (updatedCart.id !== currentCartId) {
+        console.log(`[Cart] Cart ID changed (auto-recovery): ${currentCartId} → ${updatedCart.id}`);
+        localStorage.setItem('shopify_cart_id', updatedCart.id);
+      }
+
       console.log(`[Cart] Item added successfully. Total Qty: ${updatedCart.totalQuantity}`);
       setCart(updatedCart);
       setCheckoutUrl(updatedCart.checkoutUrl);
       setCartOpen(true);
       notify("Added to Bag!", "success");
     } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : "Failed to add item to bag.";
       console.error("Failed to add to cart:", e);
-      notify("Failed to add item to bag.", "error");
+      notify(errorMsg, "error");
       throw e; // Re-throw to be caught by UI
     }
   };

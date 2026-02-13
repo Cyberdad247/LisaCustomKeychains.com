@@ -47,7 +47,8 @@ export const ShopifyGid = z
 export const ColorOptionSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
-  hex: HexColor,
+  hex: z.string().min(1), // Can be hex color OR gradient string for rainbow
+  isRainbow: z.boolean().optional(),
 });
 
 /**
@@ -86,6 +87,24 @@ export const VibeNotesSchema = z.object({
     .string()
     .max(200, "Vibe notes must be under 200 characters")
     .optional(),
+});
+
+/**
+ * Complete earring design schema.
+ * Enforces 4-letter limit for matching pair earrings.
+ */
+export const EarringDesignSchema = z.object({
+  text: z
+    .string()
+    .min(1, "Name is required")
+    .max(4, "Maximum 4 letters for earrings")
+    .regex(
+      /^[A-Z0-9 ]+$/,
+      "Only uppercase letters, numbers, and spaces allowed"
+    ),
+  color: ColorOptionSchema,
+  charmTop: CharmOptionSchema.optional(), // Charm at the top of the earring
+  charmBottom: CharmOptionSchema.optional(), // Charm at the bottom of the earring
 });
 
 // ============================================================
@@ -148,6 +167,7 @@ export type ColorOption = z.infer<typeof ColorOptionSchema>;
 export type CharmOption = z.infer<typeof CharmOptionSchema>;
 export type KeychainDesign = z.infer<typeof KeychainDesignSchema>;
 export type VibeNotes = z.infer<typeof VibeNotesSchema>;
+export type EarringDesign = z.infer<typeof EarringDesignSchema>;
 export type LineItemProperties = z.infer<typeof LineItemPropertiesSchema>;
 export type AddToCart = z.infer<typeof AddToCartSchema>;
 export type ContactForm = z.infer<typeof ContactFormSchema>;

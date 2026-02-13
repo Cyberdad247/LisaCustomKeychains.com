@@ -39,10 +39,12 @@ if (!shopifyStoreDomain || !shopifyAccessToken) {
 
 async function ShopifyData<T>(
   query: string,
-  variables?: Record<string, unknown>
+  variables?: Record<string, unknown>,
+  options?: { isMutation?: boolean }
 ): Promise<ShopifyResponse<T>> {
   if (!shopifyStoreDomain || !shopifyAccessToken) {
     console.warn("⚠️ Shopify credentials missing. Check your environment variables.");
+    console.warn(`   Domain: ${shopifyStoreDomain ? '✅' : '❌ MISSING'}, Token: ${shopifyAccessToken ? '✅' : '❌ MISSING'}`);
     return {
       data: {} as T,
       errors: [{ message: "Shopify credentials missing" }]
@@ -51,7 +53,9 @@ async function ShopifyData<T>(
 
   const endpoint = `https://${shopifyStoreDomain}/api/2023-10/graphql.json`;
 
-  const requestOptions = {
+  // Build fetch options — only apply server-side cache for NON-mutation queries.
+  // Mutations (cart create/add/remove) run client-side and must NOT use Next.js cache.
+  const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
     method: "POST",
     headers: {
       "X-Shopify-Storefront-Access-Token": shopifyAccessToken,
@@ -59,11 +63,18 @@ async function ShopifyData<T>(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ query, variables }),
-    next: { revalidate: 3600 },
   };
 
+  // Only apply server-side cache directive for read queries, never for mutations
+  if (!options?.isMutation && typeof window === 'undefined') {
+    fetchOptions.next = { revalidate: 3600 };
+  } else if (options?.isMutation) {
+    // Mutations must never be cached
+    fetchOptions.cache = 'no-store';
+  }
+
   try {
-    const response = await fetch(endpoint, requestOptions);
+    const response = await fetch(endpoint, fetchOptions as RequestInit);
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`❌ Shopify Fetch Error (HTTP ${response.status}):`, errorText);
@@ -144,33 +155,13 @@ export async function getAllProducts(): Promise<ShopifyProductEdge[]> {
 
     if (response?.data?.products?.edges) {
       shopifyProducts = response.data.products.edges;
-      logRune(KINETIC_RUNES.ACTUATE, `Fetched ${shopifyProducts.length} live products from Shopify.`);
+      logRune(KINETIC_RUNES.ACTUATE, `Sovereign Sync: ${shopifyProducts.length} live products found.`);
     }
   } catch (error) {
-    logRune(KINETIC_RUNES.BYPASS, "Shopify live fetch failed, using internal vault.");
+    logRune(KINETIC_RUNES.BYPASS, "Shopify live fetch failed.");
   }
 
-
-
-  // Logic: If live store is populated, use it. If no earrings in live, inject them from mock for now to keep feature visible.
-  const hasLiveEarrings = shopifyProducts.some(p => p.node.productType.toLowerCase() === 'earrings');
-  const finalizedProducts = [...shopifyProducts];
-
-  if (!hasLiveEarrings) {
-    const mockEarrings = mockProducts.filter(p => p.node.productType.toLowerCase() === 'earrings');
-    finalizedProducts.push(...mockEarrings);
-  }
-
-  // If live store is very small or empty, add other mocks to fill the gallery
-  if (shopifyProducts.length < 4) {
-    const otherMocks = mockProducts.filter(p =>
-      p.node.productType.toLowerCase() !== 'earrings' &&
-      !shopifyProducts.some(lp => lp.node.handle === p.node.handle)
-    );
-    finalizedProducts.push(...otherMocks);
-  }
-
-  return finalizedProducts;
+  return shopifyProducts;
 }
 
 
@@ -183,21 +174,63 @@ export async function createCart(): Promise<ShopifyCart> {
         cart {
         id
         checkoutUrl
+        totalQuantity
+        cost {
+          totalAmount {
+            amount
+            currencyCode
+          }
+        }
+        lines(first: 100) {
+          edges {
+            node {
+              id
+              quantity
+              attributes {
+                key
+                value
+              }
+              merchandise {
+                ... on ProductVariant {
+                  id
+                  title
+                  product {
+                    title
+                    featuredImage {
+                      url
+                      altText
+                    }
+                  }
+                  price {
+                    amount
+                    currencyCode
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
   `;
   const response = await ShopifyData<{ cartCreate: { cart: ShopifyCart } }>(
-    query
+    query,
+    undefined,
+    { isMutation: true }
   );
 
   if (!response?.data?.cartCreate?.cart) {
-    console.warn("⚠️ Failed to create cart, using mock checkout session.");
+    console.error("❌ Failed to create Shopify cart.", response?.errors || 'No error details');
+    // Return a clearly-tagged fallback so downstream code can detect and retry
     return {
       id: "mock-cart-id",
       checkoutUrl: "/checkout-fallback",
       totalQuantity: 0,
-      lines: { edges: [] }
+      lines: { edges: [] },
+      cost: {
+        totalAmount: { amount: "0", currencyCode: "USD" }
+      }
     };
   }
 
@@ -220,6 +253,13 @@ export async function addToCart(
         cart {
         id
         checkoutUrl
+        totalQuantity
+        cost {
+            totalAmount {
+                amount
+                currencyCode
+            }
+        }
         lines(first: 100) {
             edges {
               node {
@@ -253,15 +293,66 @@ export async function addToCart(
     }
   }
   `;
+  // Guard: If cartId is a mock placeholder, auto-recover by creating a real cart first
+  let resolvedCartId = cartId;
+  if (cartId === 'mock-cart-id') {
+    console.warn('⚠️ Detected mock-cart-id — attempting to create a real Shopify cart...');
+    try {
+      const freshCart = await createCart();
+      if (freshCart.id && freshCart.id !== 'mock-cart-id') {
+        resolvedCartId = freshCart.id;
+        console.log(`✅ Recovery: Created real cart ${resolvedCartId}`);
+        // Persist the new cart ID so CartProvider picks it up
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('shopify_cart_id', resolvedCartId);
+        }
+      } else {
+        console.error('❌ Recovery failed: createCart still returned mock.');
+        return {
+          cart: {
+            id: cartId,
+            checkoutUrl: "/checkout-fallback",
+            totalQuantity: 0,
+            lines: { edges: [] },
+            cost: { totalAmount: { amount: "0", currencyCode: "USD" } }
+          },
+          userErrors: [{ field: [], message: "Unable to connect to Shopify. Please check your internet connection and try again." }]
+        };
+      }
+    } catch (recoveryErr) {
+      console.error('❌ Cart recovery error:', recoveryErr);
+      return {
+        cart: {
+          id: cartId,
+          checkoutUrl: "/checkout-fallback",
+          totalQuantity: 0,
+          lines: { edges: [] },
+          cost: { totalAmount: { amount: "0", currencyCode: "USD" } }
+        },
+        userErrors: [{ field: [], message: "Unable to connect to Shopify. Please check your internet connection and try again." }]
+      };
+    }
+  }
+
   const response = await ShopifyData<{ cartLinesAdd: { cart: ShopifyCart; userErrors: UserError[] } }>(
     query,
-    { cartId, lines }
+    { cartId: resolvedCartId, lines },
+    { isMutation: true }
   );
 
   if (!response?.data?.cartLinesAdd) {
+    console.error('❌ cartLinesAdd returned null.', response?.errors || 'No error details');
     return {
-      cart: { id: cartId, checkoutUrl: "/checkout-fallback", totalQuantity: 0, lines: { edges: [] } },
-      userErrors: [{ field: [], message: "Failed to add items to cart (API Unavailable)" }]
+      cart: {
+        id: resolvedCartId,
+        checkoutUrl: "/checkout-fallback",
+        totalQuantity: 0,
+        lines: { edges: [] },
+        cost: {
+          totalAmount: { amount: "0", currencyCode: "USD" }
+        }
+      },
+      userErrors: [{ field: [], message: "Failed to add items to cart. Please refresh and try again." }]
     };
   }
 
@@ -276,11 +367,21 @@ export async function getCart(cartId: string): Promise<ShopifyCart> {
       id
       checkoutUrl
       totalQuantity
+      cost {
+          totalAmount {
+              amount
+              currencyCode
+          }
+      }
       lines(first: 100) {
           edges {
             node {
             id
             quantity
+              attributes {
+              key
+              value
+            }
               merchandise {
                 ... on ProductVariant {
                 id
@@ -311,7 +412,10 @@ export async function getCart(cartId: string): Promise<ShopifyCart> {
       id: cartId,
       checkoutUrl: "/checkout-fallback",
       totalQuantity: 0,
-      lines: { edges: [] }
+      lines: { edges: [] },
+      cost: {
+        totalAmount: { amount: "0", currencyCode: "USD" }
+      }
     };
   }
 
@@ -330,11 +434,21 @@ export async function removeFromCart(
         id
         checkoutUrl
         totalQuantity
+        cost {
+            totalAmount {
+                amount
+                currencyCode
+            }
+        }
         lines(first: 100) {
             edges {
               node {
               id
               quantity
+                attributes {
+                key
+                value
+              }
                 merchandise {
                   ... on ProductVariant {
                   id
@@ -359,14 +473,17 @@ export async function removeFromCart(
   `;
   const response = await ShopifyData<{
     cartLinesRemove: { cart: ShopifyCart };
-  }>(query, { cartId, lineIds });
+  }>(query, { cartId, lineIds }, { isMutation: true });
 
   if (!response?.data?.cartLinesRemove?.cart) {
     return {
       id: cartId,
       checkoutUrl: "/checkout-fallback",
       totalQuantity: 0,
-      lines: { edges: [] }
+      lines: { edges: [] },
+      cost: {
+        totalAmount: { amount: "0", currencyCode: "USD" }
+      }
     };
   }
 
@@ -386,6 +503,12 @@ export async function updateCartLineQuantity(
         id
         checkoutUrl
         totalQuantity
+        cost {
+            totalAmount {
+                amount
+                currencyCode
+            }
+        }
         lines(first: 100) {
             edges {
               node {
@@ -428,14 +551,103 @@ export async function updateCartLineQuantity(
   }>(query, {
     cartId,
     lines: [{ id: lineId, quantity }],
-  });
+  }, { isMutation: true });
 
   if (!response?.data?.cartLinesUpdate) {
     return {
-      cart: { id: cartId, checkoutUrl: "/checkout-fallback", totalQuantity: 0, lines: { edges: [] } },
+      cart: {
+        id: cartId,
+        checkoutUrl: "/checkout-fallback",
+        totalQuantity: 0,
+        lines: { edges: [] },
+        cost: {
+          totalAmount: { amount: "0", currencyCode: "USD" }
+        }
+      },
       userErrors: [{ field: [], message: "Failed to update quantity (API Unavailable)" }]
     };
   }
 
   return response.data.cartLinesUpdate;
+}
+
+/** Update cart buyer identity (email) */
+export async function updateCartBuyerIdentity(
+  cartId: string,
+  email: string
+): Promise<CartOperationResult> {
+  const query = `
+    mutation cartBuyerIdentityUpdate($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) {
+    cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) {
+        cart {
+        id
+        checkoutUrl
+        totalQuantity
+        cost {
+            totalAmount {
+                amount
+                currencyCode
+            }
+        }
+        lines(first: 100) {
+            edges {
+              node {
+              id
+              quantity
+                attributes {
+                key
+                value
+              }
+                merchandise {
+                  ... on ProductVariant {
+                  id
+                  title
+                    price {
+                    amount
+                    currencyCode
+                  }
+                    product {
+                    title
+                      featuredImage {
+                      url
+                      altText
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+        userErrors {
+        field
+        message
+      }
+    }
+  }
+  `;
+
+  const response = await ShopifyData<{
+    cartBuyerIdentityUpdate: { cart: ShopifyCart; userErrors: UserError[] };
+  }>(query, {
+    cartId,
+    buyerIdentity: { email },
+  }, { isMutation: true });
+
+  if (!response?.data?.cartBuyerIdentityUpdate) {
+    return {
+      cart: {
+        id: cartId,
+        checkoutUrl: "/checkout-fallback",
+        totalQuantity: 0,
+        lines: { edges: [] },
+        cost: {
+          totalAmount: { amount: "0", currencyCode: "USD" }
+        }
+      },
+      userErrors: [{ field: [], message: "Failed to update buyer identity (API Unavailable)" }]
+    };
+  }
+
+  return response.data.cartBuyerIdentityUpdate;
 }

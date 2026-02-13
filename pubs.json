@@ -1,0 +1,59 @@
+﻿{
+  "publications": [
+    {
+      "id": 319167299954,
+      "created_at": "2025-12-25T20:51:38-05:00",
+      "name": "Point of Sale"
+    },
+    {
+      "id": 319167267186,
+      "created_at": "2025-12-25T20:51:29-05:00",
+      "name": "Online Store"
+    },
+    {
+      "id": 319760564594,
+      "created_at": "2026-01-03T19:02:53-05:00",
+      "name": "Google & YouTube"
+    },
+    {
+      "id": 319760597362,
+      "created_at": "2026-01-03T19:02:53-05:00",
+      "name": "Google & YouTube"
+    },
+    {
+      "id": 319760630130,
+      "created_at": "2026-01-03T19:02:53-05:00",
+      "name": "Google & YouTube"
+    },
+    {
+      "id": 320832012658,
+      "created_at": "2026-01-16T17:19:51-05:00",
+      "name": "Pinterest"
+    },
+    {
+      "id": 319167365490,
+      "created_at": "2025-12-25T20:51:38-05:00",
+      "name": "Shop"
+    },
+    {
+      "id": 319167332722,
+      "created_at": "2025-12-25T20:51:38-05:00",
+      "name": "Point of Sale"
+    },
+    {
+      "id": 319759679858,
+      "created_at": "2026-01-03T18:44:43-05:00",
+      "name": "TikTok Shop ΓÇö SPL"
+    },
+    {
+      "id": 319759712626,
+      "created_at": "2026-01-03T18:44:43-05:00",
+      "name": "TikTok Shop ΓÇö SPL"
+    },
+    {
+      "id": 319410700658,
+      "created_at": "2025-12-29T17:05:03-05:00",
+      "name": "Lisa's Custom Keychains"
+    }
+  ]
+}

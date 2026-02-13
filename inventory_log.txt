@@ -1,0 +1,9 @@
+﻿≡ƒôª Updating Inventory for Handmade Heart Earrings...
+   ≡ƒôì Location: 110934196594, InventoryItem: 63586398077298
+   Γ£à Inventory set to 100 for 14976140837234
+≡ƒôª Updating Inventory for Custom Charm Earrings...
+   ≡ƒôì Location: 110934196594, InventoryItem: 63586398273906
+   Γ£à Inventory set to 100 for 14976140870002
+≡ƒôª Updating Inventory for Boho Weave Earrings...
+   ≡ƒôì Location: 110934196594, InventoryItem: 63586398306674
+   Γ£à Inventory set to 100 for 14976140902770

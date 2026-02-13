@@ -6,12 +6,13 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "sync:products": "node scripts/sync_shopify_products.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.4",
-    "@shopify/shopify-api": "^12.2.0",
+    "@shopify/shopify-api": "^12.3.0",
     "@supabase/supabase-js": "^2.89.0",
     "autoprefixer": "^10.4.23",
     "axios": "^1.13.2",

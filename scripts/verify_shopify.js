@@ -50,7 +50,7 @@ console.log(`🔍 Probing Shopify: ${shopifyStoreDomain}`);
 
 const query = `
   query getProducts {
-    products(first: 20) {
+    products(first: 50) {
       edges {
         node {
           id
@@ -103,19 +103,11 @@ const req = https.request(`https://${shopifyStoreDomain}/api/2023-10/graphql.jso
       }
       const products = json.data?.products?.edges || [];
       console.log(`✅ Connection Successful! Found ${products.length} products.`);
-      products.forEach((p) => {
-        const price = p.node.priceRange?.minVariantPrice?.amount;
-        const currency = p.node.priceRange?.minVariantPrice?.currencyCode;
-        const imageCount = p.node.images?.edges?.length || 0;
-        console.log(`   - [${p.node.productType}] ${p.node.title}`);
-        console.log(`     ID: ${p.node.id}`);
-        console.log(`     Handle: ${p.node.handle}`);
-        console.log(`     Price: ${price} ${currency}`);
-        console.log(`     Images: ${imageCount}`);
-        p.node.images.edges.forEach(img => {
-          console.log(`       - ${img.node.url}`);
-        });
+
+      products.forEach((p, index) => {
+        console.log(`${index + 1}. [${p.node.productType}] ${p.node.title} (${p.node.priceRange?.minVariantPrice?.amount})`);
       });
+
       process.exit(0);
     } catch (e) {
       console.error("❌ Failed to parse response:", e);
@@ -124,6 +116,20 @@ const req = https.request(`https://${shopifyStoreDomain}/api/2023-10/graphql.jso
     }
   });
 });
+
+function logProduct(p) {
+  const price = p.node.priceRange?.minVariantPrice?.amount;
+  const currency = p.node.priceRange?.minVariantPrice?.currencyCode;
+  const imageCount = p.node.images?.edges?.length || 0;
+  console.log(`   - [${p.node.productType}] ${p.node.title}`);
+  console.log(`     ID: ${p.node.id}`);
+  console.log(`     Handle: ${p.node.handle}`);
+  console.log(`     Price: ${price} ${currency}`);
+  console.log(`     Images: ${imageCount}`);
+  p.node.images.edges.forEach(img => {
+    console.log(`       - ${img.node.url}`);
+  });
+}
 
 req.on('error', (e) => {
   console.error("❌ Network Error:", e);
