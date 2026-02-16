@@ -6,6 +6,7 @@ import { CartProvider } from "../components/CartProvider";
 import { NotificationProvider } from "../components/NotificationSentry";
 import CartDrawer from "../components/CartDrawer";
 import Footer from "../components/Footer";
+import { Analytics } from "@vercel/analytics/next";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -40,6 +41,7 @@ export default function RootLayout({
             <Footer />
           </CartProvider>
         </NotificationProvider>
+        <Analytics />
       </body>
     </html>
   );
