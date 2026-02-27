@@ -2,13 +2,15 @@
 "use client";
 
 import { useState, useOptimistic, useTransition, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ShoppingBag, X, Loader2, Sparkles } from "lucide-react";
 import { useCart } from "../CartProvider";
 import { validateEarring } from "../../lib/validation/earring";
 import SEOWrapper from "../SEOWrapper";
 import { Sheet, SheetContent, SheetTitle } from "../ui/sheet";
 import { type ShopifyProduct } from "../../lib/shopify/types";
+import { THREAD_COLORS, CHARM_OPTIONS, NULL_CHARM } from "../../lib/camelot/registry";
+import { type ColorOption, type CharmOption } from "../../lib/camelot/schemas";
 
 interface EarringCustomizerProps {
     product: ShopifyProduct;
@@ -16,94 +18,33 @@ interface EarringCustomizerProps {
     onClose: () => void;
 }
 
-interface ThreadColor {
-    id: string;
-    name: string;
-    hex: string;
-    isRainbow?: boolean;
-}
+// Local interfaces removed in favor of schemas.ts exports
 
-interface Charm {
-    id: string;
-    name: string;
-    icon: string;
-}
-
-const THREAD_COLORS: ThreadColor[] = [
-    { id: "purple", name: "Royal Purple", hex: "#9333ea" },
-    { id: "pink", name: "Soft Pink", hex: "#ec4899" },
-    { id: "blue", name: "Sky Blue", hex: "#3b82f6" },
-    { id: "lavender", name: "Lavender Mist", hex: "#E6E6FA" },
-    { id: "mint", name: "Fresh Mint", hex: "#BDFCC9" },
-    { id: "black", name: "Void Black", hex: "#18181b" },
-    { id: "charcoal", name: "Charcoal Silk", hex: "#36454F" },
-    { id: "rose", name: "Rose", hex: "#fb7185" },
-    { id: "burgundy", name: "Classic Burgundy", hex: "#800020" },
-    { id: "red", name: "Crimson Red", hex: "#dc2626" },
-    { id: "orange", name: "Amber Orange", hex: "#f59e0b" },
-    { id: "peach", name: "Sweet Peach", hex: "#FFDAB9" },
-    { id: "yellow", name: "Golden Yellow", hex: "#fbbf24" },
-    { id: "green", name: "Emerald Green", hex: "#10b981" },
-    { id: "sage", name: "Velvet Sage", hex: "#BCB88A" },
-    { id: "white", name: "Cloud White", hex: "#f8fafc" },
-    { id: "grey", name: "Slate Grey", hex: "#475569" },
-    { id: "brown", name: "Earth Brown", hex: "#451a03" },
-    { id: "indigo", name: "Indigo Deep", hex: "#4338ca" },
-    { id: "navy", name: "Midnight Navy", hex: "#000080" },
-    { id: "teal", name: "Ocean Teal", hex: "#0d9488" },
-    { id: "coral", name: "Sun Coral", hex: "#ff7f50" },
-    { id: "violet", name: "Neon Violet", hex: "#a855f7" },
-    {
-        id: "rainbow",
-        name: "Rainbow",
-        hex: "linear-gradient(to bottom, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff)",
-        isRainbow: true,
-    },
-];
-
-const MAX_LETTERS = 4;
-
-const CHARM_OPTIONS: Charm[] = [
-    { id: "none", name: "No Charm", icon: "" },
-    { id: "heart", name: "Heart", icon: "❤️" },
-    { id: "star", name: "Star", icon: "⭐" },
-    { id: "butterfly", name: "Butterfly", icon: "🦋" },
-    { id: "flower", name: "Flower", icon: "🌸" },
-    { id: "diamond", name: "Diamond", icon: "💎" },
-    { id: "moon", name: "Moon", icon: "🌙" },
-    { id: "sun", name: "Sun", icon: "☀️" },
-    { id: "clover", name: "Clover", icon: "🍀" },
-    { id: "bow", name: "Bow", icon: "🎀" },
-    { id: "rainbow", name: "Rainbow", icon: "🌈" },
-    { id: "bouquet", name: "Bouquet", icon: "💐" },
-    { id: "sparkle", name: "Sparkle", icon: "✨" },
-];
+// Using central registry for thread colors and charms
+const EXTENDED_CHARMS = [NULL_CHARM, ...CHARM_OPTIONS];
 
 export default function EarringCustomizer({
     product,
     isOpen,
     onClose,
 }: EarringCustomizerProps) {
+    const shouldReduceMotion = useReducedMotion();
     const productPrice =
         product.priceRange?.minVariantPrice?.amount ||
         product.variants?.edges[0]?.node?.price?.amount ||
         "15.00";
 
-    const [selectedColor, setSelectedColor] = useState<ThreadColor>(
+    const [selectedColor, setSelectedColor] = useState<ColorOption>(
         THREAD_COLORS[0]
     );
-    const [text, setText] = useState("");
-    const [selectedTopCharm, setSelectedTopCharm] = useState<Charm>(CHARM_OPTIONS[0]);
-    const [selectedBottomCharm, setSelectedBottomCharm] = useState<Charm>(CHARM_OPTIONS[0]);
+    const [selectedTopCharm, setSelectedTopCharm] = useState<CharmOption>(EXTENDED_CHARMS[0]);
+    const [selectedBottomCharm, setSelectedBottomCharm] = useState<CharmOption>(EXTENDED_CHARMS[0]);
     const [activeSlot, setActiveSlot] = useState<'top' | 'bottom'>('bottom');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
     const { addItemToCart } = useCart();
 
-    const [optimisticText, setOptimisticText] = useOptimistic(
-        text,
-        (state, newText: string) => newText
-    );
+
 
     // 🛡️ Persistence Logic: Push State on Open
     useEffect(() => {
@@ -132,11 +73,7 @@ export default function EarringCustomizer({
     }, [isOpen, onClose]);
 
     const handleAddToCartAction = async (formData: FormData) => {
-        const inputText = (formData.get("text") as string) || text;
-
-        // 🛡️ Zod Validation Gate
         const validationResult = validateEarring({
-            text: inputText.toUpperCase(),
             color: selectedColor,
             charmTop: selectedTopCharm.id !== "none" ? selectedTopCharm : undefined,
             charmBottom: selectedBottomCharm.id !== "none" ? selectedBottomCharm : undefined,
@@ -147,11 +84,7 @@ export default function EarringCustomizer({
             return;
         }
 
-        // Additional 4-letter validation
-        if (inputText.length > MAX_LETTERS) {
-            setErrorMessage(`Maximum ${MAX_LETTERS} letters for earrings.`);
-            return;
-        }
+
 
         const variants = product.variants?.edges || [];
         const matchedVariant =
@@ -173,7 +106,6 @@ export default function EarringCustomizer({
             setErrorMessage(null);
             await startTransition(async () => {
                 const attributes = [
-                    { key: "Text", value: inputText.toUpperCase() },
                     { key: "Color", value: selectedColor.name },
                     { key: "Product Type", value: "Earrings (Matching Pair)" },
                 ];
@@ -268,16 +200,17 @@ export default function EarringCustomizer({
                                 {/* Earring 1 (Left) */}
                                 <motion.div
                                     className="relative flex flex-col items-center"
-                                    animate={{ rotate: [0, -2, 0] }}
-                                    transition={{
+                                    style={{ originY: 0 }}
+                                    animate={shouldReduceMotion ? { rotate: 0 } : { rotate: [0, -3, 0] }}
+                                    transition={shouldReduceMotion ? { duration: 0 } : {
                                         duration: 4,
                                         repeat: Infinity,
                                         ease: "easeInOut",
                                     }}
                                 >
                                     <motion.div
-                                        className={`w-16 h-[290px] rounded-b-3xl shadow-xl flex flex-col items-center gap-1 pt-4 pb-2 transition-all duration-700 border-x-4 border-black/10 bg-stone-50 ${selectedColor.isRainbow
-                                            ? "bg-rainbow font-rainbow"
+                                        className={`w-14 h-48 rounded-b-3xl shadow-xl flex flex-col items-center gap-1 pt-3 pb-2 transition-all duration-700 border-x-4 border-black/10 bg-stone-50 ${selectedColor.isRainbow
+                                            ? "bg-rainbow"
                                             : "yarn-hex-bg"
                                             }`}
                                         animate={{ "--yarn-color": selectedColor.hex } as any}
@@ -294,21 +227,6 @@ export default function EarringCustomizer({
                                                 </motion.div>
                                             )}
                                         </div>
-
-                                        <AnimatePresence mode="popLayout">
-                                            {optimisticText.split("").map((char: string, i: number) => (
-                                                <motion.div
-                                                    key={`e1-${i}-${char}`}
-                                                    initial={{ opacity: 0, scale: 0.5, y: -10 }}
-                                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                                    className={`w-8 h-8 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm text-sm shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-1 ${i % 2 === 0 ? "rotate-2" : "-rotate-2"
-                                                        }`}
-                                                >
-                                                    {char.toUpperCase()}
-                                                </motion.div>
-                                            ))}
-                                        </AnimatePresence>
-
                                         {/* Bottom Charm Slot */}
                                         <div className="mt-auto mb-2 h-10 w-full flex items-center justify-center">
                                             {selectedBottomCharm.id !== "none" && (
@@ -327,8 +245,9 @@ export default function EarringCustomizer({
                                 {/* Earring 2 (Right) - Matching Design */}
                                 <motion.div
                                     className="relative flex flex-col items-center"
-                                    animate={{ rotate: [0, 2, 0] }}
-                                    transition={{
+                                    style={{ originY: 0 }}
+                                    animate={shouldReduceMotion ? { rotate: 0 } : { rotate: [0, 3, 0] }}
+                                    transition={shouldReduceMotion ? { duration: 0 } : {
                                         duration: 4,
                                         repeat: Infinity,
                                         ease: "easeInOut",
@@ -336,8 +255,8 @@ export default function EarringCustomizer({
                                     }}
                                 >
                                     <motion.div
-                                        className={`w-16 h-[290px] rounded-b-3xl shadow-xl flex flex-col items-center gap-1 pt-4 pb-2 transition-all duration-700 border-x-4 border-black/10 bg-stone-50 ${selectedColor.isRainbow
-                                            ? "bg-rainbow font-rainbow"
+                                        className={`w-14 h-48 rounded-b-3xl shadow-xl flex flex-col items-center gap-1 pt-3 pb-2 transition-all duration-700 border-x-4 border-black/10 bg-stone-50 ${selectedColor.isRainbow
+                                            ? "bg-rainbow"
                                             : "yarn-hex-bg"
                                             }`}
                                         animate={{ "--yarn-color": selectedColor.hex } as any}
@@ -354,21 +273,6 @@ export default function EarringCustomizer({
                                                 </motion.div>
                                             )}
                                         </div>
-
-                                        <AnimatePresence mode="popLayout">
-                                            {optimisticText.split("").map((char: string, i: number) => (
-                                                <motion.div
-                                                    key={`e2-${i}-${char}`}
-                                                    initial={{ opacity: 0, scale: 0.5, y: -10 }}
-                                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                                    className={`w-8 h-8 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm text-sm shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-1 ${i % 2 === 0 ? "rotate-2" : "-rotate-2"
-                                                        }`}
-                                                >
-                                                    {char.toUpperCase()}
-                                                </motion.div>
-                                            ))}
-                                        </AnimatePresence>
-
                                         {/* Bottom Charm Slot - Mirrored */}
                                         <div className="mt-auto mb-2 h-10 w-full flex items-center justify-center">
                                             {selectedBottomCharm.id !== "none" && (
@@ -398,7 +302,7 @@ export default function EarringCustomizer({
                                         Design Your Custom Earrings
                                     </h1>
                                     <p className="text-sm text-slate-500 leading-relaxed">
-                                        Create matching pair earrings with up to {MAX_LETTERS} letters.
+                                        Create matching pair earrings.
                                         One design for both earrings.
                                     </p>
                                 </div>
@@ -479,7 +383,7 @@ export default function EarringCustomizer({
                                     </div>
 
                                     <div className="grid grid-cols-4 gap-2">
-                                        {CHARM_OPTIONS.map((charm) => (
+                                        {EXTENDED_CHARMS.map((charm) => (
                                             <button
                                                 key={charm.id}
                                                 type="button"
@@ -504,41 +408,6 @@ export default function EarringCustomizer({
                                                 )}
                                             </button>
                                         ))}
-                                    </div>
-                                </div>
-
-                                {/* Text Input Section */}
-                                <div className="space-y-6 pt-4 border-t border-stone-100">
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-end">
-                                            <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase">
-                                                Letters (Max {MAX_LETTERS})
-                                            </label>
-                                            <span
-                                                className={`text-[10px] font-bold font-mono ${text.length > MAX_LETTERS
-                                                    ? "text-red-500"
-                                                    : "text-slate-300"
-                                                    }`}
-                                            >
-                                                {text.length}/{MAX_LETTERS}
-                                            </span>
-                                        </div>
-                                        <input
-                                            name="text"
-                                            type="text"
-                                            value={text}
-                                            onChange={(e) => {
-                                                const val = e.target.value
-                                                    .toUpperCase()
-                                                    .slice(0, MAX_LETTERS);
-                                                setText(val);
-                                                startTransition(() => {
-                                                    setOptimisticText(val);
-                                                });
-                                            }}
-                                            className="w-full text-4xl font-serif border-b-2 border-stone-100 py-2 focus:outline-none focus:border-purple-600 bg-transparent text-slate-900 placeholder:text-stone-200 uppercase tracking-widest focus:placeholder:text-stone-100 transition-colors"
-                                            placeholder="LISA"
-                                        />
                                     </div>
                                 </div>
 

@@ -9,7 +9,7 @@
 
 export interface ShopifyImage {
     url: string;
-    altText: string;
+    altText: string | null;
 }
 
 export interface ShopifyMoney {

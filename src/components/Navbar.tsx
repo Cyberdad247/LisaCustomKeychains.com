@@ -47,6 +47,7 @@ export default function Navbar() {
               className={`hidden md:flex flex-1 justify-start space-x-8 text-[10px] font-black tracking-[0.3em] text-slate-500 transition-opacity duration-500 pointer-events-auto`}
             >
               <a href="/" className="hover:text-purple-700 transition-colors" aria-label="Shop All Products">SHOP</a>
+              <a href="/customize" className="hover:text-purple-700 transition-colors" aria-label="Build Your Own Keychain">CUSTOMIZE</a>
             </motion.div>
 
             {/* LOGO - Morphs from Huge Center to Small Side/Center */}
@@ -141,6 +142,7 @@ export default function Navbar() {
               <X size={32} />
             </button>
             <a href="/" className="hover:text-purple-700 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>SHOP</a>
+            <a href="/customize" className="hover:text-purple-700 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>CUSTOMIZE</a>
             <button onClick={() => { setIsMobileMenuOpen(false); toggleCart(); }} className="flex items-center gap-2 text-purple-700">
               <ShoppingBag /> Bag ({quantity})
             </button>

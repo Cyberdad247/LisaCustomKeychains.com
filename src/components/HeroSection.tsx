@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import { Sparkles, Heart, HeartHandshake } from "lucide-react";
 import { type ShopifyProduct } from "../lib/shopify/types";
@@ -11,11 +11,21 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ featuredProduct }: HeroSectionProps) {
+    const shouldReduceMotion = useReducedMotion();
+
+    // Simplified animation overrides for accessibility
+    const slideAnimation = shouldReduceMotion
+        ? { initial: { opacity: 0 }, animate: { opacity: 1 } }
+        : { initial: { opacity: 0, x: -50 }, animate: { opacity: 1, x: 0 } };
+
+    const photoAnimation = shouldReduceMotion
+        ? { initial: { opacity: 0 }, animate: { opacity: 1 } }
+        : { initial: { opacity: 0, scale: 0.8, rotate: -5 }, animate: { opacity: 1, scale: 1, rotate: 2 } };
+
     return (
         <div className="grid md:grid-cols-2 gap-12 items-center py-12 mb-20 overflow-hidden">
             <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
+                {...slideAnimation}
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 className="text-center md:text-left space-y-6"
             >
@@ -37,7 +47,27 @@ export default function HeroSection({ featuredProduct }: HeroSectionProps) {
                     heart. Not mass-produced. Just handmade magic.
                 </p>
 
-                <div className="flex flex-wrap gap-6 pt-4 justify-center md:justify-start">
+                <div className="flex flex-wrap gap-4 pt-4 justify-center md:justify-start">
+                    <motion.a
+                        href="/customize"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-8 py-4 bg-purple-600 text-white rounded-full font-bold shadow-lg shadow-purple-200 hover:bg-purple-700 transition-colors flex items-center gap-2"
+                    >
+                        <Sparkles className="w-5 h-5" />
+                        BUILD YOURS
+                    </motion.a>
+                    <motion.a
+                        href="/products"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-8 py-4 bg-white text-slate-900 border-2 border-slate-100 rounded-full font-bold hover:border-purple-200 transition-colors"
+                    >
+                        SHOP ALL
+                    </motion.a>
+                </div>
+
+                <div className="flex flex-wrap gap-6 pt-8 justify-center md:justify-start">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
                             <HeartHandshake className="text-purple-700 w-6 h-6" />
@@ -62,8 +92,7 @@ export default function HeroSection({ featuredProduct }: HeroSectionProps) {
             </motion.div>
 
             <motion.div
-                initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
-                animate={{ opacity: 1, scale: 1, rotate: 2 }}
+                {...photoAnimation}
                 transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
                 className="relative"
             >

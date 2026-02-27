@@ -23,8 +23,8 @@ export default function ProductCard({
   const [isCustomizing, setIsCustomizing] = useState(false);
   const { title } = product;
   const image = product.featuredImage || product.images?.edges[0]?.node;
-  const isEarring = product.productType?.toLowerCase().includes("earring") || product.title?.toLowerCase().includes("earring");
-  const defaultPrice = isEarring ? "15.00" : "9.95";
+  const isEarring = product.productType?.toLowerCase().includes("earring") || product.title?.toLowerCase().includes("earring") || product.title?.toLowerCase().includes("dangle");
+  const defaultPrice = isEarring ? "9.95" : "9.95";
   const price =
     product.priceRange?.minVariantPrice?.amount ||
     product.variants?.edges[0]?.node?.price?.amount ||
@@ -108,7 +108,8 @@ export default function ProductCard({
         <>
           {/* Detect if this is an earring product */}
           {(product.productType?.toLowerCase().includes("earring") ||
-            product.title?.toLowerCase().includes("earring")) ? (
+            product.title?.toLowerCase().includes("earring") ||
+            product.title?.toLowerCase().includes("dangle")) ? (
             <EarringCustomizer
               product={product}
               isOpen={isCustomizing}

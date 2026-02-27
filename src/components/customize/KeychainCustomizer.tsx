@@ -77,6 +77,7 @@ export default function KeychainCustomizer({
     product.priceRange?.minVariantPrice?.amount ||
     product.variants?.edges[0]?.node?.price?.amount ||
     "9.95";
+  const isEarring = product.productType?.toLowerCase().includes("earring") || product.title?.toLowerCase().includes("earring") || product.title?.toLowerCase().includes("dangle");
   const priceNum = parseFloat(productPrice);
 
   const tier = getTierByPrice(priceNum);
@@ -131,20 +132,15 @@ export default function KeychainCustomizer({
     return { id: "heart", name: "Heart", icon: "❤️", color: THREAD_COLORS[0] };
   };
 
-  const isEarring = product.productType === "Earrings";
   const initialCharm = getCharmInfo(product.title || "");
 
   const [text, setText] = useState(
-    isTier1 ? "" : product.title?.split(" ")[0]?.toUpperCase() || "NAME"
+    isTier1 || isEarring ? "" : product.title?.split(" ")[0]?.toUpperCase() || "NAME"
   );
   const [selectedColor, setSelectedColor] = useState(
     initialCharm.color || THREAD_COLORS[0]
   );
-  const [selectedCharms, setSelectedCharms] = useState<Charm[]>(
-    isEarring
-      ? [initialCharm, { id: "star", name: "Star", icon: "⭐" }]
-      : [initialCharm]
-  );
+  const [selectedCharms, setSelectedCharms] = useState<Charm[]>([initialCharm]);
   const [activeCharmIndex, setActiveCharmIndex] = useState(0);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -211,7 +207,7 @@ export default function KeychainCustomizer({
 
     // Custom tier validation logic (redundant safeguard)
     if (!isTier1) {
-      const limit = isEarring ? 4 : getCharLimit(tier);
+      const limit = getCharLimit(tier);
       if (inputText.length > limit) {
         setErrorMessage(`Maximum ${limit} characters for this product.`);
         return;
@@ -271,7 +267,7 @@ export default function KeychainCustomizer({
             charms: selectedCharms.map(c => c.name).join(", "),
             charm_icons: selectedCharms.map(c => c.icon).join(" "),
             tier: tier,
-            style: isTier3 ? "Premium Dual Strand" : (isEarring ? "Heritage Earrings" : "Single Strand"),
+            style: isTier3 ? "Premium Dual Strand" : "Single Strand",
             visual: `${selectedColor.name} with ${selectedCharms.map(c => c.icon).join(" ")}`,
           }),
         },
@@ -429,8 +425,7 @@ export default function KeychainCustomizer({
                           <motion.div
                             key={idx}
                             layoutId={`preview-charm-${idx}`}
-                            className={`w-8 h-8 bg-white flex items-center justify-center font-bold rounded-sm shadow-md flex-shrink-0 text-sm ${isEarring && activeCharmIndex === idx ? "ring-2 ring-purple-500 scale-110" : ""
-                              } ${charm.id === 'heart' || charm.id === 'star' ? 'text-rose-500' : 'text-slate-900'}`}
+                            className={`w-8 h-8 bg-white flex items-center justify-center font-bold rounded-sm shadow-md flex-shrink-0 text-sm ${charm.id === 'heart' || charm.id === 'star' ? 'text-rose-500' : 'text-slate-900'}`}
                           >
                             {charm.icon}
                           </motion.div>
@@ -507,7 +502,7 @@ export default function KeychainCustomizer({
                   </div>
 
                   {/* Interactive Input Section */}
-                  {!isTier1 && (
+                  {!isTier1 && !isEarring && (
                     <div className="space-y-6 pt-4 border-t border-stone-100">
                       {/* AI Vibe Assistant */}
                       <VibeInput
@@ -538,25 +533,7 @@ export default function KeychainCustomizer({
                         }}
                       />
 
-                      {/* Multi-Charm Selector Tabs for Earrings */}
-                      {isEarring && (
-                        <div className="flex gap-2 p-1 bg-stone-100 rounded-xl">
-                          {[0, 1].map((idx) => (
-                            <button
-                              key={idx}
-                              type="button"
-                              onClick={() => setActiveCharmIndex(idx)}
-                              className={`flex-1 py-2 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${activeCharmIndex === idx
-                                ? "bg-white text-purple-600 shadow-sm"
-                                : "text-slate-400 hover:text-slate-600"
-                                }`}
-                            >
-                              Charm {idx + 1}
-                              <span className="ml-1 text-[12px]">{selectedCharms[idx]?.icon}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                      {/* Multi-Charm Selector Tabs Removed (Keychain is Single Active Strand for now) */}
 
                       <AnimatePresence>
                         {suggestedIcons.length > 0 && (
@@ -603,12 +580,12 @@ export default function KeychainCustomizer({
                               : "Identifier (Max 8)"}
                           </label>
                           <span
-                            className={`text-[10px] font-bold font-mono ${text.length > (isEarring ? 4 : getCharLimit(tier))
+                            className={`text-[10px] font-bold font-mono ${text.length > getCharLimit(tier)
                               ? "text-red-500"
                               : "text-slate-300"
                               }`}
                           >
-                            {text.length}/{isEarring ? 4 : getCharLimit(tier)}
+                            {text.length}/{getCharLimit(tier)}
                           </span>
                         </div>
                         <input
@@ -616,7 +593,7 @@ export default function KeychainCustomizer({
                           type="text"
                           value={text}
                           onChange={(e) => {
-                            const limit = isEarring ? 4 : getCharLimit(tier);
+                            const limit = getCharLimit(tier);
                             const val = e.target.value
                               .toUpperCase()
                               .slice(0, limit);

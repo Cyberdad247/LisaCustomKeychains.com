@@ -91,17 +91,9 @@ export const VibeNotesSchema = z.object({
 
 /**
  * Complete earring design schema.
- * Enforces 4-letter limit for matching pair earrings.
+ * Enforces color and charm options for matching pair earrings.
  */
 export const EarringDesignSchema = z.object({
-  text: z
-    .string()
-    .min(1, "Name is required")
-    .max(4, "Maximum 4 letters for earrings")
-    .regex(
-      /^[A-Z0-9 ]+$/,
-      "Only uppercase letters, numbers, and spaces allowed"
-    ),
   color: ColorOptionSchema,
   charmTop: CharmOptionSchema.optional(), // Charm at the top of the earring
   charmBottom: CharmOptionSchema.optional(), // Charm at the bottom of the earring

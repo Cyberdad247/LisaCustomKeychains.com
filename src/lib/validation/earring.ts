@@ -1,7 +1,7 @@
 /**
  * 🛡️ EARRING VALIDATION MODULE
  *
- * THE SENTRY: Validates earring designs with 4-letter limit and matching pair logic.
+ * THE SENTRY: Validates earring designs with color and charm selection logic.
  * Follows Camelot OS Titanium utilities pattern.
  *
  * @module @/lib/validation/earring

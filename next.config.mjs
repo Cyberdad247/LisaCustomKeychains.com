@@ -14,6 +14,14 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'jgvme0-av.myshopify.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'lisascustomkeychains.myshopify.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lisascustomkeychains.com',
+      },
     ],
   },
 };
