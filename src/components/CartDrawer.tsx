@@ -50,7 +50,7 @@ export default function CartDrawer() {
     });
   }, [lines]);
 
-  const isDescriptionValid = orderDescription.trim().length > 10;
+  const isDescriptionValid = orderDescription.trim().length >= 1;
   const isSubmitDisabled = isSubmitting || !checkoutUrl || (hasPersonalTier && !isDescriptionValid);
 
   // Titan Principle 1.2: Form Focus Routine
@@ -393,8 +393,8 @@ export default function CartDrawer() {
                     <div className="space-y-1.5">
                       <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] flex justify-between">
                         <span>Order Description {hasPersonalTier && <span className="text-red-500">*</span>}</span>
-                        <span className={`font-mono ${orderDescription.trim().length > 10 ? "text-green-600" : "text-slate-300"}`}>
-                          {orderDescription.trim().length}/10 min
+                        <span className={`font-mono ${orderDescription.trim().length >= 1 ? "text-green-600" : "text-slate-300"}`}>
+                          {orderDescription.trim().length}/1 min
                         </span>
                       </label>
                       <textarea
@@ -406,7 +406,7 @@ export default function CartDrawer() {
                         value={orderDescription}
                         onChange={(e) => {
                           setOrderDescription(e.target.value);
-                          if (e.target.value.trim().length > 10) setDescriptionError(false);
+                          if (e.target.value.trim().length >= 1) setDescriptionError(false);
                         }}
                         rows={3}
                         className={`w-full px-4 py-3 bg-stone-50 border rounded-xl text-sm focus:outline-none transition-colors resize-none ${
@@ -423,7 +423,7 @@ export default function CartDrawer() {
                             exit={{ opacity: 0, y: -4 }}
                             className="text-[10px] font-bold text-red-500"
                           >
-                            Please describe your order (minimum 10 characters).
+                            Please describe your order.
                           </motion.p>
                         )}
                       </AnimatePresence>
