@@ -30,13 +30,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (existingCartId) {
         try {
           const existingCart = await getCart(existingCartId);
-          if (existingCart) {
+          if (existingCart && existingCart.checkoutUrl && existingCart.checkoutUrl !== "/checkout-fallback") {
             setCart(existingCart);
             setCheckoutUrl(existingCart.checkoutUrl);
             return;
           }
+          // Cart expired or invalid — clear stale ID and fall through to create fresh
+          console.warn("Cart expired or invalid, creating new cart");
+          localStorage.removeItem('shopify_cart_id');
         } catch (e) {
           console.error("Cart init failed, creating new");
+          localStorage.removeItem('shopify_cart_id');
         }
       }
 

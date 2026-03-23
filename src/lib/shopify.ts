@@ -348,7 +348,28 @@ export async function addToCart(
   );
 
   if (!response?.data?.cartLinesAdd) {
-    console.error('❌ cartLinesAdd returned null.', response?.errors || 'No error details');
+    // Cart may be expired — attempt recovery by creating a fresh cart and retrying once
+    console.warn('⚠️ cartLinesAdd failed (cart may be expired). Attempting recovery...', response?.errors || '');
+    try {
+      const freshCart = await createCart();
+      if (freshCart.id && freshCart.id !== 'mock-cart-id') {
+        console.log(`✅ Recovery: Created fresh cart ${freshCart.id}. Retrying addToCart...`);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('shopify_cart_id', freshCart.id);
+        }
+        const retryResponse = await ShopifyData<{ cartLinesAdd: { cart: ShopifyCart; userErrors: UserError[] } }>(
+          query,
+          { cartId: freshCart.id, lines },
+          { isMutation: true }
+        );
+        if (retryResponse?.data?.cartLinesAdd) {
+          return retryResponse.data.cartLinesAdd;
+        }
+      }
+    } catch (recoveryErr) {
+      console.error('❌ Cart recovery failed:', recoveryErr);
+    }
+
     return {
       cart: {
         id: resolvedCartId,
@@ -359,7 +380,7 @@ export async function addToCart(
           totalAmount: { amount: "0", currencyCode: "USD" }
         }
       },
-      userErrors: [{ field: [], message: "Failed to add items to cart. Please refresh and try again." }]
+      userErrors: [{ field: [], message: "Cart expired. Please try again." }]
     };
   }
 
@@ -415,15 +436,9 @@ export async function getCart(cartId: string): Promise<ShopifyCart> {
   const response = await ShopifyData<{ cart: ShopifyCart }>(query, { cartId });
 
   if (!response?.data?.cart) {
-    return {
-      id: cartId,
-      checkoutUrl: "/checkout-fallback",
-      totalQuantity: 0,
-      lines: { edges: [] },
-      cost: {
-        totalAmount: { amount: "0", currencyCode: "USD" }
-      }
-    };
+    // Cart expired or invalid — return null so CartProvider creates a fresh one
+    console.warn('⚠️ Cart not found (expired or invalid):', cartId);
+    return null as unknown as ShopifyCart;
   }
 
   return response.data.cart;
