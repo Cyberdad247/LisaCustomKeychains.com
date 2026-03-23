@@ -37,8 +37,8 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
     const [text, setText] = useState(isEarring ? "" : "NAME");
     const [selectedColor, setSelectedColor] = useState<ColorOption>(THREAD_COLORS[0]);
     const [selectedCharms, setSelectedCharms] = useState<CharmOption[]>([
-        { id: "heart", name: "Heart", icon: "❤️" },
-        { id: "star", name: "Star", icon: "⭐" }
+        CHARM_OPTIONS[0],
+        CHARM_OPTIONS[1],
     ]);
     const [activeCharmIndex, setActiveCharmIndex] = useState(0);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -139,7 +139,7 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
                                         whileHover={{ scale: 1.1 }}
                                         whileTap={{ scale: 0.9 }}
                                         onClick={() => setActiveCharmIndex(0)}
-                                        className={`w-10 h-10 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mb-4 shadow-md text-sm transition-all ${activeCharmIndex === 0 ? "ring-4 ring-purple-600 ring-offset-2" : ""}`}
+                                        className={`w-16 min-h-8 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm mb-4 shadow-md text-[6px] tracking-tight leading-none px-1 py-1 text-center transition-all ${activeCharmIndex === 0 ? "ring-4 ring-purple-600 ring-offset-2" : ""}`}
                                     >
                                         {selectedCharms[0]?.icon}
                                     </motion.button>
@@ -161,7 +161,7 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
                                         whileHover={{ scale: 1.1 }}
                                         whileTap={{ scale: 0.9 }}
                                         onClick={() => setActiveCharmIndex(1)}
-                                        className={`w-10 h-10 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mt-auto mb-6 shadow-md text-sm transition-all ${activeCharmIndex === 1 ? "ring-4 ring-purple-600 ring-offset-2" : ""}`}
+                                        className={`w-16 min-h-8 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm mt-auto mb-6 shadow-md text-[6px] tracking-tight leading-none px-1 py-1 text-center transition-all ${activeCharmIndex === 1 ? "ring-4 ring-purple-600 ring-offset-2" : ""}`}
                                     >
                                         {selectedCharms[1]?.icon || selectedCharms[0]?.icon}
                                     </motion.button>
@@ -183,7 +183,7 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}
                                             onClick={() => setActiveCharmIndex(0)}
-                                            className={`w-10 h-10 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mb-4 shadow-md text-sm transition-all ${activeCharmIndex === 0 ? "ring-4 ring-purple-600 ring-offset-2" : ""}`}
+                                            className={`w-16 min-h-8 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm mb-4 shadow-md text-[6px] tracking-tight leading-none px-1 py-1 text-center transition-all ${activeCharmIndex === 0 ? "ring-4 ring-purple-600 ring-offset-2" : ""}`}
                                         >
                                             {selectedCharms[0]?.icon}
                                         </motion.button>
@@ -205,7 +205,7 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}
                                             onClick={() => setActiveCharmIndex(1)}
-                                            className={`w-10 h-10 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mt-auto mb-6 shadow-md text-sm transition-all ${activeCharmIndex === 1 ? "ring-4 ring-purple-600 ring-offset-2" : ""}`}
+                                            className={`w-16 min-h-8 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm mt-auto mb-6 shadow-md text-[6px] tracking-tight leading-none px-1 py-1 text-center transition-all ${activeCharmIndex === 1 ? "ring-4 ring-purple-600 ring-offset-2" : ""}`}
                                         >
                                             {selectedCharms[1]?.icon || selectedCharms[0]?.icon}
                                         </motion.button>
@@ -330,11 +330,10 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
                                             newCharms[activeCharmIndex] = charm;
                                             setSelectedCharms(newCharms);
                                         }}
-                                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${selectedCharms[activeCharmIndex]?.icon === charm.icon ? "border-purple-600 bg-purple-50 ring-1 ring-purple-600 shadow-md" : "border-stone-100 bg-white hover:border-purple-200"
+                                        className={`flex items-center justify-center p-4 rounded-2xl border transition-all ${selectedCharms[activeCharmIndex]?.id === charm.id ? "border-purple-600 bg-purple-50 ring-1 ring-purple-600 shadow-md" : "border-stone-100 bg-white hover:border-purple-200"
                                             }`}
                                     >
-                                        <span className="text-2xl">{charm.icon}</span>
-                                        <span className="text-[9px] font-black uppercase tracking-tighter text-slate-500">{charm.name}</span>
+                                        <span className="text-[11px] font-black uppercase tracking-tight text-slate-800 text-center leading-tight">{charm.name}</span>
                                     </motion.button>
                                 ))}
                             </div>

@@ -15,6 +15,8 @@ import SEOWrapper from "../SEOWrapper";
 import VibeInput from "../VibeInput";
 import { Sheet, SheetContent, SheetTitle } from "../ui/sheet";
 import { type ShopifyProduct } from "../../lib/shopify/types";
+import { THREAD_COLORS as REGISTRY_COLORS, CHARM_OPTIONS } from "../../lib/camelot/registry";
+import { type CharmOption } from "../../lib/camelot/schemas";
 
 interface KeychainCustomizerProps {
   product: ShopifyProduct;
@@ -29,12 +31,7 @@ interface ThreadColor {
   isRainbow?: boolean;
 }
 
-interface Charm {
-  id: string;
-  name: string;
-  icon: string;
-  color?: ThreadColor;
-}
+type Charm = CharmOption;
 
 const THREAD_COLORS: ThreadColor[] = [
   { id: "purple", name: "Royal Purple", hex: "#9333ea" },
@@ -85,61 +82,18 @@ export default function KeychainCustomizer({
   const isTier2 = tier === 2;
   const isTier3 = tier === 3;
 
-  const getCharmInfo = (title: string): Charm => {
+  const getCharmFromTitle = (title: string): Charm => {
     const t = title.toLowerCase();
-    if (t.includes("tennis"))
-      return {
-        id: "tennis",
-        name: "Tennis Ball",
-        icon: "🎾",
-        color: THREAD_COLORS.find((c) => c.id === "green"),
-      };
-    if (t.includes("baseball"))
-      return {
-        id: "baseball",
-        name: "Baseball",
-        icon: "⚾",
-        color: THREAD_COLORS.find((c) => c.id === "white"),
-      };
-    if (t.includes("football"))
-      return {
-        id: "football",
-        name: "Football",
-        icon: "🏈",
-        color: THREAD_COLORS.find((c) => c.id === "brown"),
-      };
-    if (t.includes("soccer"))
-      return {
-        id: "soccer",
-        name: "Soccer Ball",
-        icon: "⚽",
-        color: THREAD_COLORS.find((c) => c.id === "white"),
-      };
-    if (t.includes("volleyball"))
-      return {
-        id: "volleyball",
-        name: "Volleyball",
-        icon: "🏐",
-        color: THREAD_COLORS.find((c) => c.id === "blue"),
-      };
-    if (t.includes("softball"))
-      return {
-        id: "softball",
-        name: "Softball",
-        icon: "🥎",
-        color: THREAD_COLORS.find((c) => c.id === "yellow"),
-      };
-    return { id: "heart", name: "Heart", icon: "❤️", color: THREAD_COLORS[0] };
+    const match = CHARM_OPTIONS.find((c) => t.includes(c.id.replace("-", " ")) || t.includes(c.name.toLowerCase()));
+    return match || CHARM_OPTIONS[0];
   };
 
-  const initialCharm = getCharmInfo(product.title || "");
+  const initialCharm = getCharmFromTitle(product.title || "");
 
   const [text, setText] = useState(
     isTier1 || isEarring ? "" : product.title?.split(" ")[0]?.toUpperCase() || "NAME"
   );
-  const [selectedColor, setSelectedColor] = useState(
-    initialCharm.color || THREAD_COLORS[0]
-  );
+  const [selectedColor, setSelectedColor] = useState(THREAD_COLORS[0]);
   const [selectedCharms, setSelectedCharms] = useState<Charm[]>([initialCharm]);
   const [activeCharmIndex, setActiveCharmIndex] = useState(0);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -164,15 +118,8 @@ export default function KeychainCustomizer({
         window.location.pathname + "?customize=true"
       );
 
-      // ✨ Populate starter charms
-      setSuggestedIcons([
-        { id: "heart", name: "Heart", icon: "❤️" },
-        { id: "star", name: "Star", icon: "⭐" },
-        { id: "sparkles", name: "Sparkles", icon: "✨" },
-        { id: "coffee", name: "Coffee", icon: "☕" },
-        { id: "cat", name: "Kitty", icon: "🐱" },
-        { id: "dog", name: "Puppy", icon: "🐶" },
-      ]);
+      // ✨ Populate starter charms from curated text registry
+      setSuggestedIcons(CHARM_OPTIONS);
     } else {
       // Clean up URL if closed naturally
       if (window.location.search.includes("customize=true")) {
@@ -359,9 +306,17 @@ export default function KeychainCustomizer({
                       }`}
                     animate={{ "--yarn-color": selectedColor.hex } as any}
                   >
-                    <div className="w-8 h-8 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mb-2 shadow-md flex-shrink-0 text-sm">
-                      {selectedCharms[0]?.icon}
-                    </div>
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={selectedCharms[0]?.id}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="w-16 min-h-6 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm mb-2 shadow-md flex-shrink-0 text-[6px] tracking-tight leading-none px-0.5 py-1 text-center"
+                      >
+                        {selectedCharms[0]?.icon}
+                      </motion.div>
+                    </AnimatePresence>
 
                     <AnimatePresence mode="popLayout">
                       {strand1.split("").map((char: string, i: number) => (
@@ -377,9 +332,17 @@ export default function KeychainCustomizer({
                       ))}
                     </AnimatePresence>
 
-                    <div className="w-8 h-8 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mt-auto mb-4 shadow-md flex-shrink-0 text-sm">
-                      {selectedCharms[0]?.icon}
-                    </div>
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={`bottom-${selectedCharms[0]?.id}`}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="w-16 min-h-6 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm mt-auto mb-4 shadow-md flex-shrink-0 text-[6px] tracking-tight leading-none px-0.5 py-1 text-center"
+                      >
+                        {selectedCharms[0]?.icon}
+                      </motion.div>
+                    </AnimatePresence>
                   </motion.div>
                 </motion.div>
 
@@ -402,9 +365,17 @@ export default function KeychainCustomizer({
                         }`}
                       animate={{ "--yarn-color": selectedColor.hex } as any}
                     >
-                      <div className="w-8 h-8 bg-white text-rose-500 flex items-center justify-center font-bold rounded-sm mb-2 shadow-md flex-shrink-0 text-sm">
-                        {selectedCharms[0]?.icon}
-                      </div>
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={`s2-top-${selectedCharms[0]?.id}`}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          className="w-16 min-h-6 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm mb-2 shadow-md flex-shrink-0 text-[6px] tracking-tight leading-none px-0.5 py-1 text-center"
+                        >
+                          {selectedCharms[0]?.icon}
+                        </motion.div>
+                      </AnimatePresence>
 
                       <AnimatePresence mode="popLayout">
                         {strand2.split("").map((char: string, i: number) => (
@@ -420,12 +391,12 @@ export default function KeychainCustomizer({
                         ))}
                       </AnimatePresence>
 
-                      <div className="flex gap-2 mt-auto mb-4">
+                      <div className="flex gap-1 mt-auto mb-4">
                         {selectedCharms.map((charm, idx) => (
                           <motion.div
                             key={idx}
                             layoutId={`preview-charm-${idx}`}
-                            className={`w-8 h-8 bg-white flex items-center justify-center font-bold rounded-sm shadow-md flex-shrink-0 text-sm ${charm.id === 'heart' || charm.id === 'star' ? 'text-rose-500' : 'text-slate-900'}`}
+                            className="w-16 min-h-6 bg-white text-slate-900 flex items-center justify-center font-black rounded-sm shadow-md flex-shrink-0 text-[5px] tracking-tight leading-none px-0.5 py-1 text-center"
                           >
                             {charm.icon}
                           </motion.div>
@@ -554,15 +525,12 @@ export default function KeychainCustomizer({
                                     return next;
                                   });
                                 }}
-                                className={`flex flex-col items-center gap-1 p-2 bg-stone-50 border rounded-lg transition-colors text-xs text-slate-600 group ${selectedCharms[activeCharmIndex]?.icon === charm.icon
+                                className={`flex flex-col items-center justify-center gap-0.5 p-2 bg-stone-50 border rounded-lg transition-colors group ${selectedCharms[activeCharmIndex]?.id === charm.id
                                   ? "border-purple-600 bg-purple-50"
                                   : "border-stone-100 hover:border-purple-200 hover:bg-purple-50"
                                   }`}
                               >
-                                <div className="w-6 h-6 text-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                                  {charm.icon}
-                                </div>
-                                <span className="font-bold text-[9px] uppercase">
+                                <span className="font-black text-[10px] uppercase tracking-tight text-slate-800 group-hover:text-purple-700 transition-colors text-center leading-tight">
                                   {charm.name}
                                 </span>
                               </button>

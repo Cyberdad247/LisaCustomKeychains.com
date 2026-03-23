@@ -219,9 +219,10 @@ export default function EarringCustomizer({
                                         <div className="h-10 w-full flex items-center justify-center -mt-2 mb-1">
                                             {selectedTopCharm.id !== "none" && (
                                                 <motion.div
+                                                    key={selectedTopCharm.id}
                                                     initial={{ scale: 0 }}
                                                     animate={{ scale: 1 }}
-                                                    className="w-8 h-8 bg-white/90 backdrop-blur-sm flex items-center justify-center font-bold rounded-full shadow-lg text-sm border border-stone-100"
+                                                    className="w-12 min-h-6 bg-white/90 backdrop-blur-sm flex items-center justify-center font-black rounded-sm shadow-lg text-[5px] tracking-tight leading-none px-0.5 py-1 text-center border border-stone-100 text-slate-900"
                                                 >
                                                     {selectedTopCharm.icon}
                                                 </motion.div>
@@ -231,9 +232,10 @@ export default function EarringCustomizer({
                                         <div className="mt-auto mb-2 h-10 w-full flex items-center justify-center">
                                             {selectedBottomCharm.id !== "none" && (
                                                 <motion.div
+                                                    key={selectedBottomCharm.id}
                                                     initial={{ scale: 0 }}
                                                     animate={{ scale: 1 }}
-                                                    className="w-10 h-10 bg-white flex items-center justify-center font-bold rounded-full shadow-lg text-xl border border-stone-100"
+                                                    className="w-12 min-h-6 bg-white flex items-center justify-center font-black rounded-sm shadow-lg text-[5px] tracking-tight leading-none px-0.5 py-1 text-center border border-stone-100 text-slate-900"
                                                 >
                                                     {selectedBottomCharm.icon}
                                                 </motion.div>
@@ -265,9 +267,10 @@ export default function EarringCustomizer({
                                         <div className="h-10 w-full flex items-center justify-center -mt-2 mb-1">
                                             {selectedTopCharm.id !== "none" && (
                                                 <motion.div
+                                                    key={`r-${selectedTopCharm.id}`}
                                                     initial={{ scale: 0 }}
                                                     animate={{ scale: 1 }}
-                                                    className="w-8 h-8 bg-white/90 backdrop-blur-sm flex items-center justify-center font-bold rounded-full shadow-lg text-sm border border-stone-100"
+                                                    className="w-12 min-h-6 bg-white/90 backdrop-blur-sm flex items-center justify-center font-black rounded-sm shadow-lg text-[5px] tracking-tight leading-none px-0.5 py-1 text-center border border-stone-100 text-slate-900"
                                                 >
                                                     {selectedTopCharm.icon}
                                                 </motion.div>
@@ -277,9 +280,10 @@ export default function EarringCustomizer({
                                         <div className="mt-auto mb-2 h-10 w-full flex items-center justify-center">
                                             {selectedBottomCharm.id !== "none" && (
                                                 <motion.div
+                                                    key={`r-${selectedBottomCharm.id}`}
                                                     initial={{ scale: 0 }}
                                                     animate={{ scale: 1 }}
-                                                    className="w-10 h-10 bg-white flex items-center justify-center font-bold rounded-full shadow-lg text-xl border border-stone-100"
+                                                    className="w-12 min-h-6 bg-white flex items-center justify-center font-black rounded-sm shadow-lg text-[5px] tracking-tight leading-none px-0.5 py-1 text-center border border-stone-100 text-slate-900"
                                                 >
                                                     {selectedBottomCharm.icon}
                                                 </motion.div>
@@ -382,7 +386,7 @@ export default function EarringCustomizer({
                                         </span>
                                     </div>
 
-                                    <div className="grid grid-cols-4 gap-2">
+                                    <div className="grid grid-cols-3 gap-2">
                                         {EXTENDED_CHARMS.map((charm) => (
                                             <button
                                                 key={charm.id}
@@ -391,7 +395,7 @@ export default function EarringCustomizer({
                                                     if (activeSlot === 'top') setSelectedTopCharm(charm);
                                                     else setSelectedBottomCharm(charm);
                                                 }}
-                                                className={`group relative aspect-square flex items-center justify-center rounded-xl border-2 transition-all text-2xl ${(activeSlot === 'top' ? selectedTopCharm.id : selectedBottomCharm.id) === charm.id
+                                                className={`group relative flex items-center justify-center rounded-xl border-2 transition-all py-3 px-2 ${(activeSlot === 'top' ? selectedTopCharm.id : selectedBottomCharm.id) === charm.id
                                                     ? "border-purple-600 bg-purple-50 scale-105 shadow-md"
                                                     : "border-stone-100 hover:border-purple-400 hover:scale-105 bg-white"
                                                     }`}
@@ -400,10 +404,11 @@ export default function EarringCustomizer({
                                                     <span className="text-xs text-slate-400 font-bold">None</span>
                                                 ) : (
                                                     <motion.span
-                                                        whileHover={{ scale: 1.2 }}
-                                                        whileTap={{ scale: 0.9 }}
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        className="text-[10px] font-black uppercase tracking-tight text-slate-800 text-center leading-tight"
                                                     >
-                                                        {charm.icon}
+                                                        {charm.name}
                                                     </motion.span>
                                                 )}
                                             </button>

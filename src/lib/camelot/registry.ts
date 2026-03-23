@@ -45,28 +45,22 @@ export const THREAD_COLORS: ColorOption[] = [
 ];
 
 /**
- * Standard charms for customization.
+ * Curated text-based charm options.
+ * Replaces legacy icon charms with word-art text selections.
  */
 export const CHARM_OPTIONS: CharmOption[] = [
-    { id: "heart", name: "Heart", icon: "❤️" },
-    { id: "star", name: "Star", icon: "⭐" },
-    { id: "butterfly", name: "Butterfly", icon: "🦋" },
-    { id: "flower", name: "Flower", icon: "🌸" },
-    { id: "diamond", name: "Diamond", icon: "💎" },
-    { id: "moon", name: "Moon", icon: "🌙" },
-    { id: "sun", name: "Sun", icon: "☀️" },
-    { id: "clover", name: "Clover", icon: "🍀" },
-    { id: "bow", name: "Bow", icon: "🎀" },
-    { id: "rainbow", name: "Rainbow", icon: "🌈" },
-    { id: "bouquet", name: "Bouquet", icon: "💐" },
-    { id: "sparkles", name: "Sparkles", icon: "✨" },
-    { id: "coffee", name: "Coffee", icon: "☕" },
-    { id: "cat", name: "Kitty", icon: "🐱" },
-    { id: "dog", name: "Puppy", icon: "🐶" },
-    { id: "pizza", name: "Pizza", icon: "🍕" },
-    { id: "cloud", name: "Cloud", icon: "☁️" },
-    { id: "lightning", name: "Volt", icon: "⚡" },
-    { id: "alien", name: "Zorp", icon: "👽" },
+    { id: "football", name: "Football", icon: "FOOTBALL" },
+    { id: "basketball", name: "Basketball", icon: "BASKETBALL" },
+    { id: "soccer", name: "Soccer", icon: "SOCCER" },
+    { id: "softball", name: "Softball", icon: "SOFTBALL" },
+    { id: "stars", name: "Stars", icon: "STARS" },
+    { id: "hearts", name: "Hearts", icon: "HEARTS" },
+    { id: "butterflies", name: "Butterflies", icon: "BUTTERFLIES" },
+    { id: "flowers", name: "Flowers", icon: "FLOWERS" },
+    { id: "skulls", name: "Skulls", icon: "SKULLS" },
+    { id: "volleyball", name: "Volleyball", icon: "VOLLEYBALL" },
+    { id: "tennis-balls", name: "Tennis Balls", icon: "TENNIS BALLS" },
+    { id: "bowling-pins", name: "Bowling Pins", icon: "BOWLING PINS" },
 ];
 
 /**
