@@ -12,7 +12,7 @@ import {
   Minus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import { retrieveEmail } from "../lib/crm";
 import { updateCartBuyerIdentity } from "../lib/shopify";
@@ -30,9 +30,28 @@ export default function CartDrawer() {
   const quantity = cart?.totalQuantity || 0;
   const lines = cart?.lines?.edges || [];
   const [email, setEmail] = useState("");
+  const [orderDescription, setOrderDescription] = useState("");
+  const [descriptionError, setDescriptionError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const emailInputRef = useRef<HTMLInputElement>(null);
+
+  // Detect if any cart item is a Personal Tier (custom-made) product
+  const hasPersonalTier = useMemo(() => {
+    return lines.some(({ node }: { node: CartLineItem }) => {
+      const vibeAttr = node.attributes?.find((a) => a.key === "vibe_notes")?.value;
+      if (vibeAttr) {
+        try { return JSON.parse(vibeAttr).tier !== undefined; } catch { return false; }
+      }
+      // Any item with custom attributes (text, color, charms) is personal
+      return node.attributes?.some((a) =>
+        ["text", "color", "Color", "Top Charm", "Bottom Charm"].includes(a.key)
+      );
+    });
+  }, [lines]);
+
+  const isDescriptionValid = orderDescription.trim().length > 10;
+  const isSubmitDisabled = isSubmitting || !checkoutUrl || (hasPersonalTier && !isDescriptionValid);
 
   // Titan Principle 1.2: Form Focus Routine
   useEffect(() => {
@@ -48,6 +67,12 @@ export default function CartDrawer() {
     e.preventDefault();
     if (!checkoutUrl) return;
 
+    // Description Gate: Hard block for Personal Tier
+    if (hasPersonalTier && !isDescriptionValid) {
+      setDescriptionError(true);
+      return;
+    }
+    setDescriptionError(false);
     setIsSubmitting(true);
     let targetUrl = checkoutUrl;
 
@@ -74,6 +99,11 @@ export default function CartDrawer() {
     }
 
     if (targetUrl && targetUrl !== "/checkout-fallback") {
+      // Attach order description as a cart note via checkout URL
+      if (orderDescription.trim()) {
+        const separator = targetUrl.includes("?") ? "&" : "?";
+        targetUrl = `${targetUrl}${separator}note=${encodeURIComponent(orderDescription.trim())}`;
+      }
       window.location.href = targetUrl;
     } else {
       console.error("Checkout Unavailable. URL is invalid or fallback.");
@@ -358,9 +388,50 @@ export default function CartDrawer() {
                         className="w-full pl-10 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 transition-colors"
                       />
                     </div>
+
+                    {/* Description Gate */}
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] flex justify-between">
+                        <span>Order Description {hasPersonalTier && <span className="text-red-500">*</span>}</span>
+                        <span className={`font-mono ${orderDescription.trim().length > 10 ? "text-green-600" : "text-slate-300"}`}>
+                          {orderDescription.trim().length}/10 min
+                        </span>
+                      </label>
+                      <textarea
+                        aria-label="Describe your custom order"
+                        placeholder={hasPersonalTier
+                          ? "REQUIRED: Describe your word-art style, colors, special requests..."
+                          : "Describe your custom word-art style..."
+                        }
+                        value={orderDescription}
+                        onChange={(e) => {
+                          setOrderDescription(e.target.value);
+                          if (e.target.value.trim().length > 10) setDescriptionError(false);
+                        }}
+                        rows={3}
+                        className={`w-full px-4 py-3 bg-stone-50 border rounded-xl text-sm focus:outline-none transition-colors resize-none ${
+                          descriptionError
+                            ? "border-red-500 bg-red-50/50 focus:border-red-500"
+                            : "border-stone-200 focus:border-purple-500"
+                        }`}
+                      />
+                      <AnimatePresence>
+                        {descriptionError && (
+                          <motion.p
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -4 }}
+                            className="text-[10px] font-bold text-red-500"
+                          >
+                            Please describe your order (minimum 10 characters).
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
                     <button
                       type="submit"
-                      disabled={isSubmitting || !checkoutUrl}
+                      disabled={isSubmitDisabled}
                       className={`block w-full text-white text-center py-4 rounded-xl font-black text-[10px] tracking-[0.3em] uppercase transition-all shadow-xl active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${isVerified
                         ? "bg-green-600 hover:bg-green-700"
                         : "bg-slate-900 hover:bg-purple-700"

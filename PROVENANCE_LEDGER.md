@@ -63,6 +63,7 @@
 | 058 | **Earring UI: Visual Refine** | Antigravity | ✅ ACTUATED | Increased earring height to h-48 for better dangling effect, enforced `originY: 0`, and added safeguard to hide letters for earrings in KeychainBuilder. |
 | 059 | **Earring UI: Letter Purge** | Antigravity | ✅ ACTUATED | Expanded earring detection logic to include "dangle" products; enforced letter removal across all customizers and cleared default "NAME" (4-letter) state. |
 | 060 | **MIGRATION: Icons to Curated Text-Charms** | Sir Boris | ✅ ACTUATED | Replaced all legacy emoji icon charms with curated text-based word-art selections (Sports/Nature/Skulls). Registry, KeychainCustomizer, KeychainBuilder, and EarringCustomizer updated. tsc --noEmit clean. |
+| 061 | **ENFORCED: Cart Ambiguity Law - Description Gate** | Sir Boris + Sir Octavian | ✅ ACTUATED | Mandatory order description (>10 chars) enforced in CartDrawer checkout. Personal Tier hard-block with red error state. Description passed to Shopify via checkout note. |
 
  ---
 
