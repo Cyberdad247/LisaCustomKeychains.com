@@ -8,6 +8,7 @@ import { type ShopifyProduct } from "../lib/shopify/types";
 import { ShoppingBag, Sparkles } from "lucide-react";
 import KeychainCustomizer from "./customize/KeychainCustomizer";
 import EarringCustomizer from "./customize/EarringCustomizer";
+import SetCustomizer from "./customize/SetCustomizer";
 
 interface ProductCardProps {
   product: ShopifyProduct;
@@ -112,8 +113,14 @@ export default function ProductCard({
 
       {isCustomizing && (
         <>
-          {/* Detect if this is an earring product */}
-          {(product.productType?.toLowerCase().includes("earring") ||
+          {/* 🏹 Swarm Bio-Kinetic Routing */}
+          {product.title?.toLowerCase().includes("set") || product.productType?.toLowerCase().includes("set") ? (
+            <SetCustomizer
+              product={product}
+              isOpen={isCustomizing}
+              onClose={() => setIsCustomizing(false)}
+            />
+          ) : (product.productType?.toLowerCase().includes("earring") ||
             product.title?.toLowerCase().includes("earring") ||
             product.title?.toLowerCase().includes("dangle")) ? (
             <EarringCustomizer

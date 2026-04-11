@@ -74,11 +74,33 @@ export default async function Home() {
           <ProductGallery products={products} />
         </div>
 
-        {/* 🌟 New Kinetic Sections */}
+        {/* 💎 Signature Sets Section - NEW */}
+        <div id="sets" className="py-24 bg-stone-50">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="text-center mb-16">
+              <h2 className="text-sm uppercase tracking-widest text-purple-600 font-bold mb-3">
+                Synchronized Elegance
+              </h2>
+              <p className="text-5xl font-serif text-slate-900 mb-4">Signature Sets</p>
+              <p className="text-slate-500 max-w-lg mx-auto">
+                Perfectly matched keychain and earring pairs. One configuration, double the impact.
+              </p>
+            </div>
+            <ProductGallery 
+              products={products.filter(({ node }) => 
+                node.title.toLowerCase().includes("set") || 
+                node.productType?.toLowerCase().includes("set")
+              )} 
+            />
+          </div>
+        </div>
+
+        {/* 🌟 New Kinetic Sections - Hidden for Initial Launch
         <TestimonySection />
         <EventsSection />
         <BlogSection />
         <SocialFeedSection />
+        */}
 
         {/* About Us - Fourth/Last */}
         <div className="max-w-7xl mx-auto px-6">
