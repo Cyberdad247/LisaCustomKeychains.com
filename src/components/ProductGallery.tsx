@@ -22,14 +22,20 @@ export default function ProductGallery({
   allowedColors
 }: ProductGalleryProps) {
   const [activeCategory, setActiveCategory] = useState('All');
-  // Dynamic filter extraction
-  const categories = ['All', ...Array.from(new Set(products.map(({ node }) => node.productType).filter(Boolean)))];
+  // Dynamic filter extraction + Explicit Sports Category
+  const baseCategories = Array.from(new Set(products.map(({ node }) => node.productType).filter(Boolean)));
+  const categories = ['All', 'Sports', ...baseCategories.filter(c => c !== 'Sports')];
 
   const filteredProducts = products.filter(({ node }) => {
     if (activeCategory === 'All') return true;
     const type = (node.productType || "").toLowerCase();
     const title = (node.title || "").toLowerCase();
     const active = activeCategory.toLowerCase();
+
+    // Special logic for Sports category
+    if (active === 'sports') {
+      return type.includes('sports') || title.includes('sports') || title.includes('basketball') || title.includes('soccer') || title.includes('football');
+    }
 
     // Exact type match OR partial type match OR title contains category name
     return type === active || type.includes(active) || title.includes(active);
@@ -75,6 +81,8 @@ export default function ProductGallery({
                 const rotations = [-1, 2, -2, 1, -1.5, 1.5];
                 const rotation = rotations[index % rotations.length];
 
+                const isSportsActive = activeCategory.toLowerCase() === 'sports';
+
                 return (
                   <motion.div
                     key={node.id}
@@ -88,9 +96,9 @@ export default function ProductGallery({
                       product={node}
                       rotation={rotation}
                       priority={index < 3}
-                      lockLetters={lockLetters}
-                      charmCategory={charmCategory}
-                      allowedColors={allowedColors}
+                      lockLetters={isSportsActive ? true : lockLetters}
+                      charmCategory={isSportsActive ? "sports" : charmCategory}
+                      allowedColors={isSportsActive ? ["red", "blue", "black", "white"] : allowedColors}
                     />
                   </motion.div>
                 );
