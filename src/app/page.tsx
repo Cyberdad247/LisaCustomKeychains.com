@@ -7,6 +7,10 @@ import AboutSection from "../components/AboutSection";
 import HeritageSection from "../components/HeritageSection";
 import DedicationSection from "../components/DedicationSection";
 import ProductJSONLD from "../components/ProductJSONLD";
+import TestimonySection from "../components/TestimonySection";
+import EventsSection from "../components/EventsSection";
+import BlogSection from "../components/BlogSection";
+import SocialFeedSection from "../components/SocialFeedSection";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -30,23 +34,35 @@ export default async function Home() {
     console.error("Shopify Fetch Error:", e);
   }
 
-  const featuredProduct = products.length > 0 ? products[0].node : undefined;
+  // 🔄 Bio-Kinetic Rotation: Featured Product of the Week
+  // Stable rotation based on week of year
+  const getWeekNumber = (d: Date) => {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  };
+  
+  const weekIndex = products.length > 0 ? getWeekNumber(new Date()) % products.length : 0;
+  const featuredProduct = products.length > 0 ? products[weekIndex].node : undefined;
 
   return (
-    <div className="min-h-screen text-slate-800">
+    <div className="min-h-screen text-slate-800 bg-white">
       <ProductJSONLD products={products.map((p: ShopifyProductEdge) => p.node)} />
       <Navbar />
 
       <div className="h-32"></div>
 
-      <main className="max-w-7xl mx-auto px-6 pb-24 relative z-10">
-        <HeroSection featuredProduct={featuredProduct} />
+      <main className="relative z-10">
+        <div className="max-w-7xl mx-auto px-6">
+          <HeroSection featuredProduct={featuredProduct} />
+        </div>
 
         {/* Heritage Section - Second */}
         <HeritageSection />
 
         {/* Product Gallery - Third */}
-        <div id="products" className="py-24">
+        <div id="products" className="py-24 max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-sm uppercase tracking-widest text-purple-600 font-bold mb-3">
               Inspiration Gallery
@@ -58,11 +74,21 @@ export default async function Home() {
           <ProductGallery products={products} />
         </div>
 
+        {/* 🌟 New Kinetic Sections */}
+        <TestimonySection />
+        <EventsSection />
+        <BlogSection />
+        <SocialFeedSection />
+
         {/* About Us - Fourth/Last */}
-        <AboutSection />
+        <div className="max-w-7xl mx-auto px-6">
+          <AboutSection />
+        </div>
 
         {/* Dedication - Footer Lead-in */}
-        <DedicationSection />
+        <div className="max-w-7xl mx-auto px-6">
+          <DedicationSection />
+        </div>
       </main>
 
       <div className="h-20"></div>

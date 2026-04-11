@@ -47,6 +47,7 @@ export default function Navbar() {
               className={`hidden md:flex flex-1 justify-start space-x-8 text-[10px] font-black tracking-[0.3em] text-slate-500 transition-opacity duration-500 pointer-events-auto`}
             >
               <a href="/" className="hover:text-purple-700 transition-colors" aria-label="Shop All Products">SHOP</a>
+              <a href="/sports" className="hover:text-purple-700 transition-colors" aria-label="Sports Keychains Collection">SPORTS</a>
               <a href="/customize" className="hover:text-purple-700 transition-colors" aria-label="Build Your Own Keychain">CUSTOMIZE</a>
             </motion.div>
 

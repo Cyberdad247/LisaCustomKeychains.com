@@ -16,13 +16,21 @@ import { type ColorOption, type CharmOption } from "../../lib/camelot/schemas";
 
 interface KeychainBuilderProps {
     product: ShopifyProduct;
+    lockLetters?: boolean;
+    charmCategory?: string;
+    allowedColors?: string[]; // IDs of allowed colors
 }
 
 // Local interfaces removed in favor of schemas.ts exports
 
 // Using central registry for thread colors
 
-export default function KeychainBuilder({ product }: KeychainBuilderProps) {
+export default function KeychainBuilder({ 
+    product,
+    lockLetters = false,
+    charmCategory = "all",
+    allowedColors
+}: KeychainBuilderProps) {
     const shouldReduceMotion = useReducedMotion();
     const isEarring = product.productType?.toLowerCase().includes("earring") || product.title?.toLowerCase().includes("earring") || product.title?.toLowerCase().includes("dangle");
     const productPrice =
@@ -31,18 +39,29 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
         "9.95";
     const priceNum = parseFloat(productPrice);
     const tier = getTierByPrice(priceNum);
-    const isTier1 = tier === 1;
-    const isTier3 = tier === 3;
+    const isTier1 = (tier === 1) || lockLetters;
+    const isTier3 = tier === 3 && !lockLetters;
 
-    const [text, setText] = useState(isEarring ? "" : "NAME");
-    const [selectedColor, setSelectedColor] = useState<ColorOption>(THREAD_COLORS[0]);
-    const [selectedCharms, setSelectedCharms] = useState<CharmOption[]>([
-        CHARM_OPTIONS[0],
-        CHARM_OPTIONS[1],
-    ]);
+    const filteredColors = allowedColors 
+        ? THREAD_COLORS.filter(c => allowedColors.includes(c.id))
+        : THREAD_COLORS;
+
+    const [text, setText] = useState(isEarring || lockLetters ? "" : "NAME");
+    const [selectedColor, setSelectedColor] = useState<ColorOption>(filteredColors[0] || THREAD_COLORS[0]);
+    
+    const initialCharms = charmCategory === "sports"
+        ? [CHARM_OPTIONS.find(c => c.id === "football") || CHARM_OPTIONS[0], CHARM_OPTIONS.find(c => c.id === "basketball") || CHARM_OPTIONS[1]]
+        : [CHARM_OPTIONS[0], CHARM_OPTIONS[1]];
+
+    const [selectedCharms, setSelectedCharms] = useState<CharmOption[]>(initialCharms);
     const [activeCharmIndex, setActiveCharmIndex] = useState(0);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [suggestedIcons, setSuggestedIcons] = useState<CharmOption[]>(CHARM_OPTIONS);
+    
+    const charms = charmCategory === "sports"
+        ? CHARM_OPTIONS.filter(c => ["football", "basketball", "soccer", "softball", "volleyball", "tennis-balls", "bowling-pins"].includes(c.id))
+        : CHARM_OPTIONS;
+
+    const [suggestedIcons, setSuggestedIcons] = useState<CharmOption[]>(charms);
     const [isPending, startTransition] = useTransition();
     const [optimisticText, setOptimisticText] = useOptimistic(
         text,
@@ -241,7 +260,7 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
                                 <span className="text-[10px] font-black text-purple-600 uppercase tracking-widest">{selectedColor.name}</span>
                             </div>
                             <div className="grid grid-cols-6 sm:grid-cols-8 gap-3">
-                                {THREAD_COLORS.map(color => (
+                                {filteredColors.map(color => (
                                     <button
                                         key={color.id}
                                         type="button"
@@ -258,8 +277,8 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
                             </div>
                         </section>
 
-                        {/* 2. Custom Text - Safely omitted for Earrings */}
-                        {!isEarring && (
+                        {/* 2. Custom Text - Safely omitted for Earrings or Locked sections */}
+                        {!isEarring && !lockLetters && (
                             <section className="space-y-4">
                                 <div className="flex justify-between items-center">
                                     <h3 className="text-[10px] font-black tracking-[.25em] uppercase text-slate-400">02. Sequence Your Text</h3>
@@ -280,6 +299,13 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
                                     className="w-full text-5xl font-serif bg-transparent border-b-2 border-stone-200 py-4 focus:outline-none focus:border-purple-600 text-slate-900 placeholder:text-stone-200 tracking-tighter transition-all"
                                     placeholder="YOUR TEXT"
                                 />
+                            </section>
+                        )}
+
+                        {lockLetters && (
+                            <section className="p-6 bg-purple-50 rounded-2xl border border-purple-100">
+                                <p className="text-xs font-bold text-purple-900 uppercase tracking-widest mb-2">Sports Edition Locked</p>
+                                <p className="text-xs text-purple-700/70 leading-relaxed">This exclusive sports collection focuses on team spirit through color and charms. Text customization is disabled for this section.</p>
                             </section>
                         )}
 
@@ -304,20 +330,22 @@ export default function KeychainBuilder({ product }: KeychainBuilderProps) {
                                     </button>
                                 </div>
                             </div>
-                            <VibeInput
-                                onVibeChange={(data) => {
-                                    if (data.icon) {
-                                        const newCharm = { id: `v-${data.label.toLowerCase()}`, name: data.label, icon: data.icon };
-                                        const newCharms = [...selectedCharms];
-                                        newCharms[activeCharmIndex] = newCharm;
-                                        setSelectedCharms(newCharms);
-                                        setSuggestedIcons(prev => {
-                                            if (prev.find(p => p.icon === data.icon)) return prev;
-                                            return [newCharm, ...prev.slice(0, 11)];
-                                        });
-                                    }
-                                }}
-                            />
+                            {!lockLetters && (
+                                <VibeInput
+                                    onVibeChange={(data) => {
+                                        if (data.icon) {
+                                            const newCharm = { id: `v-${data.label.toLowerCase()}`, name: data.label, icon: data.icon };
+                                            const newCharms = [...selectedCharms];
+                                            newCharms[activeCharmIndex] = newCharm;
+                                            setSelectedCharms(newCharms);
+                                            setSuggestedIcons(prev => {
+                                                if (prev.find(p => p.icon === data.icon)) return prev;
+                                                return [newCharm, ...prev.slice(0, 11)];
+                                            });
+                                        }
+                                    }}
+                                />
+                            )}
                             <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                                 {suggestedIcons.map((charm, idx) => (
                                     <motion.button

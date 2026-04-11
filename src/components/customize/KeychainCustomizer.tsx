@@ -22,6 +22,9 @@ interface KeychainCustomizerProps {
   product: ShopifyProduct;
   isOpen: boolean;
   onClose: () => void;
+  lockLetters?: boolean;
+  charmCategory?: string;
+  allowedColors?: string[];
 }
 
 interface ThreadColor {
@@ -69,6 +72,9 @@ export default function KeychainCustomizer({
   product,
   isOpen,
   onClose,
+  lockLetters = false,
+  charmCategory = "all",
+  allowedColors,
 }: KeychainCustomizerProps) {
   const productPrice =
     product.priceRange?.minVariantPrice?.amount ||
@@ -78,14 +84,22 @@ export default function KeychainCustomizer({
   const priceNum = parseFloat(productPrice);
 
   const tier = getTierByPrice(priceNum);
-  const isTier1 = tier === 1;
-  const isTier2 = tier === 2;
-  const isTier3 = tier === 3;
+  const isTier1 = (tier === 1) || lockLetters;
+  const isTier2 = tier === 2 && !lockLetters;
+  const isTier3 = tier === 3 && !lockLetters;
+
+  const filteredColors = allowedColors 
+    ? THREAD_COLORS.filter(c => allowedColors.includes(c.id))
+    : THREAD_COLORS;
 
   const getCharmFromTitle = (title: string): Charm => {
     const t = title.toLowerCase();
-    const match = CHARM_OPTIONS.find((c) => t.includes(c.id.replace("-", " ")) || t.includes(c.name.toLowerCase()));
-    return match || CHARM_OPTIONS[0];
+    const availableCharms = charmCategory === "sports" 
+      ? CHARM_OPTIONS.filter(c => ["football", "basketball", "soccer", "softball", "volleyball", "tennis-balls", "bowling-pins"].includes(c.id))
+      : CHARM_OPTIONS;
+    
+    const match = availableCharms.find((c) => t.includes(c.id.replace("-", " ")) || t.includes(c.name.toLowerCase()));
+    return match || availableCharms[0];
   };
 
   const initialCharm = getCharmFromTitle(product.title || "");
@@ -93,7 +107,7 @@ export default function KeychainCustomizer({
   const [text, setText] = useState(
     isTier1 || isEarring ? "" : product.title?.split(" ")[0]?.toUpperCase() || "NAME"
   );
-  const [selectedColor, setSelectedColor] = useState(THREAD_COLORS[0]);
+  const [selectedColor, setSelectedColor] = useState(filteredColors[0] || THREAD_COLORS[0]);
   const [selectedCharms, setSelectedCharms] = useState<Charm[]>([initialCharm]);
   const [activeCharmIndex, setActiveCharmIndex] = useState(0);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -119,7 +133,11 @@ export default function KeychainCustomizer({
       );
 
       // ✨ Populate starter charms from curated text registry
-      setSuggestedIcons(CHARM_OPTIONS);
+      const charms = charmCategory === "sports"
+        ? CHARM_OPTIONS.filter(c => ["football", "basketball", "soccer", "softball", "volleyball", "tennis-balls", "bowling-pins"].includes(c.id))
+        : CHARM_OPTIONS;
+      
+      setSuggestedIcons(charms);
     } else {
       // Clean up URL if closed naturally
       if (window.location.search.includes("customize=true")) {
@@ -473,36 +491,38 @@ export default function KeychainCustomizer({
                   </div>
 
                   {/* Interactive Input Section */}
-                  {!isTier1 && !isEarring && (
+                  {!isEarring && (
                     <div className="space-y-6 pt-4 border-t border-stone-100">
                       {/* AI Vibe Assistant */}
-                      <VibeInput
-                        onVibeChange={(data) => {
-                          if (data.icon) {
-                            const newCharm = {
-                              id: data.label.toLowerCase(),
-                              name: data.label,
-                              icon: data.icon,
-                              color: selectedColor,
-                            };
+                      {!lockLetters && (
+                        <VibeInput
+                          onVibeChange={(data) => {
+                            if (data.icon) {
+                              const newCharm = {
+                                id: data.label.toLowerCase(),
+                                name: data.label,
+                                icon: data.icon,
+                                color: selectedColor,
+                              };
 
-                            setSelectedCharms(prev => {
-                              const next = [...prev];
-                              next[activeCharmIndex] = newCharm;
-                              return next;
-                            });
+                              setSelectedCharms(prev => {
+                                const next = [...prev];
+                                next[activeCharmIndex] = newCharm;
+                                return next;
+                              });
 
-                            // Add to suggestions if not already there
-                            setSuggestedIcons((prev) => {
-                              const exists = prev.find(
-                                (p) => p.icon === data.icon
-                              );
-                              if (exists) return prev;
-                              return [newCharm, ...prev.slice(0, 5)];
-                            });
-                          }
-                        }}
-                      />
+                              // Add to suggestions if not already there
+                              setSuggestedIcons((prev) => {
+                                const exists = prev.find(
+                                  (p) => p.icon === data.icon
+                                );
+                                if (exists) return prev;
+                                return [newCharm, ...prev.slice(0, 5)];
+                              });
+                            }
+                          }}
+                        />
+                      )}
 
                       {/* Multi-Charm Selector Tabs Removed (Keychain is Single Active Strand for now) */}
 
@@ -540,48 +560,56 @@ export default function KeychainCustomizer({
                       </AnimatePresence>
 
                       {/* Manual Text Input */}
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-end">
-                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase">
-                            {isTier3
-                              ? "Dual Circuit (Max 16)"
-                              : "Identifier (Max 8)"}
-                          </label>
-                          <span
-                            className={`text-[10px] font-bold font-mono ${text.length > getCharLimit(tier)
-                              ? "text-red-500"
-                              : "text-slate-300"
-                              }`}
-                          >
-                            {text.length}/{getCharLimit(tier)}
-                          </span>
+                      {!lockLetters && !isTier1 && (
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-end">
+                            <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase">
+                              {isTier3
+                                ? "Dual Circuit (Max 16)"
+                                : "Identifier (Max 8)"}
+                            </label>
+                            <span
+                              className={`text-[10px] font-bold font-mono ${text.length > getCharLimit(tier)
+                                ? "text-red-500"
+                                : "text-slate-300"
+                                }`}
+                            >
+                              {text.length}/{getCharLimit(tier)}
+                            </span>
+                          </div>
+                          <input
+                            name="text"
+                            type="text"
+                            value={text}
+                            onChange={(e) => {
+                              const limit = getCharLimit(tier);
+                              const val = e.target.value
+                                .toUpperCase()
+                                .slice(0, limit);
+                              setText(val);
+                              startTransition(() => {
+                                setOptimisticText(val);
+                              });
+                            }}
+                            className="w-full text-4xl font-serif border-b-2 border-stone-100 py-2 focus:outline-none focus:border-purple-600 bg-transparent text-slate-900 placeholder:text-stone-200 uppercase tracking-widest focus:placeholder:text-stone-100 transition-colors"
+                            placeholder="YOURTEXT"
+                          />
                         </div>
-                        <input
-                          name="text"
-                          type="text"
-                          value={text}
-                          onChange={(e) => {
-                            const limit = getCharLimit(tier);
-                            const val = e.target.value
-                              .toUpperCase()
-                              .slice(0, limit);
-                            setText(val);
-                            startTransition(() => {
-                              setOptimisticText(val);
-                            });
-                          }}
-                          className="w-full text-4xl font-serif border-b-2 border-stone-100 py-2 focus:outline-none focus:border-purple-600 bg-transparent text-slate-900 placeholder:text-stone-200 uppercase tracking-widest focus:placeholder:text-stone-100 transition-colors"
-                          placeholder="YOURTEXT"
-                        />
-                      </div>
+                      )}
                     </div>
                   )}
 
-                  {isTier1 && (
+                  {isTier1 && !lockLetters && (
                     <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100 text-blue-900/60 text-xs leading-relaxed">
                       ℹ️ Note: This basic tier allows for color selection only.
                       Upgrade to our Premium tiers to enable custom text
                       serialization.
+                    </div>
+                  )}
+
+                  {lockLetters && (
+                    <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100 text-purple-900/60 text-xs leading-relaxed">
+                      🏆 Sports Edition: This customizer is locked to Sports Charms only. Choose your team colors and favorite sport!
                     </div>
                   )}
 

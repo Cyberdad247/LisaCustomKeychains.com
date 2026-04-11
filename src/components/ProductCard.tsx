@@ -13,12 +13,18 @@ interface ProductCardProps {
   product: ShopifyProduct;
   rotation: number;
   priority?: boolean;
+  lockLetters?: boolean;
+  charmCategory?: string;
+  allowedColors?: string[];
 }
 
 export default function ProductCard({
   product,
   rotation,
   priority = false,
+  lockLetters = false,
+  charmCategory = "all",
+  allowedColors,
 }: ProductCardProps) {
   const [isCustomizing, setIsCustomizing] = useState(false);
   const { title } = product;
@@ -120,6 +126,9 @@ export default function ProductCard({
               product={product}
               isOpen={isCustomizing}
               onClose={() => setIsCustomizing(false)}
+              lockLetters={lockLetters}
+              charmCategory={charmCategory}
+              allowedColors={allowedColors}
             />
           )}
         </>
