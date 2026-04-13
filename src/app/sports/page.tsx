@@ -3,6 +3,7 @@ import ProductGallery from "@/components/ProductGallery";
 import { getAllProducts } from "@/lib/shopify";
 import { type ShopifyProductEdge } from "@/lib/shopify/types";
 import { Metadata } from "next";
+import Image from "next/image";
 import { Trophy, Medal, Star } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -87,9 +88,23 @@ export default async function SportsPage() {
             "Each sport bead is hand-selected to ensure the highest quality for your custom keyring. From the court to the field, take your game everywhere."
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {['Basketball', 'Soccer', 'Football', 'Volleyball'].map((sport) => (
-              <div key={sport} className="aspect-square bg-stone-50 rounded-2xl flex flex-col items-center justify-center border border-stone-100 group hover:border-purple-200 transition-colors">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-purple-600 transition-colors">{sport}</span>
+            {[
+              { slug: 'basketball', label: 'Basketball' },
+              { slug: 'football', label: 'Football' },
+              { slug: 'soccer', label: 'Soccer' },
+              { slug: 'softball', label: 'Softball' },
+            ].map((sport) => (
+              <div key={sport.slug} className="relative aspect-square bg-stone-50 rounded-2xl overflow-hidden border border-stone-100 group hover:border-purple-200 transition-colors">
+                <Image
+                  src={`/images/sports/${sport.slug}_mockup.jpg`}
+                  alt={`${sport.label} keychain mockup`}
+                  fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">{sport.label}</span>
+                </div>
               </div>
             ))}
           </div>
