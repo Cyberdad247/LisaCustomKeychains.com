@@ -34,7 +34,8 @@ export default function ProductGallery({
 
     // Special logic for Sports category
     if (active === 'sports') {
-      return type.includes('sports') || title.includes('sports') || title.includes('basketball') || title.includes('soccer') || title.includes('football');
+      const sportsKeywords = ['sport', 'football', 'basketball', 'soccer', 'softball', 'volleyball', 'tennis', 'bowling', 'baseball', 'hockey'];
+      return sportsKeywords.some((kw) => type.includes(kw) || title.includes(kw));
     }
 
     // Exact type match OR partial type match OR title contains category name

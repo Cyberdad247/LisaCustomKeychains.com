@@ -452,7 +452,7 @@ export default function KeychainCustomizer({
                       </span>
                     </label>
                     <div className="flex flex-wrap gap-2.5">
-                      {THREAD_COLORS.map((color) => (
+                      {filteredColors.map((color) => (
                         <button
                           key={color.id}
                           type="button"

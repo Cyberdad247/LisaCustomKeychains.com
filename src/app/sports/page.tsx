@@ -13,12 +13,19 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function SportsPage() {
+  const SPORTS_KEYWORDS = [
+    "sport", "football", "basketball", "soccer", "softball",
+    "volleyball", "tennis", "bowling", "baseball", "hockey",
+  ];
+
   let products: ShopifyProductEdge[] = [];
   try {
     const allProducts = await getAllProducts();
-    // Filter for products that might be sports related or just use the whole collection but with locked customizer
-    // For now, we show all products but apply the Sports lock
-    products = allProducts;
+    products = allProducts.filter(({ node }) => {
+      const type = (node.productType || "").toLowerCase();
+      const title = (node.title || "").toLowerCase();
+      return SPORTS_KEYWORDS.some((kw) => type.includes(kw) || title.includes(kw));
+    });
   } catch (e) {
     console.error("Shopify Fetch Error:", e);
   }
