@@ -4,6 +4,19 @@ import Image from 'next/image';
 import { motion } from "framer-motion";
 
 export default function HeritageSection() {
+    const legacyPhotos = [
+        {
+            src: "https://i.postimg.cc/cvyv100W/Untitled_design_(2).png",
+            alt: "Lisa's Custom Keychains legacy table with finished bracelet keychains and bead sets",
+            label: "Finished keychain stories",
+        },
+        {
+            src: "/images/assorted_charms_heritage.jpg",
+            alt: "Assorted sports, heart, flower, star, and butterfly charms for custom keychain designs",
+            label: "Charm choices that started it",
+        },
+    ];
+
     return (
         <section className="py-24 bg-white/40 backdrop-blur-sm rounded-[3rem] mt-24 border border-stone-100 overflow-hidden">
             <div className="max-w-7xl mx-auto px-6">
@@ -29,6 +42,28 @@ export default function HeritageSection() {
                                 <p className="text-[10px] uppercase tracking-[0.3em] font-black opacity-80 mb-2">Heritage Discovery</p>
                                 <h3 className="text-2xl font-serif italic">"Where the legacy began."</h3>
                             </div>
+                        </div>
+
+                        <div className="mt-6 grid grid-cols-2 gap-4">
+                            {legacyPhotos.map((photo) => (
+                                <div
+                                    key={photo.src}
+                                    className="group overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm"
+                                >
+                                    <div className="relative aspect-[4/3]">
+                                        <Image
+                                            src={photo.src}
+                                            alt={photo.alt}
+                                            fill
+                                            sizes="(max-width: 1024px) 50vw, 25vw"
+                                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                        />
+                                    </div>
+                                    <p className="px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                                        {photo.label}
+                                    </p>
+                                </div>
+                            ))}
                         </div>
 
                         {/* Decorative Element */}

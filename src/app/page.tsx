@@ -12,18 +12,23 @@ import EventsSection from "../components/EventsSection";
 import BlogSection from "../components/BlogSection";
 import SocialFeedSection from "../components/SocialFeedSection";
 import { Metadata } from "next";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Shop All Custom Keychains | Lisa's Custom Keychains",
   description: "Explore our collection of hand-woven custom keychains. Personalize your threads and charms to forge your own legacy.",
+  alternates: {
+    canonical: SITE_URL,
+  },
   openGraph: {
     title: "Lisa's Custom Keychains | Handcrafted Legacy",
     description: "Every knot tells a story. Shop our hand-woven collection.",
-    images: [{ url: 'https://i.postimg.cc/cvyv100W/Untitled_design_(2).png ' }],
+    url: SITE_URL,
+    images: [{ url: "https://i.postimg.cc/cvyv100W/Untitled_design_(2).png" }],
   },
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function Home() {
   let products: ShopifyProductEdge[] = [];
