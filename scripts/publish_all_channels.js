@@ -38,7 +38,7 @@ const products = [
 function request(queryStr) {
     const options = {
         hostname: domain,
-        path: '/admin/api/2023-10/graphql.json',
+        path: '/admin/api/2026-04/graphql.json',
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

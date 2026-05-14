@@ -9,7 +9,7 @@ if (!domain || !accessToken) {
     process.exit(1);
 }
 
-const API_VERSION = '2024-01';
+const API_VERSION = '2026-04';
 
 function testAuth(name, headers, auth) {
     return new Promise((resolve) => {

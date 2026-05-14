@@ -32,7 +32,7 @@ if (!domain || !accessToken) {
     process.exit(1);
 }
 
-const API_VERSION = '2024-01';
+const API_VERSION = env.SHOPIFY_API_VERSION || process.env.SHOPIFY_API_VERSION || '2026-04';
 const BASE_URL = `https://${domain}/admin/api/${API_VERSION}`;
 
 const earrings = [
@@ -187,7 +187,7 @@ function makeRequest(endpoint, method, data) {
                 // Continue to next strategy
             }
         }
-        throw new Error('All authentication strategies failed. Please check .env.local for SHOPIFY_ADMIN_API_ACCESS_TOKEN (shpat_) or SHOPIFY_API_KEY/SECRET.');
+        throw new Error('All authentication strategies failed. Please check .env.local for SHOPIFY_ADMIN_API_ACCESS_TOKEN or SHOPIFY_API_KEY/SECRET.');
     }
 
     const strategies = [];

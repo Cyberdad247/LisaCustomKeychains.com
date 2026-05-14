@@ -35,7 +35,7 @@ if (!domain) {
     process.exit(1);
 }
 
-const url = `https://${domain}/admin/api/2024-01/shop.json`;
+const url = `https://${domain}/admin/api/2026-04/shop.json`;
 
 function testAuth(name, headers) {
     return new Promise((resolve) => {

@@ -22,7 +22,7 @@ if (!token) {
 
 const options = {
     hostname: domain,
-    path: `/admin/api/2023-10/products/${productId}.json`,
+    path: `/admin/api/2026-04/products/${productId}.json`,
     method: 'GET',
     headers: {
         'Content-Type': 'application/json',

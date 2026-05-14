@@ -27,7 +27,7 @@ if (!domain || !accessToken) {
     process.exit(1);
 }
 
-const API_VERSION = '2024-01';
+const API_VERSION = '2026-04';
 const BASE_URL = `https://${domain}/admin/api/${API_VERSION}`;
 const HEADERS = {
     'Content-Type': 'application/json',

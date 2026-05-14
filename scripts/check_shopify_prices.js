@@ -1,7 +1,10 @@
 const https = require('https');
+const { domain, storefrontAccessToken, SHOPIFY_API_VERSION } = require('./camelot_utils');
 
-const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || 'lisascustomkeychains.myshopify.com';
-const token = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN || '4e309ac1ccdf8bf063d75bc15940a4cc';
+if (!storefrontAccessToken) {
+    console.error('Missing NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN.');
+    process.exit(1);
+}
 
 console.log(`🔎 Check Prices on: ${domain}`);
 
@@ -37,11 +40,11 @@ const query = JSON.stringify({
 
 const options = {
     hostname: domain,
-    path: '/api/2023-10/graphql.json',
+    path: `/api/${SHOPIFY_API_VERSION}/graphql.json`,
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',
-        'X-Shopify-Storefront-Access-Token': token,
+        'X-Shopify-Storefront-Access-Token': storefrontAccessToken,
     }
 };
 

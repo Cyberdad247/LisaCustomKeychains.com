@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "camelot": "node scripts/camelot.js",
+    "shopify:cli:auth": "shopify store auth --store jgvme0-av.myshopify.com --scopes read_products,write_products,read_product_listings,write_product_listings",
+    "shopify:cli:probe": "shopify store execute --store jgvme0-av.myshopify.com --query \"query { shop { name myshopifyDomain primaryDomain { url } } }\" --json",
     "shopify:sync": "node scripts/camelot.js sync all",
     "test": "vitest run"
   },

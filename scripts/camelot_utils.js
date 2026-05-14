@@ -22,7 +22,25 @@ if (fs.existsSync(envPath)) {
     });
 }
 
-const domain = env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || 'lisascustomkeychains.myshopify.com';
+function normalizeShopifyDomain(value) {
+    return value
+        ? value
+            .trim()
+            .replace(/^['"]|['"]$/g, '')
+            .replace(/\\r|\\n|\r|\n/g, '')
+            .replace(/^https?:\/\//, '')
+            .replace(/\/$/, '')
+        : null;
+}
+
+const SHOPIFY_API_VERSION = env.SHOPIFY_API_VERSION || process.env.SHOPIFY_API_VERSION || '2026-04';
+const domain = normalizeShopifyDomain(
+    env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN ||
+    env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN ||
+    process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN ||
+    process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN ||
+    'lisascustomkeychains.myshopify.com'
+);
 const storefrontAccessToken = env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN || process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN;
 const adminAccessToken = env.SHOPIFY_ADMIN_API_ACCESS_TOKEN || process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN;
 
@@ -40,7 +58,7 @@ function shopifyFetch({ query, variables, isAdmin = false, customPath = null }) 
     return new Promise((resolve, reject) => {
         const token = isAdmin ? adminAccessToken : storefrontAccessToken;
         const headerName = isAdmin ? 'X-Shopify-Access-Token' : 'X-Shopify-Storefront-Access-Token';
-        const defaultPath = isAdmin ? '/admin/api/2023-10/graphql.json' : '/api/2023-10/graphql.json';
+        const defaultPath = isAdmin ? `/admin/api/${SHOPIFY_API_VERSION}/graphql.json` : `/api/${SHOPIFY_API_VERSION}/graphql.json`;
 
         if (!token) {
             reject(new Error(`${isAdmin ? 'Admin' : 'Storefront'} access token is missing.`));
@@ -82,6 +100,7 @@ function shopifyFetch({ query, variables, isAdmin = false, customPath = null }) 
 module.exports = {
     env,
     domain,
+    SHOPIFY_API_VERSION,
     storefrontAccessToken,
     adminAccessToken,
     logRune,

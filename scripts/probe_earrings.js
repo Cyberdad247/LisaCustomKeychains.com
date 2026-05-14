@@ -61,7 +61,7 @@ const requestOptions = {
     body: JSON.stringify({ query }),
 };
 
-const req = https.request(`https://${shopifyStoreDomain}/api/2023-10/graphql.json`, requestOptions, (res) => {
+const req = https.request(`https://${shopifyStoreDomain}/api/2026-04/graphql.json`, requestOptions, (res) => {
     let data = '';
     res.on('data', chunk => data += chunk);
     res.on('end', () => {

@@ -2,25 +2,12 @@
 /**
  * Cart Diagnostic - Tests createCart + addToCart via Storefront API
  */
-const fs = require('fs');
-const path = require('path');
-
-// Load .env.local
-const envPath = path.resolve(__dirname, '..', '.env.local');
-const envContent = fs.readFileSync(envPath, 'utf-8');
-const envVars = {};
-envContent.split('\n').forEach(line => {
-    const [key, ...val] = line.split('=');
-    if (key && val.length) envVars[key.trim()] = val.join('=').trim();
-});
-
-const domain = envVars.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || envVars.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN;
-const token = envVars.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN;
+const { domain, storefrontAccessToken: token, SHOPIFY_API_VERSION } = require('./camelot_utils');
 
 console.log(`🔍 Domain: ${domain}`);
 console.log(`🔑 Token: ${token ? token.substring(0, 6) + '...' : 'MISSING'}`);
 
-const endpoint = `https://${domain}/api/2023-10/graphql.json`;
+const endpoint = `https://${domain}/api/${SHOPIFY_API_VERSION}/graphql.json`;
 
 async function shopifyFetch(query, variables = {}) {
     const res = await fetch(endpoint, {
@@ -34,7 +21,16 @@ async function shopifyFetch(query, variables = {}) {
     });
 
     console.log(`   HTTP Status: ${res.status}`);
-    const json = await res.json();
+    const raw = await res.text();
+    let json;
+    try {
+        json = raw ? JSON.parse(raw) : {};
+    } catch {
+        throw new Error(`Non-JSON Shopify response (${res.status}): ${raw.slice(0, 200)}`);
+    }
+    if (!res.ok) {
+        throw new Error(`Shopify request failed (${res.status}): ${JSON.stringify(json)}`);
+    }
     if (json.errors) {
         console.error('   GraphQL Errors:', JSON.stringify(json.errors, null, 2));
     }
@@ -187,5 +183,5 @@ async function main() {
 
 main().catch(err => {
     console.error('\n❌ FATAL:', err);
-    process.exit(1);
+    process.exitCode = 1;
 });

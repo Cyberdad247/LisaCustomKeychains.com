@@ -18,7 +18,7 @@ const adminToken = env.SHOPIFY_ADMIN_API_ACCESS_TOKEN;
 
 const options = {
     hostname: domain,
-    path: '/admin/api/2023-10/shop.json',
+    path: '/admin/api/2026-04/shop.json',
     method: 'GET',
     headers: {
         'X-Shopify-Access-Token': adminToken,

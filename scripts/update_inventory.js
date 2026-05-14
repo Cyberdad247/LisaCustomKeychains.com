@@ -32,12 +32,12 @@ const products = [
 
 async function updateInventory(productId) {
     // 1. Get Product to find Inventory Item ID
-    const productRes = await request(`/admin/api/2023-10/products/${productId}.json`);
+    const productRes = await request(`/admin/api/2026-04/products/${productId}.json`);
     const variant = productRes.product.variants[0];
     const inventoryItemId = variant.inventory_item_id;
     const locationId = 320832012658; // Wait, I need a location ID.
     // Fetch locations first?
-    const locRes = await request(`/admin/api/2023-10/locations.json`);
+    const locRes = await request(`/admin/api/2026-04/locations.json`);
     const location = locRes.locations[0].id;
 
     console.log(`   📍 Location: ${location}, InventoryItem: ${inventoryItemId}`);
@@ -49,7 +49,7 @@ async function updateInventory(productId) {
         "available": 100
     };
 
-    await request(`/admin/api/2023-10/inventory_levels/set.json`, 'POST', payload);
+    await request(`/admin/api/2026-04/inventory_levels/set.json`, 'POST', payload);
     console.log(`   ✅ Inventory set to 100 for ${productId}`);
 }
 

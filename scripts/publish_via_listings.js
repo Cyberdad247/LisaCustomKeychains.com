@@ -45,7 +45,7 @@ const productIds = [14976140837234, 14976140870002, 14976140902770];
     // Step 1: Check existing product_listings
     console.log("=== Existing Product Listings ===");
     try {
-        const listings = await request('/admin/api/2023-10/product_listings.json?limit=250');
+        const listings = await request('/admin/api/2026-04/product_listings.json?limit=250');
         console.log(`Found ${listings.product_listings.length} product listings.`);
         const earringListings = listings.product_listings.filter(l => l.product_type === 'Earrings');
         console.log(`Earring listings: ${earringListings.length}`);
@@ -59,7 +59,7 @@ const productIds = [14976140837234, 14976140870002, 14976140902770];
     for (const pid of productIds) {
         try {
             console.log(`Publishing ${pid}...`);
-            const res = await request(`/admin/api/2023-10/product_listings/${pid}.json`, 'PUT', {
+            const res = await request(`/admin/api/2026-04/product_listings/${pid}.json`, 'PUT', {
                 product_listing: { product_id: pid }
             });
             console.log(`  ✅ Listed: ${res.product_listing?.title || 'OK'}`);
@@ -71,7 +71,7 @@ const productIds = [14976140837234, 14976140870002, 14976140902770];
     // Step 3: Verify
     console.log("\n=== Verification ===");
     try {
-        const listings = await request('/admin/api/2023-10/product_listings.json?limit=250');
+        const listings = await request('/admin/api/2026-04/product_listings.json?limit=250');
         const earringListings = listings.product_listings.filter(l => l.product_type === 'Earrings');
         console.log(`Total listings: ${listings.product_listings.length}`);
         console.log(`Earring listings: ${earringListings.length}`);

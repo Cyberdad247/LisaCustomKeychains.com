@@ -1,7 +1,5 @@
 const https = require('https');
-
-const domain = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN || 'jgvme0-av.myshopify.com';
-const token = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN;
+const { domain, storefrontAccessToken: token, SHOPIFY_API_VERSION } = require('./camelot_utils');
 
 console.log(`🔌 Testing connection to: ${domain}`);
 
@@ -24,7 +22,7 @@ const query = JSON.stringify({
 
 const options = {
     hostname: domain,
-    path: '/api/2023-10/graphql.json',
+    path: `/api/${SHOPIFY_API_VERSION}/graphql.json`,
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',

@@ -29,6 +29,10 @@ const shopifyStoreDomain =
   process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN;
 const shopifyAccessToken =
   process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN;
+const shopifyApiVersion =
+  process.env.NEXT_PUBLIC_SHOPIFY_API_VERSION ||
+  process.env.SHOPIFY_API_VERSION ||
+  "2026-04";
 
 if (!shopifyStoreDomain || !shopifyAccessToken) {
   logRune(KINETIC_RUNES.BYPASS, "Sovereign Mock Mode Activated (No credentials)");
@@ -51,7 +55,7 @@ async function ShopifyData<T>(
     };
   }
 
-  const endpoint = `https://${shopifyStoreDomain}/api/2023-10/graphql.json`;
+  const endpoint = `https://${shopifyStoreDomain}/api/${shopifyApiVersion}/graphql.json`;
 
   // Build fetch options — only apply server-side cache for NON-mutation queries.
   // Mutations (cart create/add/remove) run client-side and must NOT use Next.js cache.

@@ -52,7 +52,7 @@ const query = `
 async function fetchProducts() {
     console.log(`Connecting to ${domain}...`);
     try {
-        const res = await fetch(`https://${domain}/api/2023-10/graphql.json`, {
+        const res = await fetch(`https://${domain}/api/2026-04/graphql.json`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

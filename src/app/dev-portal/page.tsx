@@ -213,7 +213,7 @@ export default function DevPortal() {
                      <div className="space-y-6 relative z-10">
                         <div className="flex justify-between items-center border-b border-black/10 pb-4">
                            <span className="text-xs font-black uppercase tracking-widest">Shopify Storefront</span>
-                           <span className="text-xs font-mono bg-black/5 px-2 py-1 rounded">2023-10</span>
+                           <span className="text-xs font-mono bg-black/5 px-2 py-1 rounded">2026-04</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-black/10 pb-4">
                            <span className="text-xs font-black uppercase tracking-widest">Palette Nodes</span>

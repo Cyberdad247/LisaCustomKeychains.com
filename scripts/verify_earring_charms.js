@@ -16,7 +16,7 @@ const token = envVars.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN;
 console.log(`🔍 Domain: ${domain}`);
 console.log(`🔑 Token: ${token ? token.substring(0, 6) + '...' : 'MISSING'}`);
 
-const endpoint = `https://${domain}/api/2023-10/graphql.json`;
+const endpoint = `https://${domain}/api/2026-04/graphql.json`;
 
 async function shopifyFetch(query, variables = {}) {
     const res = await fetch(endpoint, {

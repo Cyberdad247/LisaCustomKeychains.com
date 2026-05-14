@@ -56,10 +56,10 @@ export default function ProductCard({
         aria-labelledby={`product-title-${product.id}`}
       >
         {/* THE IMAGE HOTSPOT */}
-        <div
-          className="relative aspect-square w-full overflow-hidden bg-stone-50 mb-4 border border-stone-100"
+        <button
+          type="button"
+          className="relative aspect-square w-full overflow-hidden bg-stone-50 mb-4 border border-stone-100 text-left focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
           onClick={handleOpenCustomizer}
-          role="button"
           aria-label={`Customize ${title}`}
         >
           {image ? (
@@ -84,7 +84,7 @@ export default function ProductCard({
               MAKE IT MINE
             </div>
           </div>
-        </div>
+        </button>
 
         {/* Caption Area */}
         <div className="text-center px-2">

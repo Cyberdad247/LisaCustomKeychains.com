@@ -1,7 +1,10 @@
 const https = require('https');
+const { domain: storeDomain, adminAccessToken: accessToken, SHOPIFY_API_VERSION } = require('./camelot_utils');
 
-const storeDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || 'lisascustomkeychains.myshopify.com';
-const accessToken = process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN || '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';
+if (!accessToken) {
+    console.error('Missing SHOPIFY_ADMIN_API_ACCESS_TOKEN.');
+    process.exit(1);
+}
 
 console.log(`🔎 Fetching ALL Domains for: ${storeDomain}`);
 
@@ -11,7 +14,7 @@ console.log(`🔎 Fetching ALL Domains for: ${storeDomain}`);
 
 const options = {
     hostname: storeDomain,
-    path: '/admin/api/2023-10/domains.json', // Trying explicit domains endpoint
+    path: `/admin/api/${SHOPIFY_API_VERSION}/domains.json`, // Trying explicit domains endpoint
     method: 'GET',
     headers: {
         'Content-Type': 'application/json',

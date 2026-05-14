@@ -33,7 +33,7 @@ const query = JSON.stringify({
 
 const options = {
     hostname: domain,
-    path: '/api/2023-10/graphql.json',
+    path: '/api/2026-04/graphql.json',
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',

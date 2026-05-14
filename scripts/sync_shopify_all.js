@@ -81,7 +81,7 @@ function fetchShopify(query) {
     return new Promise((resolve, reject) => {
         const options = {
             hostname: domain,
-            path: '/api/2023-10/graphql.json',
+            path: '/api/2026-04/graphql.json',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -121,7 +121,7 @@ function checkAdminDomain() {
 
         const options = {
             hostname: domain,
-            path: '/admin/api/2023-10/shop.json',
+            path: '/admin/api/2026-04/shop.json',
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

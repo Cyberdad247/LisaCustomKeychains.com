@@ -58,7 +58,7 @@ export default function HeroSection({ featuredProduct }: HeroSectionProps) {
                         BUILD YOURS
                     </motion.a>
                     <motion.a
-                        href="/products"
+                        href="#products"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         className="px-8 py-4 bg-white text-slate-900 border-2 border-slate-100 rounded-full font-bold hover:border-purple-200 transition-colors"

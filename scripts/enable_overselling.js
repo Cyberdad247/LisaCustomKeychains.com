@@ -1,8 +1,10 @@
 const https = require('https');
+const { domain: STORE_DOMAIN, adminAccessToken: ADMIN_TOKEN, SHOPIFY_API_VERSION: API_VERSION } = require('./camelot_utils');
 
-const STORE_DOMAIN = "jgvme0-av.myshopify.com";
-const ADMIN_TOKEN = process.env.SHOPIFY_ADMIN_TOKEN || "PLACEHOLDER_TOKEN_DO_NOT_COMMIT";
-const API_VERSION = "2023-10";
+if (!ADMIN_TOKEN) {
+  console.error('Missing SHOPIFY_ADMIN_API_ACCESS_TOKEN.');
+  process.exit(1);
+}
 
 function shopifyRequest(query, variables) {
   return new Promise((resolve, reject) => {
