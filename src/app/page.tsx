@@ -7,9 +7,7 @@ import AboutSection from "../components/AboutSection";
 import HeritageSection from "../components/HeritageSection";
 import DedicationSection from "../components/DedicationSection";
 import ProductJSONLD from "../components/ProductJSONLD";
-import TestimonySection from "../components/TestimonySection";
 import EventsSection from "../components/EventsSection";
-import BlogSection from "../components/BlogSection";
 import SocialFeedSection from "../components/SocialFeedSection";
 import { Metadata } from "next";
 import { SITE_URL } from "@/lib/site";
@@ -100,12 +98,9 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* 🌟 New Kinetic Sections - Hidden for Initial Launch
-        <TestimonySection />
+        {/* Pop-up vending and social updates */}
         <EventsSection />
-        <BlogSection />
         <SocialFeedSection />
-        */}
 
         {/* About Us - Fourth/Last */}
         <div className="max-w-7xl mx-auto px-6">

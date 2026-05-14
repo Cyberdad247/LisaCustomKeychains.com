@@ -1,74 +1,94 @@
-// 🐝 [HIVE_SWARM_STAMP] Autonomously Audited by Lukas Swarm
 "use client";
 
-import { Calendar, MapPin, Clock } from "lucide-react";
+import { CalendarDays, ExternalLink, Facebook, Instagram, MapPin, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
-const EVENTS = [
+const INSTAGRAM_URL = "https://www.instagram.com/lisascustomkeychains?igsh=MXMzZWVyOGw2Z3Vtag==";
+const FACEBOOK_URL = "https://www.facebook.com/share/14WQBPgC1Rz/";
+
+const EVENT_CHANNELS = [
   {
-    title: "Cleveland Summer Craft Fair",
-    date: "June 15, 2026",
-    time: "10:00 AM - 4:00 PM",
-    location: "Public Square, Cleveland",
-    description: "Catch us live at the square! We'll have a custom-weaving station set up for on-the-spot orders.",
+    title: "Pop-Up Announcements",
+    description:
+      "Follow Instagram for quick updates when Lisa is vending at local markets, craft fairs, school events, and weekend pop-ups.",
+    action: "Watch Instagram",
+    href: INSTAGRAM_URL,
+    icon: Instagram,
   },
   {
-    title: "Handmade Holiday Workshop",
-    date: "July 2, 2026",
-    time: "1:00 PM - 3:00 PM",
-    location: "Art Studio West",
-    description: "Learn the basics of macramé weaving and help Lisa create a community tapestry.",
+    title: "Shared Event Details",
+    description:
+      "Use Facebook for shared event posts, location reminders, vendor table updates, and community announcements.",
+    action: "Open Facebook",
+    href: FACEBOOK_URL,
+    icon: Facebook,
+  },
+  {
+    title: "What To Look For",
+    description:
+      "At live tables, shoppers can see finished keychains, sports charms, letter beads, and color options before ordering.",
+    action: "Shop Custom Styles",
+    href: "#products",
+    icon: Sparkles,
   },
 ];
 
 export default function EventsSection() {
   return (
-    <section className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+    <section id="events" className="bg-white py-24">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="mb-14 grid gap-8 md:grid-cols-[1.1fr_0.9fr] md:items-end">
           <div>
-            <h2 className="text-sm uppercase tracking-widest text-purple-600 font-bold mb-3">
-              The Living Ledger
-            </h2>
-            <p className="text-5xl font-serif text-slate-900">Upcoming Events</p>
+            <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-full border border-purple-100 bg-purple-50">
+              <CalendarDays className="h-5 w-5 text-purple-600" />
+            </div>
+            <h2 className="font-serif text-4xl text-slate-950 md:text-5xl">Find Lisa at Pop-Up Events</h2>
+            <p className="mt-4 max-w-2xl text-slate-500">
+              Lisa posts vending dates, table previews, and last-minute pop-up details on social. Follow both pages so customers know where to find the charm table in person.
+            </p>
           </div>
-          <p className="text-slate-500 max-w-sm text-right hidden md:block">
-            Come visit our physical forge and see the weaving process in person.
-          </p>
+
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-6">
+            <div className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900">
+              <MapPin className="h-4 w-4 text-purple-600" />
+              Live vending updates
+            </div>
+            <p className="text-sm leading-relaxed text-slate-500">
+              Event schedules can move quickly. Instagram and Facebook are the best places to confirm dates, times, location changes, and what Lisa is bringing to the table.
+            </p>
+          </div>
         </div>
 
-        <div className="space-y-6">
-          {EVENTS.map((event, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="group flex flex-col md:grid md:grid-cols-12 gap-8 p-8 bg-stone-50 rounded-[3rem] border border-stone-100 hover:border-purple-200 transition-all cursor-pointer"
-            >
-              <div className="md:col-span-3">
-                <p className="text-2xl font-serif text-slate-900">{event.date}</p>
-                <div className="flex items-center gap-2 text-slate-400 mt-2">
-                  <Clock className="w-3 h-3" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">{event.time}</span>
-                </div>
-              </div>
-              
-              <div className="md:col-span-6">
-                <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-purple-700 transition-colors">
-                  {event.title}
-                </h3>
-                <p className="text-sm text-slate-500 leading-relaxed">{event.description}</p>
-              </div>
+        <div className="grid gap-5 md:grid-cols-3">
+          {EVENT_CHANNELS.map((channel, index) => {
+            const Icon = channel.icon;
 
-              <div className="md:col-span-3 flex items-start md:justify-end">
-                <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-stone-200 shadow-sm text-slate-600">
-                  <MapPin className="w-3 h-3 text-purple-500" />
-                  <span className="text-[10px] font-black uppercase tracking-tight">{event.location}</span>
+            return (
+              <motion.article
+                key={channel.title}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.08 }}
+                viewport={{ once: true }}
+                className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-purple-200 hover:shadow-xl"
+              >
+                <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-slate-950 text-white">
+                  <Icon className="h-5 w-5" />
                 </div>
-              </div>
-            </motion.div>
-          ))}
+                <h3 className="font-serif text-2xl text-slate-950">{channel.title}</h3>
+                <p className="mt-3 min-h-[96px] text-sm leading-relaxed text-slate-500">{channel.description}</p>
+                <a
+                  href={channel.href}
+                  target={channel.href.startsWith("http") ? "_blank" : undefined}
+                  rel={channel.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                  className="mt-6 inline-flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white transition-colors hover:bg-slate-950"
+                >
+                  {channel.action}
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              </motion.article>
+            );
+          })}
         </div>
       </div>
     </section>

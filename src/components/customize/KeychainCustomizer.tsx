@@ -23,6 +23,7 @@ interface KeychainCustomizerProps {
   isOpen: boolean;
   onClose: () => void;
   lockLetters?: boolean;
+  forceLetters?: boolean;
   charmCategory?: string;
   allowedColors?: string[];
 }
@@ -73,6 +74,7 @@ export default function KeychainCustomizer({
   isOpen,
   onClose,
   lockLetters = false,
+  forceLetters = false,
   charmCategory = "all",
   allowedColors,
 }: KeychainCustomizerProps) {
@@ -84,9 +86,10 @@ export default function KeychainCustomizer({
   const priceNum = parseFloat(productPrice);
 
   const tier = getTierByPrice(priceNum);
-  const isTier1 = (tier === 1) || lockLetters;
-  const isTier2 = tier === 2 && !lockLetters;
-  const isTier3 = tier === 3 && !lockLetters;
+  const effectiveTier = forceLetters && tier === 1 && !lockLetters ? 2 : tier;
+  const isTier1 = (effectiveTier === 1) || lockLetters;
+  const isTier2 = effectiveTier === 2 && !lockLetters;
+  const isTier3 = effectiveTier === 3 && !lockLetters;
 
   const filteredColors = allowedColors 
     ? THREAD_COLORS.filter(c => allowedColors.includes(c.id))
@@ -172,7 +175,7 @@ export default function KeychainCustomizer({
 
     // Custom tier validation logic (redundant safeguard)
     if (!isTier1) {
-      const limit = getCharLimit(tier);
+      const limit = getCharLimit(effectiveTier);
       if (inputText.length > limit) {
         setErrorMessage(`Maximum ${limit} characters for this product.`);
         return;
@@ -231,7 +234,7 @@ export default function KeychainCustomizer({
           value: JSON.stringify({
             charms: selectedCharms.map(c => c.name).join(", "),
             charm_icons: selectedCharms.map(c => c.icon).join(" "),
-            tier: tier,
+            tier: effectiveTier,
             style: isTier3 ? "Premium Dual Strand" : "Single Strand",
             visual: `${selectedColor.name} with ${selectedCharms.map(c => c.icon).join(" ")}`,
           }),
@@ -569,12 +572,12 @@ export default function KeychainCustomizer({
                                 : "Identifier (Max 8)"}
                             </label>
                             <span
-                              className={`text-[10px] font-bold font-mono ${text.length > getCharLimit(tier)
+                              className={`text-[10px] font-bold font-mono ${text.length > getCharLimit(effectiveTier)
                                 ? "text-red-500"
                                 : "text-slate-300"
                                 }`}
                             >
-                              {text.length}/{getCharLimit(tier)}
+                              {text.length}/{getCharLimit(effectiveTier)}
                             </span>
                           </div>
                           <input
@@ -582,7 +585,7 @@ export default function KeychainCustomizer({
                             type="text"
                             value={text}
                             onChange={(e) => {
-                              const limit = getCharLimit(tier);
+                              const limit = getCharLimit(effectiveTier);
                               const val = e.target.value
                                 .toUpperCase()
                                 .slice(0, limit);
