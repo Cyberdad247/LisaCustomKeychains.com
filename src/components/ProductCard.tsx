@@ -30,11 +30,13 @@ export default function ProductCard({
   const [isCustomizing, setIsCustomizing] = useState(false);
   const { title } = product;
   const image = product.featuredImage || product.images?.edges[0]?.node;
+  const firstVariant = product.variants?.edges[0]?.node;
+  const isAvailable = firstVariant?.availableForSale ?? true;
   const isEarring = product.productType?.toLowerCase().includes("earring") || product.title?.toLowerCase().includes("earring") || product.title?.toLowerCase().includes("dangle");
   const defaultPrice = isEarring ? "9.95" : "9.95";
   const price =
     product.priceRange?.minVariantPrice?.amount ||
-    product.variants?.edges[0]?.node?.price?.amount ||
+    firstVariant?.price?.amount ||
     defaultPrice;
 
   const handleOpenCustomizer = (e: React.MouseEvent) => {
@@ -94,6 +96,16 @@ export default function ProductCard({
           >
             {title}
           </h3>
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.16em]">
+            {product.productType && (
+              <span className="rounded-full bg-stone-100 px-2.5 py-1 text-stone-500">
+                {product.productType}
+              </span>
+            )}
+            <span className={`rounded-full px-2.5 py-1 ${isAvailable ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
+              {isAvailable ? "Shopify synced" : "Unavailable"}
+            </span>
+          </div>
 
           <div className="flex justify-between items-center border-t border-stone-100 pt-3 mt-2">
             <span className="font-bold text-slate-800">

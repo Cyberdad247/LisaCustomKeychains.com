@@ -52,6 +52,30 @@ body {
   .yarn-hex-bg {
     background-color: var(--yarn-color, #9333ea) !important;
   }
+
+  .social-marquee {
+    animation: social-marquee 34s linear infinite;
+  }
+
+  .group:hover .social-marquee,
+  .group:focus-within .social-marquee {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .social-marquee {
+      animation: none;
+    }
+  }
+}
+
+@keyframes social-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 

@@ -11,6 +11,7 @@ import EventsSection from "../components/EventsSection";
 import SocialFeedSection from "../components/SocialFeedSection";
 import { Metadata } from "next";
 import { SITE_URL } from "@/lib/site";
+import { getSocialPosts } from "@/lib/social";
 
 export const metadata: Metadata = {
   title: "Shop All Custom Keychains | Lisa's Custom Keychains",
@@ -36,6 +37,8 @@ export default async function Home() {
   } catch (e) {
     console.error("Shopify Fetch Error:", e);
   }
+
+  const socialFeed = await getSocialPosts();
 
   // 🔄 Bio-Kinetic Rotation: Featured Product of the Week
   // Stable rotation based on week of year
@@ -74,6 +77,7 @@ export default async function Home() {
               Click any design below to open the designer and customize it just for you.
             </p>
           </div>
+          <SocialFeedSection posts={socialFeed.posts} source={socialFeed.source} />
           <ProductGallery products={products} />
         </div>
 
@@ -100,7 +104,6 @@ export default async function Home() {
 
         {/* Pop-up vending and social updates */}
         <EventsSection />
-        <SocialFeedSection />
 
         {/* About Us - Fourth/Last */}
         <div className="max-w-7xl mx-auto px-6">
