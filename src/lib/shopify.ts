@@ -34,7 +34,7 @@ const shopifyApiVersion =
   process.env.SHOPIFY_API_VERSION ||
   "2026-04";
 
-if (!shopifyStoreDomain || !shopifyAccessToken) {
+if (!shopifyStoreDomain) {
   logRune(KINETIC_RUNES.BYPASS, "Sovereign Mock Mode Activated (No credentials)");
 } else {
   logRune(KINETIC_RUNES.ACTUATE, `Connecting to: ${shopifyStoreDomain}`);
@@ -46,26 +46,29 @@ async function ShopifyData<T>(
   variables?: Record<string, unknown>,
   options?: { isMutation?: boolean }
 ): Promise<ShopifyResponse<T>> {
-  if (!shopifyStoreDomain || !shopifyAccessToken) {
-    console.warn("⚠️ Shopify credentials missing. Check your environment variables.");
-    console.warn(`   Domain: ${shopifyStoreDomain ? '✅' : '❌ MISSING'}, Token: ${shopifyAccessToken ? '✅' : '❌ MISSING'}`);
+  if (!shopifyStoreDomain) {
+    console.warn("⚠️ Shopify domain missing. Check your environment variables.");
     return {
       data: {} as T,
-      errors: [{ message: "Shopify credentials missing" }]
+      errors: [{ message: "Shopify domain missing" }]
     };
   }
 
   const endpoint = `https://${shopifyStoreDomain}/api/${shopifyApiVersion}/graphql.json`;
 
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  };
+  if (shopifyAccessToken) {
+    headers["X-Shopify-Storefront-Access-Token"] = shopifyAccessToken;
+  }
+
   // Build fetch options — only apply server-side cache for NON-mutation queries.
   // Mutations (cart create/add/remove) run client-side and must NOT use Next.js cache.
   const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
     method: "POST",
-    headers: {
-      "X-Shopify-Storefront-Access-Token": shopifyAccessToken,
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify({ query, variables }),
   };
 
