@@ -11,6 +11,10 @@
     "shopify:cli:auth": "shopify store auth --store jgvme0-av.myshopify.com --scopes read_products,write_products,read_product_listings,write_product_listings",
     "shopify:cli:probe": "shopify store execute --store jgvme0-av.myshopify.com --query \"query { shop { name myshopifyDomain primaryDomain { url } } }\" --json",
     "shopify:sync": "node scripts/camelot.js sync all",
+    "shopify:app:dev": "cd ../lisa-shopify-app && npm run dev",
+    "shopify:app:build": "cd ../lisa-shopify-app && npm run build",
+    "shopify:app:deploy": "cd ../lisa-shopify-app && npm run deploy",
+    "shopify:app:setup": "cd ../lisa-shopify-app && npm run setup",
     "test": "vitest run"
   },
   "dependencies": {

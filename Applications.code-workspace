@@ -1,10 +1,20 @@
 {
 	"folders": [
 		{
-			"path": "../../Applications"
+			"name": "LisaCustomKeychains.com (storefront)",
+			"path": "."
 		},
 		{
-			"path": "."
+			"name": "lisa-shopify-app (embedded admin)",
+			"path": "../lisa-shopify-app"
+		},
+		{
+			"name": "lisa-dev-dashboard (owner dashboard)",
+			"path": "../lisa-dev-dashboard"
+		},
+		{
+			"name": "lisa-shopify-app-sandbox (dev sandbox)",
+			"path": "../lisa-shopify-app-sandbox"
 		}
 	],
 	"settings": {}
