@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import ContentCalendar from "./ContentCalendar";
 import { getUpcomingPopups } from "@/lib/calendar";
 import { isOwnerSessionValid } from "@/lib/storefront-config";
+import { logoutOwner } from "@/app/client-editor/actions";
 
 export default async function OwnerDashboard() {
   const cookieStore = await cookies();
@@ -21,11 +22,18 @@ export default async function OwnerDashboard() {
             Center
           </span>
         </h1>
-        <div className="flex items-center space-x-2">
-          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-          <span className="text-[10px] uppercase tracking-widest text-gray-500 font-mono">
-            System Online
-          </span>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            <span className="text-[10px] uppercase tracking-widest text-gray-500 font-mono">
+              System Online
+            </span>
+          </div>
+          <form action={logoutOwner}>
+            <button className="text-[10px] uppercase tracking-widest font-bold text-gray-400 hover:text-red-600 transition-colors">
+              Sign Out
+            </button>
+          </form>
         </div>
       </header>
 

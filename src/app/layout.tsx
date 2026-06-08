@@ -4,8 +4,7 @@ import { Playfair_Display, Quicksand } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "../components/CartProvider";
 import { NotificationProvider } from "../components/NotificationSentry";
-import CartDrawer from "../components/CartDrawer";
-import Footer from "../components/Footer";
+import StorefrontShell from "../components/StorefrontShell";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -38,8 +37,7 @@ export default function RootLayout({
         <NotificationProvider>
           <CartProvider>
             {children}
-            <CartDrawer />
-            <Footer />
+            <StorefrontShell />
           </CartProvider>
         </NotificationProvider>
       </body>

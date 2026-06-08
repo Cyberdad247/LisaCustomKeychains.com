@@ -90,7 +90,7 @@ export const defaultStorefrontConfig: StorefrontConfig = {
     {
       id: "signature-set",
       label: "Signature set feature",
-      shopifyHandle: "matching-pair-set",
+      shopifyHandle: "handmade-heart-earrings-2",
       placement: "Signature Sets",
     },
   ],
