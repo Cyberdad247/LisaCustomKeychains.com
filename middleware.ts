@@ -25,7 +25,7 @@ export function middleware(req: NextRequest) {
     const pass = process.env.EDITOR_PASS;
     if (user && pass) {
       const auth = req.headers.get("authorization");
-      const expected = `Basic ${Buffer.from(`${user}:${pass}`).toString("base64")}`;
+      const expected = `Basic ${btoa(`${user}:${pass}`)}`;
       if (auth !== expected) {
         return new NextResponse("Authentication Required", {
           status: 401,
