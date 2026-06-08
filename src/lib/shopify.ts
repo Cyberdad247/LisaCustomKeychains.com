@@ -140,7 +140,6 @@ export async function getAllProducts(): Promise<ShopifyProductEdge[]> {
                   id
                   title
                   availableForSale
-                  quantityAvailable
                   price {
                     amount
                     currencyCode
