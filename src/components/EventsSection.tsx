@@ -2,17 +2,18 @@
 
 import { CalendarDays, ExternalLink, Facebook, Instagram, MapPin, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+import { type StorefrontConfig } from "@/lib/storefront-config";
 
 const INSTAGRAM_URL = "https://www.instagram.com/lisascustomkeychains?igsh=MXMzZWVyOGw2Z3Vtag==";
 const FACEBOOK_URL = "https://www.facebook.com/share/14WQBPgC1Rz/";
 
-const EVENT_CHANNELS = [
+const baseEventChannels = (instagramUrl: string, facebookUrl: string) => [
   {
     title: "Pop-Up Announcements",
     description:
       "Follow Instagram for quick updates when Lisa is vending at local markets, craft fairs, school events, and weekend pop-ups.",
     action: "Watch Instagram",
-    href: INSTAGRAM_URL,
+    href: instagramUrl,
     icon: Instagram,
   },
   {
@@ -20,7 +21,7 @@ const EVENT_CHANNELS = [
     description:
       "Use Facebook for shared event posts, location reminders, vendor table updates, and community announcements.",
     action: "Open Facebook",
-    href: FACEBOOK_URL,
+    href: facebookUrl,
     icon: Facebook,
   },
   {
@@ -33,7 +34,17 @@ const EVENT_CHANNELS = [
   },
 ];
 
-export default function EventsSection() {
+interface EventsSectionProps {
+  section?: StorefrontConfig["homepageSections"][number];
+  social?: StorefrontConfig["social"];
+}
+
+export default function EventsSection({ section, social }: EventsSectionProps) {
+  const eventChannels = baseEventChannels(
+    social?.instagramUrl || INSTAGRAM_URL,
+    social?.facebookUrl || FACEBOOK_URL,
+  );
+
   return (
     <section id="events" className="bg-white py-24">
       <div className="mx-auto max-w-7xl px-6">
@@ -42,9 +53,12 @@ export default function EventsSection() {
             <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-full border border-purple-100 bg-purple-50">
               <CalendarDays className="h-5 w-5 text-purple-600" />
             </div>
-            <h2 className="font-serif text-4xl text-slate-950 md:text-5xl">Find Lisa at Pop-Up Events</h2>
+            <h2 className="font-serif text-4xl text-slate-950 md:text-5xl">
+              {section?.headline || "Find Lisa at Pop-Up Events"}
+            </h2>
             <p className="mt-4 max-w-2xl text-slate-500">
-              Lisa posts vending dates, table previews, and last-minute pop-up details on social. Follow both pages so customers know where to find the charm table in person.
+              {section?.body ||
+                "Lisa posts vending dates, table previews, and last-minute pop-up details on social. Follow both pages so customers know where to find the charm table in person."}
             </p>
           </div>
 
@@ -60,7 +74,7 @@ export default function EventsSection() {
         </div>
 
         <div className="grid gap-5 md:grid-cols-3">
-          {EVENT_CHANNELS.map((channel, index) => {
+          {eventChannels.map((channel, index) => {
             const Icon = channel.icon;
 
             return (

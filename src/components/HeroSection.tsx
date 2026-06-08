@@ -5,13 +5,26 @@ import Image from "next/image";
 import { Sparkles, Heart, HeartHandshake } from "lucide-react";
 import { type ShopifyProduct } from "../lib/shopify/types";
 import PolaroidWrapper from "@/components/PolaroidWrapper";
+import { type StorefrontConfig } from "@/lib/storefront-config";
 
 interface HeroSectionProps {
     featuredProduct?: ShopifyProduct;
+    copy?: StorefrontConfig["hero"];
 }
 
-export default function HeroSection({ featuredProduct }: HeroSectionProps) {
+export default function HeroSection({ featuredProduct, copy }: HeroSectionProps) {
     const shouldReduceMotion = useReducedMotion();
+    const heroCopy = copy || {
+        badge: "Handcrafted With Love",
+        headlineTop: "Every Knot",
+        headlineAccent: "Tells a Story",
+        subcopy:
+            "From my hands to yours. Each keychain is lovingly woven with heart. Not mass-produced. Just handmade magic.",
+        primaryCtaLabel: "Build Yours",
+        secondaryCtaLabel: "Shop All",
+        featuredLabel: "Featured This Week",
+        featuredCaption: "Handcrafted Heart Bead Earrings",
+    };
 
     // Simplified animation overrides for accessibility
     const slideAnimation = shouldReduceMotion
@@ -31,20 +44,19 @@ export default function HeroSection({ featuredProduct }: HeroSectionProps) {
             >
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 rounded-full text-purple-900 text-xs font-bold tracking-wider uppercase">
                     <Sparkles className="w-3 h-3" />
-                    <span>Handcrafted With Love</span>
+                    <span>{heroCopy.badge}</span>
                 </div>
 
                 <h2 className="text-5xl md:text-7xl font-serif italic leading-tight text-slate-900 font-bold">
-                    Every Knot
+                    {heroCopy.headlineTop}
                     <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600">
-                        Tells a Story
+                        {heroCopy.headlineAccent}
                     </span>
                 </h2>
 
                 <p className="text-lg text-slate-600 leading-relaxed max-w-xl mx-auto md:mx-0">
-                    From my hands to yours. Each keychain is lovingly woven with
-                    heart. Not mass-produced. Just handmade magic.
+                    {heroCopy.subcopy}
                 </p>
 
                 <div className="flex flex-wrap gap-4 pt-4 justify-center md:justify-start">
@@ -55,7 +67,7 @@ export default function HeroSection({ featuredProduct }: HeroSectionProps) {
                         className="px-8 py-4 bg-purple-600 text-white rounded-full font-bold shadow-lg shadow-purple-200 hover:bg-purple-700 transition-colors flex items-center gap-2"
                     >
                         <Sparkles className="w-5 h-5" />
-                        BUILD YOURS
+                        {heroCopy.primaryCtaLabel}
                     </motion.a>
                     <motion.a
                         href="#products"
@@ -63,7 +75,7 @@ export default function HeroSection({ featuredProduct }: HeroSectionProps) {
                         whileTap={{ scale: 0.95 }}
                         className="px-8 py-4 bg-white text-slate-900 border-2 border-slate-100 rounded-full font-bold hover:border-purple-200 transition-colors"
                     >
-                        SHOP ALL
+                        {heroCopy.secondaryCtaLabel}
                     </motion.a>
                 </div>
 
@@ -110,10 +122,10 @@ export default function HeroSection({ featuredProduct }: HeroSectionProps) {
                     </div>
                     <div className="text-center">
                         <h3 className="font-bold text-slate-900 text-xl font-serif">
-                            Featured This Week
+                            {heroCopy.featuredLabel}
                         </h3>
                         <p className="text-slate-600 text-sm italic">
-                            Handcrafted Heart Bead Earrings
+                            {featuredProduct?.title || heroCopy.featuredCaption}
                         </p>
                     </div>
                 </PolaroidWrapper>

@@ -399,3 +399,174 @@
 | Law 1: Kinetic Purity | ✅ ENFORCED |
 | Law 2: Ledger is Law | ✅ UPDATED |
 | Law 3: UI Consistency | ✅ ALIGNED |
+
+---
+
+## Omega v204.0 - EMC Cartridge V1 Production Contract
+
+**Date:** 2026-06-05T00:00:00-04:00
+**Adept:** Sir Codex (Codex)
+
+### Enhancements
+
+- **Production Contract**: Added `docs/EMC_CARTRIDGE_V1.md` to decode the Omega Titan cartridge into actionable Lisa storefront milestones.
+- **Implementation Lane**: Defined Shopify attribute contracts, dynamic customizer preview, webhook revalidation, Vercel KV telemetry, CI, Vitest, and Lighthouse acceptance gates.
+- **First Build Move**: Selected Shopify attribute schema and preview-state validation as the next dependency to implement.
+
+### Titanium Laws Status
+
+| Law | Status |
+|:---|:---|
+| Law 1: Kinetic Purity | ENFORCED |
+| Law 2: Ledger is Law | UPDATED |
+| Law 3: Shopify SSOT | PRESERVED |
+
+---
+
+## Omega v204.1 - Client Editor Integrated Into Storefront
+
+**Date:** 2026-06-05T08:30:00-04:00
+**Adept:** Sir Codex (Codex)
+
+### Enhancements
+
+- **Dashboard Merge**: Integrated the separate Lisa dashboard concept into the main storefront as `/client-editor`.
+- **Client Scope**: Restricted edits to subtle client-owned content: hero copy, section copy, social links, accent color, and featured Shopify handles.
+- **Storefront Wiring**: Added `/api/storefront-config`, `data/storefront-config.json`, and `src/lib/storefront-config.ts`; homepage now reads editor-managed settings.
+- **Security Boundary**: Added owner-password session controls and `.env.example` variables. Shopify remains the product, inventory, and checkout source of truth.
+- **Shopify CLI Attempt**: Ran `shopify app config link`; it timed out waiting for interactive Developer Dashboard selection and left `client_id = ""`.
+
+### Verification
+
+- `npm test` passed: 1 file, 3 tests.
+- `npm run build` passed with non-blocking Shopify Storefront HTTP 401 warnings from the current token.
+
+### Titanium Laws Status
+
+| Law | Status |
+|:---|:---|
+| Law 1: Client Simplicity | ENFORCED |
+| Law 2: Shopify SSOT | PRESERVED |
+| Law 3: Build Verification | PASSED_WITH_SHOPIFY_TOKEN_WARNING |
+
+---
+
+## Omega v204.2 - Legacy Shopify App Sync Ledger
+
+**Date:** 2026-06-05T00:00:00-04:00
+**Adept:** Sir Codex (Codex)
+
+### Sync State
+
+- **Legacy App Merge**: Stored legacy Shopify app credentials only in ignored local env files and kept public examples secret-free.
+- **Shopify App Config**: Updated the local Shopify app config with the legacy app client identifier.
+- **Store Probe**: Verified Shopify CLI access to Lisa's store and confirmed the current myshopify domain through the CLI.
+- **Config Link Blocker**: `shopify app config link` and `shopify app config validate` are blocked until the logged-in Shopify Partner account has access to the legacy app.
+- **Storefront Token Blocker**: Storefront API probes still return HTTP 401, so a valid Storefront API token must be regenerated or permissioned before live product data is fully restored.
+- **Project Sync Blocker**: `npm run shopify:sync` reaches Lisa's Shopify store but fails during product fetch with HTTP 401; the same script also reports that `SHOPIFY_ADMIN_API_ACCESS_TOKEN` is missing.
+
+### Verification
+
+- `npm test` passed after storefront editor integration.
+- `npm run build` passed with Shopify Storefront HTTP 401 warnings.
+- `npm run shopify:cli:probe` passed and confirmed Lisa's store identity.
+- `npm run shopify:sync` failed at product fetch with HTTP 401.
+- `/`, `/client-editor/login`, and `/api/storefront-config` responded successfully during local smoke testing.
+
+### Titanium Laws Status
+
+| Law | Status |
+|:---|:---|
+| Law 1: Secrets Safety | ENFORCED |
+| Law 2: Ledger is Law | UPDATED |
+| Law 3: Shopify Sync | PARTIAL_BLOCKED_BY_PARTNER_ACCESS_AND_TOKEN_401 |
+
+---
+
+## Omega v204.3 - Brand New Shopify App Linked
+
+**Date:** 2026-06-05T00:00:00-04:00
+**Adept:** Sir Codex (Codex)
+
+### Sync State
+
+- **Strategy Change**: Stopped the legacy-app recovery path and created a new Shopify app for the Lisa editor workflow.
+- **New App Link**: `shopify.app.custom-keychains-editor.toml` is linked to `Custom_Keychains_editor` on Shopify and is now the default Shopify app config.
+- **Validation**: `shopify app config validate` passed against the new linked config.
+- **Production Gap**: The new config still uses Shopify's default app home URL and redirect URL; set real deployed URLs before `shopify app deploy`.
+- **Scope Gap**: The new config currently has empty access scopes. Keep it that way for a simple content editor, or add only the minimum scopes required if the app must touch Shopify Admin data.
+
+### Verification
+
+- `shopify app config link --reset` completed interactively and linked the new app.
+- `shopify app config validate` passed.
+- Existing storefront build/test verification from v204.1 remains valid; Shopify product sync is still blocked until Storefront/Admin credentials are corrected.
+
+### Titanium Laws Status
+
+| Law | Status |
+|:---|:---|
+| Law 1: Legacy Detach | COMPLETE |
+| Law 2: New App Config | VALIDATED |
+| Law 3: Production Deploy | WAITING_ON_REAL_APP_URLS_AND_TOKEN_FIX |
+
+---
+
+## Omega v204.4 - Lisa-Only App Access Guard
+
+**Date:** 2026-06-05T00:00:00-04:00
+**Adept:** Sir Codex (Codex)
+
+### Security State
+
+- **Single Site Boundary**: Confirmed Vercel production storefront project resolves to `https://www.lisascustomkeychains.com`.
+- **Shopify App Boundary**: Hardened `lisa-shopify-app` as a single-merchant app and added a runtime allowlist for Lisa's Shopify domains only.
+- **Verified User Gate**: Embedded Shopify routes now require Shopify Admin authentication and reject sessions from shops outside the Lisa allowlist.
+- **Editor Boundary**: Documented `/client-editor` as a private storefront editor protected by server-only owner password and session secret variables.
+- **Config Caveat**: Shopify app config is valid, but app URL and redirect URLs still need the real deployed Shopify app backend URL before deploy.
+
+### Verification
+
+- `npm run typecheck` passed in `lisa-shopify-app`.
+- `shopify app config validate` passed for the new app config.
+- Vercel project listing confirmed `lisa-custom-keychains-com` production URL.
+
+### Titanium Laws Status
+
+| Law | Status |
+|:---|:---|
+| Law 1: Lisa-Only Access | ENFORCED_IN_CODE |
+| Law 2: Verified Shopify Users | ENFORCED_BY_SHOPIFY_ADMIN_AUTH |
+| Law 3: Deploy Readiness | WAITING_ON_DEPLOYED_APP_BACKEND_URL |
+
+---
+
+## Omega v204.5 - Shopify Editor Backend Production Deploy
+
+**Date:** 2026-06-05T00:00:00-04:00
+**Adept:** Sir Codex (Codex)
+
+### Production State
+
+- **Vercel Project**: Created and linked `vizions-projects-9a404e54/lisa-custom-keychains-editor`.
+- **Backend URL**: Deployed the Shopify editor backend to `https://lisa-custom-keychains-editor.vercel.app`.
+- **Runtime Env**: Persisted production Vercel env vars for Shopify API credentials, app URL, Lisa-only shop allowlist, custom shop domain, and database URL.
+- **Vercel Adapter**: Added the official Vercel React Router preset so production builds emit Vercel-compatible server functions.
+- **Shopify Config**: Updated `shopify.app.custom-keychains-editor.toml` with the deployed app URL and `/auth/callback` redirect URL.
+- **Shopify Release**: Ran `shopify app deploy --allow-updates`; Shopify released `custom_keychains_editor-2` to users.
+
+### Verification
+
+- `npm run typecheck` passed in `lisa-shopify-app`.
+- `npm run build` passed locally and on Vercel production.
+- `shopify app config validate` passed after deployment.
+- Vercel production deployment is `READY` and aliased to `https://lisa-custom-keychains-editor.vercel.app`.
+- `curl -I https://lisa-custom-keychains-editor.vercel.app` returned HTTP 200.
+
+### Titanium Laws Status
+
+| Law | Status |
+|:---|:---|
+| Law 1: Dedicated Backend | DEPLOYED |
+| Law 2: Shopify Config Sync | RELEASED_TO_SHOPIFY |
+| Law 3: Future Deploy Env | PERSISTED_IN_VERCEL |

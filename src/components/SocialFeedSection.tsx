@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { ExternalLink, Facebook, Instagram } from "lucide-react";
 import { type SocialPost } from "@/lib/social";
+import { type StorefrontConfig } from "@/lib/storefront-config";
 
 const INSTAGRAM_URL = "https://www.instagram.com/lisascustomkeychains?igsh=MXMzZWVyOGw2Z3Vtag==";
 const FACEBOOK_URL = "https://www.facebook.com/share/14WQBPgC1Rz/";
@@ -10,6 +11,7 @@ const FACEBOOK_URL = "https://www.facebook.com/share/14WQBPgC1Rz/";
 interface SocialFeedSectionProps {
   posts: SocialPost[];
   source: "configured" | "fallback";
+  config?: StorefrontConfig["social"];
 }
 
 const platformIcon = {
@@ -22,23 +24,33 @@ const platformLabel = {
   instagram: "Instagram",
 };
 
-export default function SocialFeedSection({ posts, source }: SocialFeedSectionProps) {
+export default function SocialFeedSection({ posts, source, config }: SocialFeedSectionProps) {
   const railPosts = posts.length > 0 ? posts : [];
   const animatedPosts = [...railPosts, ...railPosts];
+  const socialConfig = config || {
+    instagramUrl: INSTAGRAM_URL,
+    facebookUrl: FACEBOOK_URL,
+    source: "fallback",
+    fallbackMessage:
+      "Facebook and Instagram API credentials are not connected yet. Showing curated recent-work photos until the owner connects the feeds.",
+    headline: "Fresh From Lisa's Socials",
+    body:
+      "Recent table photos, finished custom pieces, sports charm ideas, and pop-up updates from Facebook and Instagram.",
+  };
 
   return (
     <section className="overflow-hidden rounded-[2rem] bg-slate-950 px-5 py-12 text-white shadow-2xl shadow-slate-200 md:px-8">
       <div className="mb-8 grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
         <div>
-          <h2 className="font-serif text-3xl md:text-5xl">Fresh From Lisa&apos;s Socials</h2>
+          <h2 className="font-serif text-3xl md:text-5xl">{socialConfig.headline}</h2>
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/65 md:text-base">
-            Recent table photos, finished custom pieces, sports charm ideas, and pop-up updates from Facebook and Instagram.
+            {socialConfig.body}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
           <a
-            href={INSTAGRAM_URL}
+            href={socialConfig.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white px-5 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-slate-950 transition-colors hover:bg-purple-100"
@@ -47,7 +59,7 @@ export default function SocialFeedSection({ posts, source }: SocialFeedSectionPr
             Instagram
           </a>
           <a
-            href={FACEBOOK_URL}
+            href={socialConfig.facebookUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-5 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white transition-colors hover:bg-white/20"
@@ -60,7 +72,7 @@ export default function SocialFeedSection({ posts, source }: SocialFeedSectionPr
 
       {source === "fallback" && (
         <div className="mb-5 rounded-2xl border border-amber-300/20 bg-amber-300/10 px-4 py-3 text-xs font-semibold text-amber-50">
-          Facebook and Instagram API credentials are not connected yet. Showing curated recent-work photos until the owner connects the feeds.
+          {socialConfig.fallbackMessage}
         </div>
       )}
 

@@ -12,6 +12,7 @@ import SocialFeedSection from "../components/SocialFeedSection";
 import { Metadata } from "next";
 import { SITE_URL } from "@/lib/site";
 import { getSocialPosts } from "@/lib/social";
+import { getStorefrontConfig } from "@/lib/storefront-config";
 
 export const metadata: Metadata = {
   title: "Shop All Custom Keychains | Lisa's Custom Keychains",
@@ -39,6 +40,10 @@ export default async function Home() {
   }
 
   const socialFeed = await getSocialPosts();
+  const storefrontConfig = await getStorefrontConfig();
+  const sectionById = new Map(
+    storefrontConfig.homepageSections.map((section) => [section.id, section]),
+  );
 
   // 🔄 Bio-Kinetic Rotation: Featured Product of the Week
   // Stable rotation based on week of year
@@ -61,7 +66,7 @@ export default async function Home() {
 
       <main className="relative z-10">
         <div className="max-w-7xl mx-auto px-6">
-          <HeroSection featuredProduct={featuredProduct} />
+          <HeroSection featuredProduct={featuredProduct} copy={storefrontConfig.hero} />
         </div>
 
         {/* Heritage Section - Second */}
@@ -71,13 +76,18 @@ export default async function Home() {
         <div id="products" className="py-24 max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-sm uppercase tracking-widest text-purple-600 font-bold mb-3">
-              Inspiration Gallery
+              {sectionById.get("products")?.headline || "Inspiration Gallery"}
             </h2>
             <p className="text-slate-500 max-w-lg mx-auto">
-              Click any design below to open the designer and customize it just for you.
+              {sectionById.get("products")?.body ||
+                "Click any design below to open the designer and customize it just for you."}
             </p>
           </div>
-          <SocialFeedSection posts={socialFeed.posts} source={socialFeed.source} />
+          <SocialFeedSection
+            posts={socialFeed.posts}
+            source={socialFeed.source}
+            config={storefrontConfig.social}
+          />
           <ProductGallery products={products} />
         </div>
 
@@ -88,9 +98,12 @@ export default async function Home() {
               <h2 className="text-sm uppercase tracking-widest text-purple-600 font-bold mb-3">
                 Synchronized Elegance
               </h2>
-              <p className="text-5xl font-serif text-slate-900 mb-4">Signature Sets</p>
+              <p className="text-5xl font-serif text-slate-900 mb-4">
+                {sectionById.get("sets")?.headline || "Signature Sets"}
+              </p>
               <p className="text-slate-500 max-w-lg mx-auto">
-                Perfectly matched keychain and earring pairs. One configuration, double the impact.
+                {sectionById.get("sets")?.body ||
+                  "Perfectly matched keychain and earring pairs. One configuration, double the impact."}
               </p>
             </div>
             <ProductGallery 
@@ -103,7 +116,7 @@ export default async function Home() {
         </div>
 
         {/* Pop-up vending and social updates */}
-        <EventsSection />
+        <EventsSection section={sectionById.get("events")} social={storefrontConfig.social} />
 
         {/* About Us - Fourth/Last */}
         <div className="max-w-7xl mx-auto px-6">
