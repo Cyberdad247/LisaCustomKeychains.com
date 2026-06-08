@@ -18,6 +18,8 @@ async function getProductByHandle(handle: string): Promise<ShopifyProduct | null
   return products.find(({ node }: ShopifyProductEdge) => node.handle === handle)?.node ?? null;
 }
 
+export const revalidate = 3600;
+
 export async function generateStaticParams() {
   const products = await getAllProducts();
   return products.map(({ node }: ShopifyProductEdge) => ({
