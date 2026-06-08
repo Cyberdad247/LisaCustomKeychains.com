@@ -1,0 +1,26 @@
+[
+  {
+    "id": "cq-001",
+    "type": "Instagram Post",
+    "title": "Summer Macrame Drop",
+    "body": "Hand-tied and sun-kissed ☀️ Our summer collection is here — pastel cords, custom charms, and same-day pickup at pop-ups. Link in bio to shop or customize yours.",
+    "status": "pending",
+    "createdAt": "2026-06-07T09:00:00Z"
+  },
+  {
+    "id": "cq-002",
+    "type": "Product Description",
+    "title": "Boho Tassel Keychain",
+    "body": "Each knot tells a story. This boho tassel keychain is hand-crafted using premium waxed cord with your choice of accent bead — turquoise, amethyst, or pearl. Measures 5\" and ships within 2 business days.",
+    "status": "pending",
+    "createdAt": "2026-06-07T09:05:00Z"
+  },
+  {
+    "id": "cq-003",
+    "type": "Announcement",
+    "title": "Pop-Up at Riverside Park",
+    "body": "We'll be at Riverside Park Pavilion on June 21 — come find us! Bring a friend and get a second custom keychain at 20% off. Same-day customization available.",
+    "status": "approved",
+    "createdAt": "2026-06-06T14:00:00Z"
+  }
+]

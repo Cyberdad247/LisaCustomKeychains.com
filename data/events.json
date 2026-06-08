@@ -1,0 +1,20 @@
+[
+  {
+    "id": "evt-001",
+    "date": "2026-06-21",
+    "title": "Summer Craft Market",
+    "location": "Riverside Park Pavilion"
+  },
+  {
+    "id": "evt-002",
+    "date": "2026-07-04",
+    "title": "Fourth of July Pop-Up",
+    "location": "Downtown Main Street"
+  },
+  {
+    "id": "evt-003",
+    "date": "2026-07-19",
+    "title": "Artisan Vendor Fair",
+    "location": "City Community Center"
+  }
+]
