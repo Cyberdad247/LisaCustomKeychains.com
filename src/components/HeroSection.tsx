@@ -50,7 +50,7 @@ export default function HeroSection({ featuredProduct, copy }: HeroSectionProps)
                 <h2 className="text-5xl md:text-7xl font-serif italic leading-tight text-slate-900 font-bold">
                     {heroCopy.headlineTop}
                     <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600">
+                    <span className="bg-chromium-purple bg-300% animate-chromium-glint text-transparent bg-clip-text">
                         {heroCopy.headlineAccent}
                     </span>
                 </h2>

@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ShoppingBag, Menu, X } from 'lucide-react';
+import { ShoppingBag, Menu, X, LayoutDashboard } from 'lucide-react';
 import Image from 'next/image';
 import { useCart } from './CartProvider';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -97,6 +97,14 @@ export default function Navbar() {
               <div className="text-[10px] font-black tracking-[0.3em] text-slate-500">
                 <a href="#about" className="hover:text-purple-700 transition-colors uppercase" aria-label="About the Artist">ABOUT</a>
               </div>
+              <a
+                href="/editor"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-purple-200 text-purple-600 hover:bg-purple-50 hover:border-purple-400 transition-all text-[10px] font-black tracking-[0.2em] uppercase"
+                aria-label="Owner Dashboard"
+              >
+                <LayoutDashboard className="w-3 h-3" />
+                Dashboard
+              </a>
             </motion.div>
 
             {/* MOBILE TOGGLE */}
@@ -149,6 +157,14 @@ export default function Navbar() {
               <ShoppingBag /> Bag ({quantity})
             </button>
             <a href="#about" className="hover:text-purple-700 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>ABOUT</a>
+            <a
+              href="/editor"
+              className="flex items-center gap-2 px-5 py-2 rounded-full border border-purple-300 text-purple-700 hover:bg-purple-50 transition-all text-sm font-bold tracking-widest uppercase"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              Dashboard
+            </a>
           </motion.div>
         )}
       </AnimatePresence>

@@ -13,6 +13,7 @@ import { Metadata } from "next";
 import { SITE_URL } from "@/lib/site";
 import { getSocialPosts } from "@/lib/social";
 import { getStorefrontConfig } from "@/lib/storefront-config";
+import { getUpcomingPopups } from "@/lib/calendar";
 
 export const metadata: Metadata = {
   title: "Shop All Custom Keychains | Lisa's Custom Keychains",
@@ -39,10 +40,13 @@ export default async function Home() {
     console.error("Shopify Fetch Error:", e);
   }
 
-  const socialFeed = await getSocialPosts();
-  const storefrontConfig = await getStorefrontConfig();
+  const [socialFeed, storefrontConfig, upcomingEvents] = await Promise.all([
+    getSocialPosts(),
+    getStorefrontConfig(),
+    getUpcomingPopups(),
+  ]);
   const sectionById = new Map(
-    storefrontConfig.homepageSections.map((section) => [section.id, section]),
+    storefrontConfig.homepageSections.map((s) => [s.id, s]),
   );
 
   // 🔄 Bio-Kinetic Rotation: Featured Product of the Week
@@ -75,10 +79,15 @@ export default async function Home() {
         {/* Product Gallery - Third */}
         <div id="products" className="py-24 max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-sm uppercase tracking-widest text-purple-600 font-bold mb-3">
-              {sectionById.get("products")?.headline || "Inspiration Gallery"}
+            <p className="text-xs uppercase tracking-[0.3em] font-bold text-purple-500 mb-4">
+              Handmade · One at a Time
+            </p>
+            <h2 className="text-5xl md:text-6xl font-serif font-bold mb-4">
+              <span className="bg-chromium-purple bg-300% animate-chromium-glint text-transparent bg-clip-text">
+                {sectionById.get("products")?.headline || "Inspiration Gallery"}
+              </span>
             </h2>
-            <p className="text-slate-500 max-w-lg mx-auto">
+            <p className="text-slate-500 max-w-lg mx-auto text-base">
               {sectionById.get("products")?.body ||
                 "Click any design below to open the designer and customize it just for you."}
             </p>
@@ -95,13 +104,15 @@ export default async function Home() {
         <div id="sets" className="py-24 bg-stone-50">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-sm uppercase tracking-widest text-purple-600 font-bold mb-3">
+              <p className="text-xs uppercase tracking-[0.3em] font-bold text-purple-500 mb-4">
                 Synchronized Elegance
-              </h2>
-              <p className="text-5xl font-serif text-slate-900 mb-4">
-                {sectionById.get("sets")?.headline || "Signature Sets"}
               </p>
-              <p className="text-slate-500 max-w-lg mx-auto">
+              <h2 className="text-5xl md:text-6xl font-serif font-bold mb-4">
+                <span className="bg-chromium-purple bg-300% animate-chromium-glint text-transparent bg-clip-text">
+                  {sectionById.get("sets")?.headline || "Signature Sets"}
+                </span>
+              </h2>
+              <p className="text-slate-500 max-w-lg mx-auto text-base">
                 {sectionById.get("sets")?.body ||
                   "Perfectly matched keychain and earring pairs. One configuration, double the impact."}
               </p>
@@ -116,7 +127,7 @@ export default async function Home() {
         </div>
 
         {/* Pop-up vending and social updates */}
-        <EventsSection section={sectionById.get("events")} social={storefrontConfig.social} />
+        <EventsSection section={sectionById.get("events")} events={upcomingEvents} />
 
         {/* About Us - Fourth/Last */}
         <div className="max-w-7xl mx-auto px-6">
