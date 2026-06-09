@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import ContentCalendar from "./ContentCalendar";
-import { getUpcomingPopups } from "@/lib/calendar";
+import { getUpcomingPopups } from "@/lib/calendar.server";
 import { isOwnerSessionValid } from "@/lib/storefront-config";
 import { logoutOwner } from "@/app/client-editor/actions";
 

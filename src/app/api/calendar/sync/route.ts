@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { syncEventsFromICS } from "@/lib/calendar";
+import { syncEventsFromICS } from "@/lib/calendar.server";
 
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get("authorization");

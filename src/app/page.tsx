@@ -13,7 +13,7 @@ import { Metadata } from "next";
 import { SITE_URL } from "@/lib/site";
 import { getSocialPosts } from "@/lib/social";
 import { getStorefrontConfig } from "@/lib/storefront-config";
-import { getUpcomingPopups } from "@/lib/calendar";
+import { getUpcomingPopups } from "@/lib/calendar.server";
 
 export const metadata: Metadata = {
   title: "Shop All Custom Keychains | Lisa's Custom Keychains",
