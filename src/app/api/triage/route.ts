@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { isOwnerSessionValid, getStorefrontConfig } from "@/lib/storefront-config";
 import { getUpcomingPopups } from "@/lib/calendar.server";
+import { providerInfo } from "@/app/api/ai/assist/route";
 
 export type TriageStatus = "ok" | "warn" | "error" | "unconfigured";
 
@@ -208,18 +209,30 @@ async function checkEvents(): Promise<TriageCheck> {
 }
 
 function checkAiAssist(): TriageCheck {
-  if (process.env.ANTHROPIC_API_KEY) {
+  const { provider, model, configured } = providerInfo();
+  if (!configured) {
     return {
       label: "AI Assist (Hermes)",
-      status: "ok",
-      detail: "ANTHROPIC_API_KEY set — AI writing assistant enabled.",
+      status: "unconfigured",
+      detail:
+        "No AI provider configured. Options: Ollama (free/local), Gemini (free tier), or Anthropic.",
+      fix: "/editor",
     };
   }
+  const PROVIDER_LABELS: Record<string, string> = {
+    ollama: "Ollama (local · free)",
+    gemini: "Google Gemini (free tier)",
+    anthropic: "Anthropic Claude (paid)",
+  };
+  const PROVIDER_COST: Record<string, TriageStatus> = {
+    ollama: "ok",
+    gemini: "ok",
+    anthropic: "warn",
+  };
   return {
     label: "AI Assist (Hermes)",
-    status: "unconfigured",
-    detail: "Set ANTHROPIC_API_KEY to enable the AI writing assistant in the editor.",
-    fix: "https://console.anthropic.com/settings/keys",
+    status: PROVIDER_COST[provider!] ?? "ok",
+    detail: `Provider: ${PROVIDER_LABELS[provider!] ?? provider} · Model: ${model}`,
   };
 }
 

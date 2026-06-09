@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { logoutOwner, publishStorefrontConfig } from "./actions";
 import { getStorefrontConfig, isOwnerSessionValid } from "@/lib/storefront-config";
 import HermesAssist from "./HermesAssist";
+import EditorNav from "@/app/editor/EditorNav";
 
 export default async function ClientEditorPage({
   searchParams,
@@ -19,32 +20,38 @@ export default async function ClientEditorPage({
   const params = await searchParams;
 
   return (
-    <main className="min-h-screen bg-stone-50 px-5 py-6 text-slate-950 lg:px-8">
+    <div className="min-h-screen bg-stone-50 text-slate-950">
+      <EditorNav />
       <HermesAssist />
+      <main className="px-5 py-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <header className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
+        <header className="rounded-xl border border-slate-800 bg-slate-950 p-5 shadow-sm text-white">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-purple-700">
-                Client editor
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400">
+                Storefront Editor
               </p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-                Lisa storefront controls
+                Lisa{" "}
+                <span className="bg-chromium-purple bg-300% animate-chromium-glint text-transparent bg-clip-text">
+                  storefront
+                </span>{" "}
+                controls
               </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Change small public-facing details without touching code. Shopify remains
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/60">
+                Change public-facing details without touching code. Shopify remains
                 the product, inventory, and checkout source of truth.
               </p>
             </div>
             <form action={logoutOwner}>
-              <button className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-stone-50">
+              <button className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold text-white/70 hover:bg-white/10 transition-colors">
                 Sign out
               </button>
             </form>
           </div>
           {params.published === "1" && (
-            <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900">
-              Storefront settings were published.
+            <div className="mt-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-300">
+              Storefront settings published successfully.
             </div>
           )}
         </header>
@@ -145,7 +152,8 @@ export default async function ClientEditorPage({
           </section>
         </form>
       </div>
-    </main>
+      </main>
+    </div>
   );
 }
 

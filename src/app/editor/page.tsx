@@ -90,8 +90,11 @@ export default async function OwnerDashboard() {
             </h2>
             <nav className="space-y-2">
               {[
+                { label: "Social Studio", href: "/editor/social" },
+                { label: "Blog Engine", href: "/editor/blog" },
                 { label: "Ad Gallery", href: "/editor/ads" },
                 { label: "Storefront Editor", href: "/client-editor" },
+                { label: "Public Blog", href: "/blog" },
                 { label: "Design Studio", href: "/customize" },
                 { label: "Shopify Admin", href: "https://jgvme0-av.myshopify.com/admin" },
                 { label: "Vercel Dashboard", href: "https://vercel.com/invisionedmarketing/lisa-custom-keychains-com" },

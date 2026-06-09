@@ -1,0 +1,62 @@
+[
+  {
+    "id": "amazon",
+    "name": "Amazon Associates",
+    "baseUrl": "https://www.amazon.com/s?k=",
+    "trackingParam": "tag",
+    "affiliateId": "",
+    "categories": ["craft-supplies", "keychains", "gifts", "tools"],
+    "commission": "1–10%",
+    "signupUrl": "https://affiliate-program.amazon.com/",
+    "active": false,
+    "notes": "Add your Associate ID to activate. Works for almost any product link."
+  },
+  {
+    "id": "joann",
+    "name": "Joann Fabrics (ShareASale)",
+    "baseUrl": "https://www.joann.com/",
+    "trackingParam": "afftrack",
+    "affiliateId": "",
+    "categories": ["craft-supplies", "beads", "cord", "findings"],
+    "commission": "4–6%",
+    "signupUrl": "https://www.shareasale.com/shareasale.cfm?merchantID=18606",
+    "active": false,
+    "notes": "Join via ShareASale. Great for craft supply content."
+  },
+  {
+    "id": "michaels",
+    "name": "Michaels (Rakuten)",
+    "baseUrl": "https://www.michaels.com/",
+    "trackingParam": "ranMID",
+    "affiliateId": "",
+    "categories": ["craft-supplies", "beads", "paint", "tools"],
+    "commission": "3–5%",
+    "signupUrl": "https://rakutenadvertising.com/affiliate-publishers/",
+    "active": false,
+    "notes": "Join via Rakuten (LinkShare). Good for beginner craft content."
+  },
+  {
+    "id": "etsy",
+    "name": "Etsy Affiliate (Awin)",
+    "baseUrl": "https://www.etsy.com/search?q=",
+    "trackingParam": "awc",
+    "affiliateId": "",
+    "categories": ["gifts", "handmade", "keychains"],
+    "commission": "4%",
+    "signupUrl": "https://www.awin.com/us/advertiser/etsy",
+    "active": false,
+    "notes": "Earn on Etsy sales you refer — including other makers' products."
+  },
+  {
+    "id": "custom",
+    "name": "Custom Program",
+    "baseUrl": "",
+    "trackingParam": "ref",
+    "affiliateId": "",
+    "categories": ["other"],
+    "commission": "varies",
+    "signupUrl": "",
+    "active": false,
+    "notes": "For any program not listed above."
+  }
+]
