@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { logoutOwner, publishStorefrontConfig } from "./actions";
 import { getStorefrontConfig, isOwnerSessionValid } from "@/lib/storefront-config";
+import HermesAssist from "./HermesAssist";
 
 export default async function ClientEditorPage({
   searchParams,
@@ -19,6 +20,7 @@ export default async function ClientEditorPage({
 
   return (
     <main className="min-h-screen bg-stone-50 px-5 py-6 text-slate-950 lg:px-8">
+      <HermesAssist />
       <div className="mx-auto max-w-6xl">
         <header className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
