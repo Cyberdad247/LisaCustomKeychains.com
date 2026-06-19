@@ -44,11 +44,19 @@ export default async function ClientEditorPage({
                 the product, inventory, and checkout source of truth.
               </p>
             </div>
-            <form action={logoutOwner}>
-              <button className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold text-white/70 hover:bg-white/10 transition-colors">
-                Sign out
-              </button>
-            </form>
+            <div className="flex items-center gap-2">
+              <a
+                href="/"
+                className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold text-white/70 hover:bg-white/10 transition-colors"
+              >
+                ← Back to site
+              </a>
+              <form action={logoutOwner}>
+                <button className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold text-white/70 hover:bg-white/10 transition-colors">
+                  Sign out
+                </button>
+              </form>
+            </div>
           </div>
           {params.published === "1" && (
             <div className="mt-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-300">
