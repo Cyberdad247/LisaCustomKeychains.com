@@ -8,6 +8,7 @@ import {
   createOwnerSession,
   getStorefrontConfig,
   isOwnerSessionValid,
+  OWNER_SESSION_TTL_SECONDS,
   ownerPasswordConfigured,
   saveStorefrontConfig,
   saveUploadedImage,
@@ -29,7 +30,7 @@ export async function loginOwner(formData: FormData) {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 8,
+    maxAge: OWNER_SESSION_TTL_SECONDS,
   });
   redirect("/client-editor");
 }
