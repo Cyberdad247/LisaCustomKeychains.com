@@ -31,6 +31,14 @@ product_check_results.txt
 publications.txt
 pub_output.txt
 
+# transient debug / script output (regenerated on demand — never commit)
+verify_*.txt
+*_log.txt
+*_log_*.txt
+inspect_*output*.txt
+scripts/hash*.txt
+/tmp/
+
 # vercel
 .vercel
 
