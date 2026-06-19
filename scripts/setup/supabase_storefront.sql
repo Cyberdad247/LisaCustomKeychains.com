@@ -18,6 +18,21 @@ create policy "storefront_config_read"
   for select
   using (true);
 
+-- 1b) Events table (single 'singleton' row holding the events JSON array).
+create table if not exists public.storefront_events (
+  id text primary key default 'singleton',
+  events jsonb not null default '[]'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.storefront_events enable row level security;
+
+drop policy if exists "storefront_events_read" on public.storefront_events;
+create policy "storefront_events_read"
+  on public.storefront_events
+  for select
+  using (true);
+
 -- 2) Public Storage bucket for owner-uploaded section images.
 insert into storage.buckets (id, name, public)
 values ('storefront-uploads', 'storefront-uploads', true)

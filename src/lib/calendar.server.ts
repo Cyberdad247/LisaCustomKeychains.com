@@ -2,6 +2,11 @@
 import { readFile, writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { type PopupEvent } from "./calendar";
+import { getServerSupabase } from "./supabase-server";
+
+// Supabase persistence (durable on Vercel, where the FS is read-only/ephemeral).
+const EVENTS_TABLE = process.env.STOREFRONT_EVENTS_TABLE || "storefront_events";
+const EVENTS_ROW_ID = "singleton";
 
 // ── ICS parsing ──────────────────────────────────────────────────────────────
 
@@ -47,22 +52,61 @@ export function parseICSEvents(icsText: string): PopupEvent[] {
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
-// ── File I/O ─────────────────────────────────────────────────────────────────
+// ── Persistence (Supabase when configured, filesystem fallback for dev) ───────
 
 const EVENTS_PATH = path.join(process.cwd(), "data", "events.json");
 
-export async function getUpcomingPopups(): Promise<PopupEvent[]> {
+/** All events (unfiltered). Used by the owner editor. */
+export async function getAllEvents(): Promise<PopupEvent[]> {
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from(EVENTS_TABLE)
+        .select("events")
+        .eq("id", EVENTS_ROW_ID)
+        .maybeSingle();
+      if (error) throw error;
+      return Array.isArray(data?.events) ? (data.events as PopupEvent[]) : [];
+    } catch (err) {
+      console.error("[events] Supabase read failed:", err);
+      return [];
+    }
+  }
   try {
-    const raw = await readFile(EVENTS_PATH, "utf-8");
-    const events: PopupEvent[] = JSON.parse(raw);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    return events
-      .filter((e) => new Date(e.date) >= now)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return JSON.parse(await readFile(EVENTS_PATH, "utf-8")) as PopupEvent[];
   } catch {
     return [];
   }
+}
+
+export async function saveAllEvents(events: PopupEvent[]): Promise<void> {
+  const sorted = [...events].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  );
+  const supabase = getServerSupabase();
+  if (supabase) {
+    const { error } = await supabase.from(EVENTS_TABLE).upsert(
+      { id: EVENTS_ROW_ID, events: sorted, updated_at: new Date().toISOString() },
+      { onConflict: "id" },
+    );
+    if (error) {
+      console.error("[events] Supabase write failed:", error);
+      throw new Error(`Failed to save events: ${error.message}`);
+    }
+    return;
+  }
+  await mkdir(path.dirname(EVENTS_PATH), { recursive: true });
+  await writeFile(EVENTS_PATH, JSON.stringify(sorted, null, 2) + "\n", "utf-8");
+}
+
+/** Upcoming events only (today onward), for the public storefront. */
+export async function getUpcomingPopups(): Promise<PopupEvent[]> {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  return (await getAllEvents())
+    .filter((e) => new Date(e.date) >= now)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
 export async function syncEventsFromICS(): Promise<{ synced: number; error?: string }> {
@@ -80,19 +124,9 @@ export async function syncEventsFromICS(): Promise<{ synced: number; error?: str
 
   const icsEvents = parseICSEvents(icsText);
 
-  let existing: PopupEvent[] = [];
-  try {
-    existing = JSON.parse(await readFile(EVENTS_PATH, "utf-8"));
-  } catch {
-    // first sync — no existing file yet
-  }
-  const manual = existing.filter((e) => !e.id.startsWith("ics-"));
-
-  const merged = [...manual, ...icsEvents].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-  );
-
-  await mkdir(path.dirname(EVENTS_PATH), { recursive: true });
-  await writeFile(EVENTS_PATH, JSON.stringify(merged, null, 2) + "\n", "utf-8");
+  // Preserve manually-added events (ids that don't start with "ics-").
+  const manual = (await getAllEvents()).filter((e) => !e.id.startsWith("ics-"));
+  const merged = [...manual, ...icsEvents];
+  await saveAllEvents(merged);
   return { synced: icsEvents.length };
 }

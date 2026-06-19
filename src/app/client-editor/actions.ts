@@ -15,6 +15,66 @@ import {
   StorefrontConfigSchema,
   verifyOwnerPassword,
 } from "@/lib/storefront-config";
+import { PopupEventSchema, newEventId } from "@/lib/calendar";
+import { getAllEvents, saveAllEvents, syncEventsFromICS } from "@/lib/calendar.server";
+
+async function requireOwner(): Promise<boolean> {
+  const cookieStore = await cookies();
+  return isOwnerSessionValid(cookieStore.get("lisa_owner_session")?.value);
+}
+
+type EventActionResult = { ok: true } | { ok: false; error: string };
+
+/** Add a new event or update an existing one (by id). Owner-gated. */
+export async function saveEventAction(formData: FormData): Promise<EventActionResult> {
+  if (!(await requireOwner())) return { ok: false, error: "Not signed in." };
+
+  const id = String(formData.get("id") || "").trim() || newEventId();
+  const candidate = {
+    id,
+    date: String(formData.get("date") || "").trim(),
+    title: String(formData.get("title") || "").trim(),
+    location: String(formData.get("location") || "").trim(),
+  };
+  const parsed = PopupEventSchema.safeParse(candidate);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message || "Invalid event." };
+  }
+
+  const events = await getAllEvents();
+  const idx = events.findIndex((e) => e.id === id);
+  if (idx >= 0) events[idx] = parsed.data;
+  else events.push(parsed.data);
+
+  await saveAllEvents(events);
+  revalidatePath("/");
+  revalidatePath("/client-editor");
+  return { ok: true };
+}
+
+/** Delete an event by id. Owner-gated. */
+export async function deleteEventAction(id: string): Promise<EventActionResult> {
+  if (!(await requireOwner())) return { ok: false, error: "Not signed in." };
+  if (!id) return { ok: false, error: "Missing id." };
+
+  const events = (await getAllEvents()).filter((e) => e.id !== id);
+  await saveAllEvents(events);
+  revalidatePath("/");
+  revalidatePath("/client-editor");
+  return { ok: true };
+}
+
+/** Pull events from the linked Google Calendar (ICS). Owner-gated. */
+export async function syncCalendarAction(): Promise<
+  { ok: true; synced: number } | { ok: false; error: string }
+> {
+  if (!(await requireOwner())) return { ok: false, error: "Not signed in." };
+  const result = await syncEventsFromICS();
+  if (result.error) return { ok: false, error: result.error };
+  revalidatePath("/");
+  revalidatePath("/client-editor");
+  return { ok: true, synced: result.synced };
+}
 
 export async function loginOwner(formData: FormData) {
   const password = String(formData.get("password") || "");
