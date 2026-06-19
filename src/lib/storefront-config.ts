@@ -3,6 +3,8 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { z } from "zod";
 
+import { getServerSupabase } from "./supabase-server";
+
 const ProductSlotSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1),
@@ -55,6 +57,12 @@ export const StorefrontConfigSchema = z.object({
 export type StorefrontConfig = z.infer<typeof StorefrontConfigSchema>;
 
 const CONFIG_PATH = path.join(process.cwd(), "data", "storefront-config.json");
+
+// Supabase persistence (survives Vercel's ephemeral, read-only serverless FS).
+// Overridable via env so the table/bucket can be renamed without code changes.
+const CONFIG_TABLE = process.env.STOREFRONT_CONFIG_TABLE || "storefront_config";
+const CONFIG_ROW_ID = "singleton";
+const UPLOAD_BUCKET = process.env.STOREFRONT_UPLOAD_BUCKET || "storefront-uploads";
 
 export const defaultStorefrontConfig: StorefrontConfig = {
   clientName: "Lisa Custom Keychains",
@@ -139,13 +147,36 @@ export const defaultStorefrontConfig: StorefrontConfig = {
   },
 };
 
+function mergeWithDefaults(parsed: unknown): StorefrontConfig {
+  return StorefrontConfigSchema.parse({
+    ...defaultStorefrontConfig,
+    ...(parsed as Partial<StorefrontConfig>),
+  });
+}
+
 export async function getStorefrontConfig(): Promise<StorefrontConfig> {
+  // Prefer Supabase (durable in production). Fall back to the local filesystem
+  // for development, then to the in-code defaults.
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from(CONFIG_TABLE)
+        .select("config")
+        .eq("id", CONFIG_ROW_ID)
+        .maybeSingle();
+      if (error) throw error;
+      if (data?.config) return mergeWithDefaults(data.config);
+      return defaultStorefrontConfig;
+    } catch (err) {
+      console.error("[storefront-config] Supabase read failed:", err);
+      return defaultStorefrontConfig;
+    }
+  }
+
   try {
     const parsed = JSON.parse(await readFile(CONFIG_PATH, "utf8")) as unknown;
-    return StorefrontConfigSchema.parse({
-      ...defaultStorefrontConfig,
-      ...(parsed as Partial<StorefrontConfig>),
-    });
+    return mergeWithDefaults(parsed);
   } catch {
     return defaultStorefrontConfig;
   }
@@ -153,6 +184,24 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
 
 export async function saveStorefrontConfig(config: StorefrontConfig) {
   const parsed = StorefrontConfigSchema.parse(config);
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    const { error } = await supabase.from(CONFIG_TABLE).upsert(
+      {
+        id: CONFIG_ROW_ID,
+        config: parsed,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" },
+    );
+    if (error) {
+      console.error("[storefront-config] Supabase write failed:", error);
+      throw new Error(`Failed to save storefront config: ${error.message}`);
+    }
+    return;
+  }
+
   await mkdir(path.dirname(CONFIG_PATH), { recursive: true });
   await writeFile(CONFIG_PATH, `${JSON.stringify(parsed, null, 2)}\n`, "utf8");
 }
@@ -168,6 +217,21 @@ export async function saveUploadedImage(file: File | null): Promise<string> {
     .update(file.name)
     .digest("hex")
     .slice(0, 10)}${extension}`;
+
+  // Upload to Supabase Storage in production so the URL survives redeploys.
+  const supabase = getServerSupabase();
+  if (supabase) {
+    const { error } = await supabase.storage
+      .from(UPLOAD_BUCKET)
+      .upload(safeName, bytes, { contentType: file.type, upsert: false });
+    if (error) {
+      console.error("[storefront-config] Supabase upload failed:", error);
+      throw new Error(`Failed to upload image: ${error.message}`);
+    }
+    const { data } = supabase.storage.from(UPLOAD_BUCKET).getPublicUrl(safeName);
+    return data.publicUrl;
+  }
+
   const uploadDir = path.join(process.cwd(), "public", "uploads");
   await mkdir(uploadDir, { recursive: true });
   await writeFile(path.join(uploadDir, safeName), bytes);
