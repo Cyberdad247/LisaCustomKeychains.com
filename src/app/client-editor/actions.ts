@@ -12,6 +12,7 @@ import {
   ownerPasswordConfigured,
   saveStorefrontConfig,
   saveUploadedImage,
+  StorefrontConfigSchema,
   verifyOwnerPassword,
 } from "@/lib/storefront-config";
 
@@ -39,6 +40,41 @@ export async function logoutOwner() {
   const cookieStore = await cookies();
   cookieStore.delete("lisa_owner_session");
   redirect("/client-editor/login");
+}
+
+/**
+ * Human-in-the-loop apply step for the conversational editor. The chat route
+ * only proposes; nothing is persisted until the owner clicks Accept, which calls
+ * this. Re-validates the incoming JSON against the schema before saving.
+ */
+export async function applyProposedConfig(
+  configJson: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const cookieStore = await cookies();
+  if (!isOwnerSessionValid(cookieStore.get("lisa_owner_session")?.value)) {
+    return { ok: false, error: "Not signed in." };
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(configJson);
+  } catch {
+    return { ok: false, error: "Malformed proposal." };
+  }
+
+  const result = StorefrontConfigSchema.safeParse(parsed);
+  if (!result.success) {
+    return { ok: false, error: "Proposal failed validation." };
+  }
+
+  await saveStorefrontConfig({
+    ...result.data,
+    updatedAt: new Date().toISOString(),
+  });
+  revalidatePath("/");
+  revalidatePath("/client-editor");
+  revalidatePath("/api/storefront-config");
+  return { ok: true };
 }
 
 export async function publishStorefrontConfig(formData: FormData) {

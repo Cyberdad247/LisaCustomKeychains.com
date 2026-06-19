@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { logoutOwner, publishStorefrontConfig } from "./actions";
 import { getStorefrontConfig, isOwnerSessionValid } from "@/lib/storefront-config";
 import HermesAssist from "./HermesAssist";
+import ThreadEditor from "./ThreadEditor";
 import EditorNav from "@/app/editor/EditorNav";
 
 export default async function ClientEditorPage({
@@ -55,6 +56,18 @@ export default async function ClientEditorPage({
             </div>
           )}
         </header>
+
+        <div className="mt-6">
+          <ThreadEditor />
+        </div>
+
+        <div className="mt-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-slate-300" />
+          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
+            Or edit fields manually
+          </span>
+          <div className="h-px flex-1 bg-slate-300" />
+        </div>
 
         <form action={publishStorefrontConfig} className="mt-6 grid gap-6">
           <section className="grid gap-4 md:grid-cols-4">
