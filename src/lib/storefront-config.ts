@@ -1,9 +1,13 @@
-import { createHash, timingSafeEqual } from "crypto";
+import { createHash, createHmac, timingSafeEqual } from "crypto";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { z } from "zod";
 
 import { getServerSupabase } from "./supabase-server";
+
+// Owner session lifetime. Keep in sync with the cookie maxAge in
+// src/app/client-editor/actions.ts (it imports this constant).
+export const OWNER_SESSION_TTL_SECONDS = 60 * 60 * 8; // 8 hours
 
 const ProductSlotSchema = z.object({
   id: z.string().min(1),
@@ -248,17 +252,52 @@ export function verifyOwnerPassword(input: string) {
   return safeEqual(input, password);
 }
 
-export function createOwnerSession() {
-  const secret =
+function getSessionSecret(): string | null {
+  // Fail closed: no implicit "dev" fallback. A missing secret means no valid
+  // sessions can be minted or accepted, rather than everyone sharing a
+  // publicly-known token.
+  return (
     process.env.OWNER_DASHBOARD_SECRET ||
     process.env.OWNER_DASHBOARD_PASSWORD ||
-    "dev";
-  return createHash("sha256").update(`lisa-owner:${secret}`).digest("hex");
+    null
+  );
 }
 
-export function isOwnerSessionValid(value: string | undefined) {
+function signSession(payload: string, secret: string): string {
+  return createHmac("sha256", secret).update(`lisa-owner:${payload}`).digest("hex");
+}
+
+/**
+ * Mint an expiring, HMAC-signed session token: `<expiresAtMs>.<signature>`.
+ * Unlike the previous static `sha256(secret)` token, this expires and cannot be
+ * forged without the secret. Throws if no secret is configured.
+ */
+export function createOwnerSession(): string {
+  const secret = getSessionSecret();
+  if (!secret) {
+    throw new Error(
+      "OWNER_DASHBOARD_SECRET (or OWNER_DASHBOARD_PASSWORD) must be set to create an owner session.",
+    );
+  }
+  const expiresAt = Date.now() + OWNER_SESSION_TTL_SECONDS * 1000;
+  const payload = String(expiresAt);
+  return `${payload}.${signSession(payload, secret)}`;
+}
+
+export function isOwnerSessionValid(value: string | undefined): boolean {
   if (!value) return false;
-  return safeEqual(value, createOwnerSession());
+  const secret = getSessionSecret();
+  if (!secret) return false; // fail closed
+
+  const separator = value.indexOf(".");
+  if (separator <= 0) return false;
+  const payload = value.slice(0, separator);
+  const signature = value.slice(separator + 1);
+
+  const expiresAt = Number(payload);
+  if (!Number.isFinite(expiresAt) || Date.now() > expiresAt) return false;
+
+  return safeEqual(signature, signSession(payload, secret));
 }
 
 function safeEqual(left: string, right: string) {
