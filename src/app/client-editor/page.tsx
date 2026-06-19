@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 
 import { logoutOwner, publishStorefrontConfig } from "./actions";
 import { getStorefrontConfig, isOwnerSessionValid } from "@/lib/storefront-config";
+import { getAllEvents } from "@/lib/calendar.server";
 import HermesAssist from "./HermesAssist";
 import ThreadEditor from "./ThreadEditor";
+import EventManager from "./EventManager";
 import EditorNav from "@/app/editor/EditorNav";
 
 export default async function ClientEditorPage({
@@ -18,6 +20,8 @@ export default async function ClientEditorPage({
   }
 
   const config = await getStorefrontConfig();
+  const events = await getAllEvents();
+  const calendarConfigured = Boolean(process.env.GOOGLE_CALENDAR_ICS_URL);
   const params = await searchParams;
 
   return (
@@ -67,6 +71,10 @@ export default async function ClientEditorPage({
 
         <div className="mt-6">
           <ThreadEditor />
+        </div>
+
+        <div className="mt-6">
+          <EventManager events={events} calendarConfigured={calendarConfigured} />
         </div>
 
         <div className="mt-6 flex items-center gap-3">
