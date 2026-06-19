@@ -66,6 +66,13 @@ export default async function ClientEditorLoginPage({
             Sign in
           </button>
         </form>
+
+        <a
+          href="/"
+          className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-slate-500 hover:text-purple-700"
+        >
+          ← Back to site
+        </a>
       </section>
     </main>
   );
