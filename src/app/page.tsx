@@ -121,7 +121,7 @@ export default async function Home() {
               products={products.filter(({ node }) => 
                 node.title.toLowerCase().includes("set") || 
                 node.productType?.toLowerCase().includes("set")
-              )} 
+              ).slice(0, 1)} 
             />
           </div>
         </div>
