@@ -1,3 +1,4 @@
+export const maxDuration = 60;
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { getAllProducts } from "@/lib/shopify";
