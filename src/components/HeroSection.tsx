@@ -113,7 +113,7 @@ export default function HeroSection({ featuredProduct, copy }: HeroSectionProps)
                 <PolaroidWrapper className="mx-auto md:mr-0 max-w-sm">
                     <div className="aspect-square bg-stone-100 overflow-hidden mb-4 border border-stone-200 relative">
                         <Image
-                            src="/featured-earrings.jpg"
+                            src="https://i.postimg.cc/ZKT4zCYX/IMG-20260923-192924.jpg"
                             alt="Featured Handmade Earrings"
                             fill
                             priority
