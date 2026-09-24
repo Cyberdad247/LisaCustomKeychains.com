@@ -61,6 +61,19 @@ export default async function Home() {
   const weekIndex = products.length > 0 ? getWeekNumber(new Date()) % products.length : 0;
   const featuredProduct = products.length > 0 ? products[weekIndex].node : undefined;
 
+  // ✨ Earrings: show only the signature Heart earring in the product list
+  const isEarring = ({ node }: ShopifyProductEdge) =>
+    node.productType?.toLowerCase().includes("earring") ||
+    node.title.toLowerCase().includes("earring") ||
+    node.title.toLowerCase().includes("dangle");
+  const earringPool = products.filter(isEarring);
+  const signatureEarring =
+    earringPool.find(({ node }) => node.title.toLowerCase().includes("heart")) ??
+    earringPool[0];
+  const galleryProducts = signatureEarring
+    ? products.filter((p) => !isEarring(p) || p === signatureEarring)
+    : products;
+
   return (
     <div className="min-h-screen text-slate-800 bg-white">
       <ProductJSONLD products={products.map((p: ShopifyProductEdge) => p.node)} />
@@ -97,7 +110,7 @@ export default async function Home() {
             source={socialFeed.source}
             config={storefrontConfig.social}
           />
-          <ProductGallery products={products} />
+          <ProductGallery products={galleryProducts} />
         </div>
 
         {/* 💎 Signature Sets Section - NEW */}
