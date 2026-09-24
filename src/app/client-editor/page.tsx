@@ -5,6 +5,7 @@ import { logoutOwner, publishStorefrontConfig } from "./actions";
 import { getStorefrontConfig, isOwnerSessionValid } from "@/lib/storefront-config";
 import { getAllEvents } from "@/lib/calendar.server";
 import HermesAssist from "./HermesAssist";
+import QueenBobPanel from "@/components/QueenBobPanel";
 import ThreadEditor from "./ThreadEditor";
 import EventManager from "./EventManager";
 import EditorNav from "@/app/editor/EditorNav";
@@ -68,6 +69,10 @@ export default async function ClientEditorPage({
             </div>
           )}
         </header>
+
+        <div className="mt-6">
+          <QueenBobPanel />
+        </div>
 
         <div className="mt-6">
           <ThreadEditor />
