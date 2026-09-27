@@ -11,5 +11,6 @@ export async function GET() {
     key_set: key.length > 0,
     key_len: key.length,
     vercel_env: process.env.VERCEL_ENV ?? null,
+    probe: process.env.BOB_TEST_PROBE ?? null,
   });
 }
