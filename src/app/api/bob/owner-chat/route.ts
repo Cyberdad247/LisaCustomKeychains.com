@@ -14,7 +14,13 @@ let catalogCache: { at: number; text: string } | null = null;
 async function catalogContext(): Promise<string> {
   if (catalogCache && Date.now() - catalogCache.at < 3_600_000) return catalogCache.text;
   try {
-    const edges = await getAllProducts();
+    // Bound the catalog fetch so a slow Shopify API can never hang the chat.
+    const edges = await Promise.race([
+      getAllProducts(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("catalog timeout")), 8000)
+      ),
+    ]);
     const lines = edges.slice(0, 120).map(({ node }) => {
       const price = node.priceRange?.minVariantPrice;
       return `- ${node.title} [${node.productType || "keychain"}] $${price?.amount ?? "?"} (/${node.handle})`;
