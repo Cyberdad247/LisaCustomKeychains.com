@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAllProducts } from "@/lib/shopify";
 
 // Sir BoB chat proxy — the model brain lives on the VPS gateway.
-// Env: BOB_GATEWAY_URL (e.g. http://<vps>:8102), BOB_API_KEY (shared secret).
+// The gateway's /chat is a public storefront endpoint (per-IP rate limited
+// on both ends), so the URL is hardcoded and no secret is needed here.
 
 const WINDOW_MS = 60_000;
 const MAX_PER_WINDOW = 20;
@@ -44,14 +45,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ reply: "You are chatting quite fast — give me a breath and try again." }, { status: 429 });
   }
 
-  const gateway = process.env.BOB_GATEWAY_URL;
-  const apiKey = process.env.BOB_API_KEY;
-  if (!gateway || !apiKey) {
-    return NextResponse.json(
-      { reply: "I am not yet connected to my desk. Please check back soon, or contact Lisa directly." },
-      { status: 503 }
-    );
-  }
+  const gateway = "https://bob.lisascustomkeychains.com";
 
   let body: { messages?: { role: string; content: string }[] };
   try {
@@ -69,11 +63,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const catalog = await catalogContext();
-    const res = await fetch(`${gateway.replace(/\/$/, "")}/chat`, {
+    const res = await fetch(`${gateway}/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({ messages, catalog }),
       signal: AbortSignal.timeout(60_000),

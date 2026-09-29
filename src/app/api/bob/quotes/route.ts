@@ -3,20 +3,22 @@ import { NextResponse } from "next/server";
 import { isOwnerSessionValid } from "@/lib/storefront-config";
 
 // Owner-gated: list bulk quote requests captured by the shopper BoB.
+
+const GATEWAY = "https://bob.lisascustomkeychains.com";
 export async function GET() {
   const cookieStore = await cookies();
   if (!isOwnerSessionValid(cookieStore.get("lisa_owner_session")?.value)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const gateway = process.env.BOB_GATEWAY_URL;
+  const gateway = GATEWAY;
   const apiKey = process.env.BOB_API_KEY;
   if (!gateway || !apiKey) {
     return NextResponse.json({ quotes: [], notConfigured: true });
   }
 
   try {
-    const res = await fetch(`${gateway.replace(/\/$/, "")}/quotes`, {
+    const res = await fetch(`${gateway}/quotes`, {
       headers: { Authorization: `Bearer ${apiKey}` },
       signal: AbortSignal.timeout(30_000),
     });

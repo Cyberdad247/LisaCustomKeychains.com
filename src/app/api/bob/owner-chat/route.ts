@@ -7,6 +7,8 @@ import { isOwnerSessionValid } from "@/lib/storefront-config";
 // Queen Lisa's BoB — chamberlain mode. Owner-gated. Business advice,
 // quote summaries, grounded in the live catalog. Same VPS brain, owner persona.
 
+const GATEWAY = "https://bob.lisascustomkeychains.com";
+
 let catalogCache: { at: number; text: string } | null = null;
 
 async function catalogContext(): Promise<string> {
@@ -31,14 +33,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const gateway = process.env.BOB_GATEWAY_URL;
-  const apiKey = process.env.BOB_API_KEY;
-  if (!gateway || !apiKey) {
-    return NextResponse.json(
-      { reply: "BoB is not connected yet. Set BOB_GATEWAY_URL and BOB_API_KEY in Vercel." },
-      { status: 503 }
-    );
-  }
+  const gateway = GATEWAY;
 
   let body: { messages?: { role: string; content: string }[] };
   try {
@@ -56,11 +51,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const catalog = await catalogContext();
-    const res = await fetch(`${gateway.replace(/\/$/, "")}/chat`, {
+    const res = await fetch(`${gateway}/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({ messages, catalog, persona: "owner" }),
       signal: AbortSignal.timeout(60_000),

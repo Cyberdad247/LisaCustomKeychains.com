@@ -3,13 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 // Bulk quote capture — forwards to the VPS BoB gateway, which stores the
 // request and notifies Lisa. Nothing is promised to the customer here;
 // Lisa reviews every request personally (human-in-the-loop).
+// The gateway's /quote is a public storefront endpoint, so no secret here.
+
+const GATEWAY = "https://bob.lisascustomkeychains.com";
 
 export async function POST(req: NextRequest) {
-  const gateway = process.env.BOB_GATEWAY_URL;
-  const apiKey = process.env.BOB_API_KEY;
-  if (!gateway || !apiKey) {
-    return NextResponse.json({ ok: false, error: "not-configured" }, { status: 503 });
-  }
 
   let body: { name?: string; contact?: string; quantity?: string; details?: string };
   try {
@@ -27,11 +25,10 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const res = await fetch(`${gateway.replace(/\/$/, "")}/quote`, {
+    const res = await fetch(`${GATEWAY}/quote`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({ name, contact, quantity, details }),
       signal: AbortSignal.timeout(30_000),
