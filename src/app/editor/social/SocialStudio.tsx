@@ -189,15 +189,32 @@ export default function SocialStudio() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  // Auto-append UTM params to store links so the playbook's attribution works
+  // without Lisa remembering to do it by hand.
+  function withUTM(content: string, platform: string): string {
+    return content.replace(
+      /https?:\/\/(www\.)?lisascustomkeychains\.com[^\s]*/g,
+      (url) => {
+        if (url.includes("utm_source=")) return url;
+        const sep = url.includes("?") ? "&" : "?";
+        return `${url}${sep}utm_source=${platform}&utm_medium=social&utm_campaign=lisa_organic`;
+      }
+    );
+  }
+
   async function savePost() {
     setSaving(true);
     try {
       const url = editingId ? `/api/social?id=${editingId}` : "/api/social";
       const method = editingId ? "PATCH" : "POST";
+      const payload = {
+        ...draft,
+        content: withUTM(draft.content ?? "", draft.platform ?? "instagram"),
+      };
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(draft),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Save failed");
       const saved: SocialPost = await res.json();

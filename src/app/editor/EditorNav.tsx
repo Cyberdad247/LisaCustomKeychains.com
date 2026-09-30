@@ -8,6 +8,7 @@ import {
   PenSquare,
   Image,
   ShoppingBag,
+  TrendingUp,
   ExternalLink,
 } from "lucide-react";
 
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
   { href: "/editor/social", label: "Social", icon: Share2, exact: false },
   { href: "/editor/blog", label: "Blog", icon: PenSquare, exact: false },
   { href: "/editor/ads", label: "Ads", icon: Image, exact: false },
+  { href: "/editor/growth", label: "Growth", icon: TrendingUp, exact: false },
   { href: "/client-editor", label: "Storefront", icon: ShoppingBag, exact: false },
 ];
 

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import ContentCalendar from "./ContentCalendar";
 import TriagePanel from "./TriagePanel";
 import CampaignPacks from "./CampaignPacks";
+import PopupPrep from "./PopupPrep";
 import { getUpcomingPopups } from "@/lib/calendar.server";
 import { isOwnerSessionValid } from "@/lib/storefront-config";
 import { logoutOwner } from "@/app/client-editor/actions";
@@ -73,6 +74,7 @@ export default async function OwnerDashboard() {
                     <span className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">
                       {event.location}
                     </span>
+                    <PopupPrep title={event.title} date={event.date} location={event.location} />
                   </li>
                 ))}
               </ul>
