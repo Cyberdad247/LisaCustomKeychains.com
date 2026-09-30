@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import ContentCalendar from "./ContentCalendar";
 import TriagePanel from "./TriagePanel";
+import CampaignPacks from "./CampaignPacks";
 import { getUpcomingPopups } from "@/lib/calendar.server";
 import { isOwnerSessionValid } from "@/lib/storefront-config";
 import { logoutOwner } from "@/app/client-editor/actions";
@@ -45,6 +46,8 @@ export default async function OwnerDashboard() {
 
         <div className="space-y-6">
           <TriagePanel />
+
+          <CampaignPacks />
 
           <div className="bg-white border border-gray-200 p-6 shadow-sm">
             <h2 className="text-xs uppercase tracking-[0.2em] font-bold text-gray-900 mb-4 border-b pb-2">

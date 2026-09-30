@@ -43,3 +43,22 @@ export async function PATCH(req: Request) {
   await writeFile(DATA_PATH, JSON.stringify(items, null, 2));
   return NextResponse.json(items[idx]);
 }
+
+export async function POST(req: Request) {
+  const { type, title, body } = await req.json();
+  if (!title || !body) {
+    return NextResponse.json({ error: "title and body required" }, { status: 400 });
+  }
+  const items = await readQueue();
+  const item: ContentItem = {
+    id: `cq-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    type: type ?? "note",
+    title,
+    body,
+    status: "pending",
+    createdAt: new Date().toISOString(),
+  };
+  items.unshift(item);
+  await writeFile(DATA_PATH, JSON.stringify(items, null, 2));
+  return NextResponse.json(item, { status: 201 });
+}

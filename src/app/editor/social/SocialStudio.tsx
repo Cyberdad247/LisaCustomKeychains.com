@@ -152,6 +152,7 @@ export default function SocialStudio() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Partial<SocialPost>>(emptyPost());
   const [aiPrompt, setAiPrompt] = useState("");
+  const [bobDrafting, setBobDrafting] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -218,6 +219,36 @@ export default function SocialStudio() {
     await fetch(`/api/social?id=${id}`, { method: "DELETE" });
     setPosts((prev) => prev.filter((p) => p.id !== id));
     if (editingId === id) startNew();
+  }
+
+  async function draftWithBob() {
+    if (bobDrafting) return;
+    setBobDrafting(true);
+    try {
+      const res = await fetch("/api/bob/draft-posts", { method: "POST" });
+      if (!res.ok) throw new Error("BoB draft failed");
+      const { drafts } = (await res.json()) as {
+        drafts: { platform: string; content: string; hashtags: string[] }[];
+      };
+      for (const d of drafts) {
+        await fetch("/api/social", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            platform: d.platform,
+            content: d.content,
+            hashtags: d.hashtags,
+            status: "draft",
+            scheduledDate: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
+          }),
+        });
+      }
+      await fetchPosts();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setBobDrafting(false);
+    }
   }
 
   async function generate() {
@@ -298,6 +329,15 @@ export default function SocialStudio() {
             </span>
           </h1>
         </div>
+        <div className="flex items-center gap-2">
+        <button
+          onClick={draftWithBob}
+          disabled={bobDrafting}
+          className="flex items-center gap-1.5 rounded-lg border border-purple-300 bg-purple-50 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-purple-800 hover:bg-purple-100 transition-colors disabled:opacity-50"
+        >
+          {bobDrafting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          {bobDrafting ? "BoB drafting..." : "Draft with Sir BoB"}
+        </button>
         <button
           onClick={startNew}
           className="flex items-center gap-1.5 rounded-lg bg-slate-950 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-white hover:bg-purple-700 transition-colors"
@@ -305,6 +345,7 @@ export default function SocialStudio() {
           <Plus className="h-3.5 w-3.5" />
           New Post
         </button>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">

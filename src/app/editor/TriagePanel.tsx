@@ -96,6 +96,7 @@ export default function TriagePanel() {
   const [report, setReport] = useState<TriageReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [business, setBusiness] = useState<{ metrics: { label: string; value: string; status: string; detail: string }[] } | null>(null);
 
   const fetchTriage = useCallback(async () => {
     setLoading(true);
@@ -108,6 +109,12 @@ export default function TriagePanel() {
       setError(String(err));
     } finally {
       setLoading(false);
+    }
+    try {
+      const bres = await fetch("/api/business-health");
+      if (bres.ok) setBusiness(await bres.json());
+    } catch {
+      /* business metrics are best-effort */
     }
   }, []);
 
@@ -202,6 +209,25 @@ export default function TriagePanel() {
                 <CheckRow key={check.label} check={check} />
               ))}
             </div>
+
+            {/* Business health */}
+            {business && business.metrics.length > 0 && (
+              <div className="mt-5 pt-4 border-t border-gray-200">
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-900 mb-2">
+                  Business Health
+                </h3>
+                {business.metrics.map((m) => (
+                  <CheckRow
+                    key={m.label}
+                    check={{
+                      label: m.label,
+                      status: m.status as TriageStatus,
+                      detail: `${m.value} — ${m.detail}`,
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>
