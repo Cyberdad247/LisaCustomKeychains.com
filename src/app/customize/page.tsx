@@ -1,11 +1,11 @@
 import { getAllProducts } from "@/lib/shopify";
-import KeychainBuilder from "@/components/customize/KeychainBuilder";
+import CustomizationWalkthrough from "@/components/customize/CustomizationWalkthrough";
 import Navbar from "@/components/Navbar";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
     title: "Build Your Own Keychain | Lisa's Custom Keychains",
-    description: "Create your unique personal expression. Select colors, charms, and custom text to forge your one-of-a-kind handcrafted keychain.",
+    description: "Walk the forge with Sir BoB: choose your occasion, thread, text, and charms — Lisa hand-weaves your one-of-a-kind keychain.",
 };
 
 export default async function CustomizePage() {
@@ -29,7 +29,7 @@ export default async function CustomizePage() {
         <div className="min-h-screen bg-stone-50">
             <Navbar />
             <main className="pt-24 min-h-screen">
-                <KeychainBuilder product={baseProduct} />
+                <CustomizationWalkthrough product={baseProduct} />
             </main>
         </div>
     );
