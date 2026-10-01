@@ -1,7 +1,8 @@
-import { afterEach, beforeEach, describe, it, expect } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import {
   createOwnerSession,
   defaultStorefrontConfig,
+  getStorefrontConfig,
   isOwnerSessionValid,
   OWNER_SESSION_TTL_SECONDS,
   StorefrontConfigSchema,
@@ -129,5 +130,72 @@ describe("owner session", () => {
 
   it("uses an 8 hour TTL", () => {
     expect(OWNER_SESSION_TTL_SECONDS).toBe(60 * 60 * 8);
+  });
+});
+
+describe("getStorefrontConfig remote dashboard source", () => {
+  const originalUrl = process.env.DASHBOARD_CONFIG_URL;
+
+  afterEach(() => {
+    if (originalUrl === undefined) delete process.env.DASHBOARD_CONFIG_URL;
+    else process.env.DASHBOARD_CONFIG_URL = originalUrl;
+    vi.unstubAllGlobals();
+  });
+
+  it("does not fetch when DASHBOARD_CONFIG_URL is unset", async () => {
+    delete process.env.DASHBOARD_CONFIG_URL;
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const config = await getStorefrontConfig();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(StorefrontConfigSchema.safeParse(config).success).toBe(true);
+  });
+
+  it("prefers a valid remote config when configured", async () => {
+    process.env.DASHBOARD_CONFIG_URL =
+      "https://dash.example.com/api/storefront-config";
+    const remoteConfig = {
+      ...defaultStorefrontConfig,
+      hero: { ...defaultStorefrontConfig.hero, badge: "Remote Badge" },
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: true, json: async () => remoteConfig }),
+    );
+    const config = await getStorefrontConfig();
+    expect(config.hero.badge).toBe("Remote Badge");
+  });
+
+  it("falls back when the remote returns an error status", async () => {
+    process.env.DASHBOARD_CONFIG_URL =
+      "https://dash.example.com/api/storefront-config";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: false, status: 503, json: async () => ({}) }),
+    );
+    const config = await getStorefrontConfig();
+    expect(config.hero.badge).toBe(defaultStorefrontConfig.hero.badge);
+  });
+
+  it("falls back when the remote payload is invalid", async () => {
+    process.env.DASHBOARD_CONFIG_URL =
+      "https://dash.example.com/api/storefront-config";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: true, json: async () => ({ nope: true }) }),
+    );
+    const config = await getStorefrontConfig();
+    expect(config.hero.badge).toBe(defaultStorefrontConfig.hero.badge);
+  });
+
+  it("falls back when the remote is unreachable", async () => {
+    process.env.DASHBOARD_CONFIG_URL =
+      "https://dash.example.com/api/storefront-config";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new Error("ECONNREFUSED")),
+    );
+    const config = await getStorefrontConfig();
+    expect(config.hero.badge).toBe(defaultStorefrontConfig.hero.badge);
   });
 });

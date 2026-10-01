@@ -117,6 +117,7 @@ export default function HeroSection({ featuredProduct, copy }: HeroSectionProps)
                             alt="Featured Handmade Earrings"
                             fill
                             priority
+                            sizes="384px" // PolaroidWrapper caps at max-w-sm
                             className="object-cover transition-transform duration-700 hover:scale-110"
                         />
                     </div>

@@ -48,6 +48,7 @@ export default function AboutSection() {
               src="/images/lisa_maker_profile.png"
               alt="Lisa - The Maker"
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
               priority
             />

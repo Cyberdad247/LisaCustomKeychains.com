@@ -6,8 +6,12 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ShoppingBag, X, Loader2, Check, Sparkles } from "lucide-react";
 import { useCart } from "../CartProvider";
 import SEOWrapper from "../SEOWrapper";
-import { Sheet, SheetContent, SheetTitle } from "../ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "../ui/sheet";
+import DesignCartridges from "./DesignCartridges";
+import DesignMemory from "./DesignMemory";
 import { type ShopifyProduct } from "../../lib/shopify/types";
+import { type ResolvedCartridge } from "../../lib/a2ui/cartridges";
+import { type SavedDesign } from "../../lib/a2ui/memory";
 import { THREAD_COLORS, CHARM_OPTIONS } from "../../lib/camelot/registry";
 import { type ColorOption, type CharmOption } from "../../lib/camelot/schemas";
 
@@ -33,6 +37,20 @@ export default function SetCustomizer({
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
     const { addItemToCart } = useCart();
+
+    // 🎴 A2UI: cartridge preset → set state (single synced charm, no text).
+    const handleCartridgeApply = (resolved: ResolvedCartridge) => {
+        if (resolved.color) setSelectedColor(resolved.color);
+        if (resolved.charms.length) setSelectedCharm(resolved.charms[0]);
+    };
+
+    // 🧠 A2UI: restore a saved design into the set.
+    const handleRestoreDesign = (design: SavedDesign["design"]) => {
+        const color = THREAD_COLORS.find((c) => c.id === design.colorId);
+        if (color) setSelectedColor(color);
+        const charm = CHARM_OPTIONS.find((c) => c.id === design.charmIds[0]);
+        if (charm) setSelectedCharm(charm);
+    };
 
     // 🛡️ Persistence Logic: Push State on Open
     useEffect(() => {
@@ -102,6 +120,9 @@ export default function SetCustomizer({
             <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
                 <SheetContent className="w-full md:max-w-[90vw] lg:max-w-6xl p-0 gap-0 overflow-hidden bg-white border-l border-white/20 shadow-2xl flex flex-col">
                     <SheetTitle className="sr-only">Customize {product.title}</SheetTitle>
+                    <SheetDescription className="sr-only">
+                        Design your custom set: pick a thread color and charms.
+                    </SheetDescription>
 
                     <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-start z-50 pointer-events-none">
                         <div className="pointer-events-auto"></div>
@@ -187,6 +208,25 @@ export default function SetCustomizer({
                                 </div>
 
                                 <div className="space-y-10">
+                                    {/* 🎴 A2UI: one-tap cartridges + design memory (sets = synced color + charm, no text) */}
+                                    <div className="space-y-6 pt-6 border-t border-stone-100">
+                                        <DesignCartridges
+                                            tier={2}
+                                            lockLetters
+                                            onApply={handleCartridgeApply}
+                                        />
+                                        <DesignMemory
+                                            current={{
+                                                text: "",
+                                                colorId: selectedColor.id,
+                                                colorName: selectedColor.name,
+                                                charmIds: [selectedCharm.id],
+                                                tier: 2,
+                                            }}
+                                            onRestore={handleRestoreDesign}
+                                        />
+                                    </div>
+
                                     {/* Sync Color */}
                                     <div className="space-y-4">
                                         <label className="flex items-center justify-between text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase">

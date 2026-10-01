@@ -10,6 +10,12 @@ import {
     getCharLimit,
 } from "../../lib/camelot/tiers";
 import VibeInput from "../VibeInput";
+import A2UICompiler from "./A2UICompiler";
+import DesignCartridges from "./DesignCartridges";
+import DesignMemory from "./DesignMemory";
+import { type CompiledDesign } from "../../lib/a2ui/compiler";
+import { type ResolvedCartridge } from "../../lib/a2ui/cartridges";
+import { type SavedDesign } from "../../lib/a2ui/memory";
 import { type ShopifyProduct } from "../../lib/shopify/types";
 import { THREAD_COLORS, CHARM_OPTIONS } from "../../lib/camelot/registry";
 import { type ColorOption, type CharmOption } from "../../lib/camelot/schemas";
@@ -69,6 +75,44 @@ export default function KeychainBuilder({
     );
 
     const { addItemToCart } = useCart();
+
+    // ⚡ A2UI: apply compiled design state to the builder
+    const applyText = (value: string) => {
+        const limit = getCharLimit(tier);
+        const val = value.toUpperCase().slice(0, limit);
+        setText(val);
+        startTransition(() => setOptimisticText(val));
+    };
+
+    const handleA2UIApply = (design: Partial<CompiledDesign>) => {
+        if (design.color) setSelectedColor(design.color);
+        if (design.charms?.length) {
+            setSelectedCharms(prev => {
+                const next = [...prev];
+                design.charms!.forEach((c, i) => { if (i < 2) next[i] = c; });
+                return next;
+            });
+        }
+        if (design.text && !lockLetters && !isTier1) applyText(design.text);
+    };
+
+    const handleCartridgeApply = (resolved: ResolvedCartridge) => {
+        handleA2UIApply({ color: resolved.color, charms: resolved.charms, text: resolved.text });
+    };
+
+    const handleRestoreDesign = (design: SavedDesign["design"]) => {
+        const color = filteredColors.find(c => c.id === design.colorId) || filteredColors[0];
+        if (color) setSelectedColor(color);
+        if (design.charmIds.length) {
+            const restored = design.charmIds
+                .map(id => CHARM_OPTIONS.find(c => c.id === id))
+                .filter((c): c is CharmOption => Boolean(c));
+            if (restored.length) {
+                setSelectedCharms(restored.length === 2 ? restored : [restored[0], selectedCharms[1] ?? restored[0]]);
+            }
+        }
+        if (design.text && !lockLetters && !isTier1) applyText(design.text);
+    };
 
     const handleAddToCartAction = async (formData: FormData) => {
         const inputText = (formData.get("text") as string) || text;
@@ -253,6 +297,38 @@ export default function KeychainBuilder({
                     </header>
 
                     <form action={handleAddToCartAction} className="space-y-10">
+                        {/* 00. A2UI Compiler — intent → design */}
+                        <section className="space-y-6">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-[10px] font-black tracking-[.25em] uppercase text-slate-400">00. Compile Your Vision</h3>
+                                <span className="text-[10px] font-black text-purple-600 uppercase tracking-widest">⚡ A2UI DYNAMICS</span>
+                            </div>
+                            <A2UICompiler
+                                tier={tier}
+                                allowedColors={allowedColors}
+                                charmCategory={charmCategory}
+                                lockLetters={lockLetters || isTier1}
+                                onApply={handleA2UIApply}
+                            />
+                            <DesignCartridges
+                                tier={tier}
+                                allowedColors={allowedColors}
+                                charmCategory={charmCategory}
+                                lockLetters={lockLetters || isTier1}
+                                onApply={handleCartridgeApply}
+                            />
+                            <DesignMemory
+                                current={{
+                                    text,
+                                    colorId: selectedColor.id,
+                                    colorName: selectedColor.name,
+                                    charmIds: selectedCharms.map(c => c.id),
+                                    tier,
+                                }}
+                                onRestore={handleRestoreDesign}
+                            />
+                        </section>
+
                         {/* 1. Thread Color */}
                         <section className="space-y-4">
                             <div className="flex justify-between items-center">

@@ -15,7 +15,8 @@
     "shopify:app:build": "cd ../lisa-shopify-app && npm run build",
     "shopify:app:deploy": "cd ../lisa-shopify-app && npm run deploy",
     "shopify:app:setup": "cd ../lisa-shopify-app && npm run setup",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.62.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^20.19.27",

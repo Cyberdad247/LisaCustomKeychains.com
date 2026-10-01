@@ -64,6 +64,7 @@ export default function Navbar() {
                   alt="Lisa's Custom Keychains Logo"
                   fill
                   priority
+                  sizes="192px" // logo width: w-24 (96px) scrolled, w-48 (192px) at rest
                   className="object-contain"
                 />
               </a>

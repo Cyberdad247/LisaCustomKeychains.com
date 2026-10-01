@@ -7,8 +7,12 @@ import { ShoppingBag, X, Loader2, Sparkles } from "lucide-react";
 import { useCart } from "../CartProvider";
 import { validateEarring } from "../../lib/validation/earring";
 import SEOWrapper from "../SEOWrapper";
-import { Sheet, SheetContent, SheetTitle } from "../ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "../ui/sheet";
+import DesignCartridges from "./DesignCartridges";
+import DesignMemory from "./DesignMemory";
 import { type ShopifyProduct } from "../../lib/shopify/types";
+import { type ResolvedCartridge } from "../../lib/a2ui/cartridges";
+import { type SavedDesign } from "../../lib/a2ui/memory";
 import { THREAD_COLORS, CHARM_OPTIONS, NULL_CHARM } from "../../lib/camelot/registry";
 import { type ColorOption, type CharmOption } from "../../lib/camelot/schemas";
 
@@ -44,7 +48,26 @@ export default function EarringCustomizer({
     const [isPending, startTransition] = useTransition();
     const { addItemToCart } = useCart();
 
+    // 🎴 A2UI: cartridge preset → earring slots (top = charm[0], bottom = charm[1] ?? charm[0]).
+    // Earrings have no text — cartridges resolve with lockLetters so text never applies.
+    const handleCartridgeApply = (resolved: ResolvedCartridge) => {
+        if (resolved.color) setSelectedColor(resolved.color);
+        if (resolved.charms.length) {
+            setSelectedTopCharm(resolved.charms[0]);
+            setSelectedBottomCharm(resolved.charms[1] ?? resolved.charms[0]);
+        }
+    };
 
+    // 🧠 A2UI: restore a saved design into the earring slots.
+    const handleRestoreDesign = (design: SavedDesign["design"]) => {
+        const color = THREAD_COLORS.find((c) => c.id === design.colorId);
+        if (color) setSelectedColor(color);
+        const restored = design.charmIds
+            .map((id) => EXTENDED_CHARMS.find((c) => c.id === id))
+            .filter((c): c is CharmOption => Boolean(c));
+        setSelectedTopCharm(restored[0] ?? NULL_CHARM);
+        setSelectedBottomCharm(restored[1] ?? restored[0] ?? NULL_CHARM);
+    };
 
     // 🛡️ Persistence Logic: Push State on Open
     useEffect(() => {
@@ -156,6 +179,9 @@ export default function EarringCustomizer({
             <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
                 <SheetContent className="w-full md:max-w-[90vw] lg:max-w-6xl p-0 gap-0 overflow-hidden bg-white border-l border-white/20 shadow-2xl flex flex-col">
                     <SheetTitle className="sr-only">Customize {product.title}</SheetTitle>
+                    <SheetDescription className="sr-only">
+                        Design your custom earrings: pick a thread color and charms.
+                    </SheetDescription>
 
                     {/* Custom Header / Close */}
                     <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-start z-50 pointer-events-none">
@@ -309,6 +335,32 @@ export default function EarringCustomizer({
                                         Create matching pair earrings.
                                         One design for both earrings.
                                     </p>
+                                </div>
+
+                                {/* 🎴 A2UI: one-tap cartridges + design memory (earrings = color + charms, no text) */}
+                                <div className="space-y-6 pt-4 border-t border-stone-100">
+                                    <DesignCartridges
+                                        tier={2}
+                                        lockLetters
+                                        onApply={handleCartridgeApply}
+                                    />
+                                    <DesignMemory
+                                        current={{
+                                            text: "",
+                                            colorId: selectedColor.id,
+                                            colorName: selectedColor.name,
+                                            charmIds: Array.from(
+                                                new Set(
+                                                    [
+                                                        selectedTopCharm.id,
+                                                        selectedBottomCharm.id,
+                                                    ].filter((id) => id !== "none")
+                                                )
+                                            ),
+                                            tier: 2,
+                                        }}
+                                        onRestore={handleRestoreDesign}
+                                    />
                                 </div>
 
                                 {/* Color Palette Selector */}

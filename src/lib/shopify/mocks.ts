@@ -1996,5 +1996,93 @@ export const mockProducts: ShopifyProductEdge[] = [
                 ]
             }
         }
+    },
+    {
+        "node": {
+            "id": "gid://shopify/Product/14929748499999",
+            "title": "Handmade Dangle Earrings - 1000012345",
+            "handle": "handmade-dangle-earrings-1000012345",
+            "description": "Matching pair of handcrafted macramé earrings. One design, both earrings.",
+            "productType": "Earrings",
+            "featuredImage": {
+                "url": "https://cdn.shopify.com/s/files/1/0952/7151/8578/files/1000012345.jpg?v=1767069006",
+                "altText": null
+            },
+            "priceRange": {
+                "minVariantPrice": {
+                    "amount": "15.00",
+                    "currencyCode": "USD"
+                }
+            },
+            "images": {
+                "edges": [
+                    {
+                        "node": {
+                            "url": "https://cdn.shopify.com/s/files/1/0952/7151/8578/files/1000012345.jpg?v=1767069006",
+                            "altText": null
+                        }
+                    }
+                ]
+            },
+            "variants": {
+                "edges": [
+                    {
+                        "node": {
+                            "id": "gid://shopify/ProductVariant/61475653999999",
+                            "title": "Default Title",
+                            "availableForSale": true,
+                            "price": {
+                                "amount": "15.00",
+                                "currencyCode": "USD"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "node": {
+            "id": "gid://shopify/Product/14929748500000",
+            "title": "Keychain & Earring Set - 1000012346",
+            "handle": "keychain-earring-set-1000012346",
+            "description": "Synchronized bundle: matching keychain and earrings in one cohesive design.",
+            "productType": "Set",
+            "featuredImage": {
+                "url": "https://cdn.shopify.com/s/files/1/0952/7151/8578/files/1000012346.jpg?v=1767069006",
+                "altText": null
+            },
+            "priceRange": {
+                "minVariantPrice": {
+                    "amount": "25.00",
+                    "currencyCode": "USD"
+                }
+            },
+            "images": {
+                "edges": [
+                    {
+                        "node": {
+                            "url": "https://cdn.shopify.com/s/files/1/0952/7151/8578/files/1000012346.jpg?v=1767069006",
+                            "altText": null
+                        }
+                    }
+                ]
+            },
+            "variants": {
+                "edges": [
+                    {
+                        "node": {
+                            "id": "gid://shopify/ProductVariant/61475654000000",
+                            "title": "Default Title",
+                            "availableForSale": true,
+                            "price": {
+                                "amount": "25.00",
+                                "currencyCode": "USD"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
     }
 ];

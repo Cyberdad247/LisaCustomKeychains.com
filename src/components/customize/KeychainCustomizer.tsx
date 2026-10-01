@@ -12,8 +12,13 @@ import {
   getTierDescription,
 } from "../../lib/camelot/tiers";
 import SEOWrapper from "../SEOWrapper";
-import VibeInput from "../VibeInput";
-import { Sheet, SheetContent, SheetTitle } from "../ui/sheet";
+import A2UICompiler from "./A2UICompiler";
+import DesignCartridges from "./DesignCartridges";
+import DesignMemory from "./DesignMemory";
+import { type CompiledDesign } from "../../lib/a2ui/compiler";
+import { type ResolvedCartridge } from "../../lib/a2ui/cartridges";
+import { type SavedDesign } from "../../lib/a2ui/memory";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "../ui/sheet";
 import { type ShopifyProduct } from "../../lib/shopify/types";
 import { THREAD_COLORS as REGISTRY_COLORS, CHARM_OPTIONS } from "../../lib/camelot/registry";
 import { type CharmOption } from "../../lib/camelot/schemas";
@@ -124,6 +129,48 @@ export default function KeychainCustomizer({
     text,
     (state, newText: string) => newText
   );
+
+  // ⚡ A2UI: shared text application (respects lock/earring/tier constraints).
+  const applyDesignText = (value: string) => {
+    if (lockLetters || isTier1) return;
+    const limit = getCharLimit(effectiveTier);
+    const val = value.toUpperCase().slice(0, limit);
+    setText(val);
+    startTransition(() => setOptimisticText(val));
+  };
+
+  // 🎴 A2UI: cartridge preset → drawer state (single active strand).
+  const handleCartridgeApply = (resolved: ResolvedCartridge) => {
+    if (resolved.color) setSelectedColor(resolved.color);
+    if (resolved.charms.length) {
+      setSelectedCharms([resolved.charms[0]]);
+      setSuggestedIcons((prev) =>
+        prev.some((p) => p.id === resolved.charms[0].id)
+          ? prev
+          : [resolved.charms[0], ...prev.slice(0, 5)]
+      );
+    }
+    if (resolved.text) applyDesignText(resolved.text);
+  };
+
+  // 🧠 A2UI: restore a saved design into the drawer.
+  const handleRestoreDesign = (design: SavedDesign["design"]) => {
+    const color =
+      filteredColors.find((c) => c.id === design.colorId) || filteredColors[0];
+    if (color) setSelectedColor(color);
+    const restored = design.charmIds
+      .map((id) => CHARM_OPTIONS.find((c) => c.id === id))
+      .filter((c): c is Charm => Boolean(c));
+    if (restored.length) {
+      setSelectedCharms([restored[0]]);
+      setSuggestedIcons((prev) =>
+        prev.some((p) => p.id === restored[0].id)
+          ? prev
+          : [restored[0], ...prev.slice(0, 5)]
+      );
+    }
+    if (design.text) applyDesignText(design.text);
+  };
 
   // 🛡️ Persistence Logic: Push State on Open
   useEffect(() => {
@@ -275,6 +322,9 @@ export default function KeychainCustomizer({
       <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <SheetContent className="w-full md:max-w-[90vw] lg:max-w-6xl p-0 gap-0 overflow-hidden bg-white border-l border-white/20 shadow-2xl flex flex-col">
           <SheetTitle className="sr-only">Customize {product.title}</SheetTitle>
+          <SheetDescription className="sr-only">
+            Design your custom keychain: pick a thread color, charms, and text.
+          </SheetDescription>
 
           {/* Custom Header / Close */}
           <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-start z-50 pointer-events-none">
@@ -496,36 +546,50 @@ export default function KeychainCustomizer({
                   {/* Interactive Input Section */}
                   {!isEarring && (
                     <div className="space-y-6 pt-4 border-t border-stone-100">
-                      {/* AI Vibe Assistant */}
-                      {!lockLetters && (
-                        <VibeInput
-                          onVibeChange={(data) => {
-                            if (data.icon) {
-                              const newCharm = {
-                                id: data.label.toLowerCase(),
-                                name: data.label,
-                                icon: data.icon,
-                                color: selectedColor,
-                              };
+                      {/* ⚡ A2UI Compiler — intent → design (replaces vibe keyword engine) */}
+                      <A2UICompiler
+                        tier={effectiveTier}
+                        allowedColors={allowedColors}
+                        charmCategory={charmCategory}
+                        lockLetters={lockLetters}
+                        compact
+                        onApply={(design: Partial<CompiledDesign>) => {
+                          if (design.color) setSelectedColor(design.color);
+                          if (design.charms?.length) {
+                            setSelectedCharms([design.charms[0]]);
+                            setSuggestedIcons((prev) =>
+                              prev.some((p) => p.id === design.charms![0].id)
+                                ? prev
+                                : [design.charms![0], ...prev.slice(0, 5)]
+                            );
+                          }
+                          if (design.text && !lockLetters && !isTier1) {
+                            const limit = getCharLimit(effectiveTier);
+                            const val = design.text.toUpperCase().slice(0, limit);
+                            setText(val);
+                            startTransition(() => setOptimisticText(val));
+                          }
+                        }}
+                      />
 
-                              setSelectedCharms(prev => {
-                                const next = [...prev];
-                                next[activeCharmIndex] = newCharm;
-                                return next;
-                              });
-
-                              // Add to suggestions if not already there
-                              setSuggestedIcons((prev) => {
-                                const exists = prev.find(
-                                  (p) => p.icon === data.icon
-                                );
-                                if (exists) return prev;
-                                return [newCharm, ...prev.slice(0, 5)];
-                              });
-                            }
-                          }}
-                        />
-                      )}
+                      {/* 🎴 Cartridges + 🧠 Memory — same A2UI suite as the builder */}
+                      <DesignCartridges
+                        tier={effectiveTier}
+                        allowedColors={allowedColors}
+                        charmCategory={charmCategory}
+                        lockLetters={lockLetters}
+                        onApply={handleCartridgeApply}
+                      />
+                      <DesignMemory
+                        current={{
+                          text,
+                          colorId: selectedColor.id,
+                          colorName: selectedColor.name,
+                          charmIds: selectedCharms.map((c) => c.id),
+                          tier: effectiveTier,
+                        }}
+                        onRestore={handleRestoreDesign}
+                      />
 
                       {/* Multi-Charm Selector Tabs Removed (Keychain is Single Active Strand for now) */}
 

@@ -158,9 +158,53 @@ function mergeWithDefaults(parsed: unknown): StorefrontConfig {
   });
 }
 
+/**
+ * Optional remote dashboard source. When DASHBOARD_CONFIG_URL is set (the
+ * deployed Lisa Dev Dashboard config endpoint), it is authoritative and the
+ * storefront consumes the dashboard-published artifact directly. Any error —
+ * unreachable endpoint, bad status, invalid schema — falls through to
+ * Supabase, the local file, then in-code defaults so the site never breaks.
+ */
+async function getRemoteDashboardConfig(): Promise<StorefrontConfig | null> {
+  const endpoint = process.env.DASHBOARD_CONFIG_URL;
+  if (!endpoint) return null;
+
+  try {
+    const response = await fetch(endpoint, {
+      headers: { accept: "application/json" },
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!response.ok) {
+      console.error(
+        `[storefront-config] Dashboard endpoint returned ${response.status}.`,
+      );
+      return null;
+    }
+
+    const parsed = StorefrontConfigSchema.safeParse(await response.json());
+    if (!parsed.success) {
+      console.error("[storefront-config] Dashboard endpoint returned invalid config.");
+      return null;
+    }
+    return parsed.data;
+  } catch (err) {
+    console.error(
+      "[storefront-config] Dashboard endpoint unreachable:",
+      err instanceof Error ? err.message : String(err),
+    );
+    return null;
+  }
+}
+
 export async function getStorefrontConfig(): Promise<StorefrontConfig> {
-  // Prefer Supabase (durable in production). Fall back to the local filesystem
-  // for development, then to the in-code defaults.
+  // When a dashboard control-plane endpoint is configured, it wins over
+  // Supabase and the local file: the dashboard is the publish source of truth.
+  const remote = await getRemoteDashboardConfig();
+  if (remote) return remote;
+
+  // Otherwise prefer Supabase (durable in production). Fall back to the local
+  // filesystem for development, then to the in-code defaults.
   const supabase = getServerSupabase();
   if (supabase) {
     try {
