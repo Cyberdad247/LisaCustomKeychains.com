@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { readFile, writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { isOwnerSessionValid } from "@/lib/storefront-config";
+import { safeReadJson, safeWriteJson } from "@/lib/server-storage";
 
 // Review flywheel tracker: log review requests sent, record reviews received,
 // approve testimonials for the storefront. Owner-gated.
@@ -21,16 +21,11 @@ export type ReviewEntry = {
 };
 
 async function readReviews(): Promise<ReviewEntry[]> {
-  try {
-    return JSON.parse(await readFile(DATA_PATH, "utf-8"));
-  } catch {
-    return [];
-  }
+  return safeReadJson<ReviewEntry[]>(DATA_PATH, []);
 }
 
 async function writeReviews(items: ReviewEntry[]) {
-  await mkdir(path.dirname(DATA_PATH), { recursive: true });
-  await writeFile(DATA_PATH, JSON.stringify(items, null, 2));
+  await safeWriteJson(DATA_PATH, items);
 }
 
 async function checkAuth(): Promise<boolean> {

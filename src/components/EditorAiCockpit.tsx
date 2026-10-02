@@ -75,7 +75,7 @@ export default function EditorAiCockpit() {
       id: "welcome-1",
       role: "bob",
       text: "At your service, Queen Lisa. I am Sir BoB, your chamberlain and commercial strategist. Our catalog, margins, and custom woven collections are loaded into memory. How shall we expand the boutique today?",
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      timestamp: "Online",
     },
   ]);
   const chatScrollRef = useRef<HTMLDivElement>(null);

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { readFile, writeFile } from "fs/promises";
 import path from "path";
+import { safeReadJson, safeWriteJson } from "@/lib/server-storage";
 
 export type ContentItem = {
   id: string;
@@ -14,12 +14,7 @@ export type ContentItem = {
 const DATA_PATH = path.join(process.cwd(), "data", "content-queue.json");
 
 async function readQueue(): Promise<ContentItem[]> {
-  try {
-    const raw = await readFile(DATA_PATH, "utf-8");
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  return safeReadJson<ContentItem[]>(DATA_PATH, []);
 }
 
 export async function GET() {
@@ -40,7 +35,7 @@ export async function PATCH(req: Request) {
   }
 
   items[idx] = { ...items[idx], status, ...(body !== undefined ? { body } : {}) };
-  await writeFile(DATA_PATH, JSON.stringify(items, null, 2));
+  await safeWriteJson(DATA_PATH, items);
   return NextResponse.json(items[idx]);
 }
 
@@ -59,6 +54,6 @@ export async function POST(req: Request) {
     createdAt: new Date().toISOString(),
   };
   items.unshift(item);
-  await writeFile(DATA_PATH, JSON.stringify(items, null, 2));
+  await safeWriteJson(DATA_PATH, items);
   return NextResponse.json(item, { status: 201 });
 }

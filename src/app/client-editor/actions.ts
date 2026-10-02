@@ -161,6 +161,35 @@ export async function verifyOtpAction(
   return { ok: true };
 }
 
+export async function loginOwnerPasswordAction(password: string): Promise<{
+  ok: boolean;
+  error?: string;
+}> {
+  if (!ownerPasswordConfigured()) {
+    return {
+      ok: false,
+      error: "Owner password is not configured on this server environment.",
+    };
+  }
+  if (!verifyOwnerPassword(password.trim())) {
+    return {
+      ok: false,
+      error: "Incorrect owner password. Check capitalization and try again.",
+    };
+  }
+
+  const cookieStore = await cookies();
+  cookieStore.set("lisa_owner_session", createOwnerSession(), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: OWNER_SESSION_TTL_SECONDS,
+  });
+
+  return { ok: true };
+}
+
 export async function loginOwner(formData: FormData) {
   const password = String(formData.get("password") || "");
   if (!ownerPasswordConfigured()) {

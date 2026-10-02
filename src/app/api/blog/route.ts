@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile, writeFile, mkdir } from "fs/promises";
 import { cookies } from "next/headers";
 import path from "path";
 import { isOwnerSessionValid } from "@/lib/storefront-config";
+import { safeReadJson, safeWriteJson } from "@/lib/server-storage";
 
 const DATA_FILE = path.join(process.cwd(), "data", "blog", "posts.json");
 
@@ -34,17 +34,11 @@ export interface BlogPost {
 }
 
 async function readPosts(): Promise<BlogPost[]> {
-  try {
-    const raw = await readFile(DATA_FILE, "utf-8");
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  return safeReadJson<BlogPost[]>(DATA_FILE, []);
 }
 
 async function writePosts(posts: BlogPost[]): Promise<void> {
-  await mkdir(path.dirname(DATA_FILE), { recursive: true });
-  await writeFile(DATA_FILE, JSON.stringify(posts, null, 2), "utf-8");
+  await safeWriteJson(DATA_FILE, posts);
 }
 
 async function checkAuth(): Promise<boolean> {
