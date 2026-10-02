@@ -21,6 +21,7 @@ import {
   Loader2,
   Calendar,
 } from "lucide-react";
+import { hermesStream } from "@/lib/hermes";
 
 declare global {
   interface Window {
@@ -181,6 +182,30 @@ export default function EditorAiCockpit() {
             return res.json();
           },
         },
+        streamHermesAssist: {
+          description: "Stream artisan copy variants using Hermes / Gemini via Bifrost SSE (<400ms latency).",
+          parameters: {
+            intent: { type: "string", description: "improve-copy | headline-variants | announcement | section-body | social-caption | ad-copy" },
+            current: { type: "string" },
+            field: { type: "string" },
+          },
+          execute: async (args: any) => {
+            return new Promise((resolve, reject) => {
+              let accumulated = "";
+              hermesStream(
+                {
+                  intent: (args?.intent as any) || "improve-copy",
+                  context: { current: args?.current || "", field: args?.field || "" },
+                },
+                {
+                  onChunk: (t) => { accumulated += t; },
+                  onDone: () => resolve({ result: accumulated.trim() }),
+                  onError: (err) => reject(new Error(err)),
+                }
+              );
+            });
+          },
+        },
       };
 
       window.__WEBMCP_REGISTRY = {
@@ -311,47 +336,89 @@ export default function EditorAiCockpit() {
     }
   };
 
-  // Tab 2: Generate Marketing Copy
+  // Tab 2: Generate Marketing Copy (Streaming via Hermes / Gemini)
   const handleGenerateMarketing = async () => {
     setIsGeneratingCopy(true);
+    setGeneratedDraft({
+      platform,
+      content: "",
+      hashtags: [],
+    });
+
+    let streamedText = "";
     try {
-      const promptQuery = customPrompt.trim()
-        ? `Write a high-converting ${platform} post about: ${customPrompt}`
-        : `Write an engaging, boutique ${platform} post highlighting "${marketingTheme}" for Lisa's Custom Keychains. Handcrafted macrame in Ohio. Include 4-5 relevant hashtags.`;
+      await hermesStream(
+        {
+          intent: "social-caption",
+          context: {
+            field: `${platform.toUpperCase()} Post`,
+            current: customPrompt.trim() || marketingTheme,
+            extra: `Brand: Lisa's Custom Keychains. Handcrafted in Ohio. Platform: ${platform}.`,
+          },
+        },
+        {
+          onChunk: (chunk) => {
+            streamedText += chunk;
+            const hashtags = streamedText.match(/#[a-zA-Z0-9_]+/g) || [];
+            const clean = streamedText.replace(/#[a-zA-Z0-9_]+/g, "").trim();
+            setGeneratedDraft({
+              platform,
+              content: clean,
+              hashtags:
+                hashtags.length > 0
+                  ? hashtags
+                  : [
+                      "#CustomKeychain",
+                      "#HandmadeInOhio",
+                      "#ArtisanGifts",
+                      "#MacrameKeychain",
+                    ],
+            });
+          },
+          onDone: () => {
+            setIsGeneratingCopy(false);
+            showToast("✨ Artisan marketing copy generated!");
+          },
+          onError: async (errMsg) => {
+            console.warn("Hermes streaming error, falling back to owner-chat:", errMsg);
+            const promptQuery = customPrompt.trim()
+              ? `Write a high-converting ${platform} post about: ${customPrompt}`
+              : `Write an engaging, boutique ${platform} post highlighting "${marketingTheme}" for Lisa's Custom Keychains. Handcrafted macrame in Ohio. Include 4-5 relevant hashtags.`;
 
-      const res = await fetch("/api/bob/owner-chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [{ role: "user", content: promptQuery }],
-        }),
-      });
+            const res = await fetch("/api/bob/owner-chat", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                messages: [{ role: "user", content: promptQuery }],
+              }),
+            });
 
-      const data = await res.json();
-      const rawText: string = data.reply || "";
+            const data = await res.json();
+            const rawText: string = data.reply || "";
+            const hashtags = rawText.match(/#[a-zA-Z0-9_]+/g) || [
+              "#CustomKeychain",
+              "#HandmadeInOhio",
+              "#MacrameKeychains",
+              "#PersonalizedGifts",
+            ];
+            const cleanContent = rawText.replace(/#[a-zA-Z0-9_]+/g, "").trim();
 
-      // Extract hashtags
-      const hashtags = rawText.match(/#[a-zA-Z0-9_]+/g) || [
-        "#CustomKeychain",
-        "#HandmadeInOhio",
-        "#MacrameKeychains",
-        "#PersonalizedGifts",
-      ];
-      const cleanContent = rawText.replace(/#[a-zA-Z0-9_]+/g, "").trim();
-
-      setGeneratedDraft({
-        platform,
-        content: cleanContent || "Handcrafted knot by knot in our studio. Personalized charms and custom colors made just for you.",
-        hashtags,
-      });
-      showToast("✨ Artisan marketing copy generated!");
+            setGeneratedDraft({
+              platform,
+              content: cleanContent || "Handcrafted knot by knot in our studio. Personalized charms and custom colors made just for you.",
+              hashtags,
+            });
+            setIsGeneratingCopy(false);
+            showToast("✨ Artisan marketing copy generated!");
+          },
+        }
+      );
     } catch {
       setGeneratedDraft({
         platform,
         content: `Every key tells a story. Personalized colors, genuine clasps, and artisan macrame cord handcrafted right here in Ohio. Build yours at lisascustomkeychains.com.`,
         hashtags: ["#HandmadeKeychain", "#ShopLocalOhio", "#CustomMacrame", "#ArtisanGifts"],
       });
-    } finally {
       setIsGeneratingCopy(false);
     }
   };
@@ -500,11 +567,11 @@ Signage: [Table sign headline and 2 bullet points for the market booth]`,
       <div className="bg-slate-900 text-white p-4 sm:p-5 border-b border-slate-800">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-purple-700 via-indigo-600 to-amber-400 flex items-center justify-center shadow-md">
-              <Bot className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-lg bg-slate-800 border border-amber-400/50 text-amber-300 flex items-center justify-center shadow-md">
+              <Bot className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-sm font-black uppercase tracking-[0.2em] text-white">
                   Sovereign AI Cockpit
                 </h2>
@@ -517,6 +584,12 @@ Signage: [Table sign headline and 2 bullet points for the market booth]`,
                     WebMCP Active
                   </span>
                 )}
+                <span className="hidden lg:inline-flex px-1.5 py-0.5 rounded text-[8px] font-mono font-bold bg-slate-800 text-amber-300 border border-amber-400/30">
+                  DTCG: 60-30-10
+                </span>
+                <span className="hidden lg:inline-flex px-1.5 py-0.5 rounded text-[8px] font-mono font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                  DOHERTY: &lt;400ms
+                </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
                 Multi-agent orchestration · Sir BoB, Hermes Copilot & Storefront Synthesizer
@@ -529,7 +602,7 @@ Signage: [Table sign headline and 2 bullet points for the market booth]`,
             <button
               onClick={handleFastDraftWeek}
               disabled={isDraftingWeek}
-              className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg text-[11px] font-black uppercase tracking-wider shadow-sm transition disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-lg text-[11px] font-black uppercase tracking-wider shadow-sm transition disabled:opacity-50"
             >
               {isDraftingWeek ? (
                 <>
@@ -759,7 +832,7 @@ Signage: [Table sign headline and 2 bullet points for the market booth]`,
             <button
               onClick={handleGenerateMarketing}
               disabled={isGeneratingCopy}
-              className="w-full py-2.5 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white rounded-lg text-xs font-black uppercase tracking-widest transition flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+              className="w-full py-2.5 bg-purple-700 hover:bg-purple-800 text-white rounded-lg text-xs font-black uppercase tracking-widest transition flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
             >
               {isGeneratingCopy ? (
                 <>
@@ -1001,7 +1074,7 @@ Signage: [Table sign headline and 2 bullet points for the market booth]`,
             <button
               onClick={handleGeneratePopup}
               disabled={isGeneratingPopup}
-              className="w-full py-2.5 bg-gradient-to-r from-purple-700 to-amber-600 hover:from-purple-600 hover:to-amber-500 text-white rounded-lg text-xs font-black uppercase tracking-widest transition flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+              className="w-full py-2.5 bg-slate-900 hover:bg-purple-700 text-white rounded-lg text-xs font-black uppercase tracking-widest transition flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
             >
               {isGeneratingPopup ? (
                 <>
