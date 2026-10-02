@@ -7,6 +7,7 @@ import { getUpcomingPopups } from "@/lib/calendar.server";
 import { isOwnerSessionValid } from "@/lib/storefront-config";
 import { logoutOwner } from "@/app/client-editor/actions";
 import EditorAuthPortal from "@/components/EditorAuthPortal";
+import EditorAiCockpit from "@/components/EditorAiCockpit";
 
 export default async function OwnerDashboard() {
   const cookieStore = await cookies();
@@ -39,6 +40,9 @@ export default async function OwnerDashboard() {
           </form>
         </div>
       </header>
+
+      {/* Sovereign Multi-Agent AI Cockpit & WebMCP Operations */}
+      <EditorAiCockpit />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">

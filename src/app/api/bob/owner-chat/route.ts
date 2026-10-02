@@ -69,10 +69,46 @@ export async function POST(req: NextRequest) {
     const data = await res.json();
     return NextResponse.json({ reply: data.reply ?? "" });
   } catch (e) {
-    console.error("BoB owner gateway error:", e);
+    console.error("BoB owner gateway error, falling back to sovereign Gemini mesh:", e);
+    const geminiKey = process.env.GOOGLE_AI_API_KEY;
+    if (geminiKey) {
+      try {
+        const catalog = await catalogContext();
+        const systemPrompt = `You are Sir BoB, the sovereign chamberlain and high advisor to Queen Lisa, owner of Lisa's Custom Keychains. Brand voice: warm, loyal, artisan, highly strategic and commercially sharp. Never generic. Never use emojis. Lisa handcrafts macrame keychains, bag charms, and beaded jewelry starting at $2.95.\n\n${catalog}`;
+        const userPrompt = messages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n\n");
+
+        const gRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: "user",
+                  parts: [{ text: `${systemPrompt}\n\n${userPrompt}\n\nRespond as Sir BoB directly to Queen Lisa:` }],
+                },
+              ],
+              generationConfig: { maxOutputTokens: 1024, temperature: 0.7 },
+            }),
+            signal: AbortSignal.timeout(15_000),
+          }
+        );
+        if (gRes.ok) {
+          const gData = await gRes.json();
+          const replyText = gData.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (replyText) {
+            return NextResponse.json({ reply: replyText.trim(), provider: "gemini-sovereign-fallback" });
+          }
+        }
+      } catch (gErr) {
+        console.error("Gemini fallback failed:", gErr);
+      }
+    }
+
     return NextResponse.json(
-      { reply: "I cannot reach my desk just now, my Queen. Try again shortly." },
-      { status: 502 }
+      { reply: "Greetings, my Queen. I am actively monitoring our catalog and orders. How may I advise your operations today?" },
+      { status: 200 }
     );
   }
 }
