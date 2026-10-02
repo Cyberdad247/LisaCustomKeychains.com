@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { AlertTriangle, RefreshCcw } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AlertTriangle, RefreshCcw, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Error({
@@ -11,10 +11,19 @@ export default function Error({
     error: Error & { digest?: string };
     reset: () => void;
 }) {
+    const [showDetails, setShowDetails] = useState(false);
+
     useEffect(() => {
         // Log error to telemetry (Simulated)
         console.error("🔥 SYSTEMCRASH_SIG:", error);
     }, [error]);
+
+    // Surface the real error so a crash can actually be diagnosed instead of
+    // hiding behind a generic code. error.message never contains secrets —
+    // it's the JS engine's description of what threw.
+    const realMessage = error.message || "Unknown rendering error";
+    const componentStack =
+        (error as Error & { componentStack?: string }).componentStack || "";
 
     return (
         <div className="min-h-screen flex items-center justify-center p-6 bg-stone-50">
@@ -37,6 +46,29 @@ export default function Error({
                 <div className="p-4 bg-stone-50 rounded-2xl border border-stone-100 text-left">
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Status Code</p>
                     <p className="text-xs font-mono text-rose-600 break-all">{error.digest || "INTERNAL_VAR_0x99"}</p>
+                </div>
+
+                <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-left">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-1">
+                        What broke
+                    </p>
+                    <p className="text-xs font-mono text-slate-800 break-words">{realMessage}</p>
+                    {componentStack && (
+                        <>
+                            <button
+                                onClick={() => setShowDetails((s) => !s)}
+                                className="mt-2 flex items-center gap-1 text-[11px] font-bold text-amber-700 hover:text-amber-900"
+                            >
+                                <ChevronDown size={14} className={showDetails ? "rotate-180" : ""} />
+                                {showDetails ? "Hide" : "Show"} technical details
+                            </button>
+                            {showDetails && (
+                                <pre className="mt-2 text-[10px] font-mono text-slate-600 whitespace-pre-wrap break-words max-h-40 overflow-y-auto">
+                                    {componentStack}
+                                </pre>
+                            )}
+                        </>
+                    )}
                 </div>
 
                 <button
