@@ -8,7 +8,7 @@ import AdGallery from "../AdGallery";
 export default async function AdGalleryPage() {
   const cookieStore = await cookies();
   if (!isOwnerSessionValid(cookieStore.get("lisa_owner_session")?.value)) {
-    redirect("/client-editor/login");
+    redirect("/editor");
   }
 
   const raw = await readFile(path.join(process.cwd(), "data", "ad-mockups.json"), "utf-8");

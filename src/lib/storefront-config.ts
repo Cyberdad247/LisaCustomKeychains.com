@@ -297,9 +297,6 @@ export function verifyOwnerPassword(input: string) {
 }
 
 function getSessionSecret(): string | null {
-  // Fail closed: no implicit "dev" fallback. A missing secret means no valid
-  // sessions can be minted or accepted, rather than everyone sharing a
-  // publicly-known token.
   return (
     process.env.OWNER_DASHBOARD_SECRET ||
     process.env.OWNER_DASHBOARD_PASSWORD ||

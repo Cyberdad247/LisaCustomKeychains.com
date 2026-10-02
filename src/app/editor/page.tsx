@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import ContentCalendar from "./ContentCalendar";
 import TriagePanel from "./TriagePanel";
 import CampaignPacks from "./CampaignPacks";
@@ -7,11 +6,12 @@ import PopupPrep from "./PopupPrep";
 import { getUpcomingPopups } from "@/lib/calendar.server";
 import { isOwnerSessionValid } from "@/lib/storefront-config";
 import { logoutOwner } from "@/app/client-editor/actions";
+import EditorAuthPortal from "@/components/EditorAuthPortal";
 
 export default async function OwnerDashboard() {
   const cookieStore = await cookies();
   if (!isOwnerSessionValid(cookieStore.get("lisa_owner_session")?.value)) {
-    redirect("/client-editor/login");
+    return <EditorAuthPortal redirectUrl="/editor" />;
   }
 
   const events = await getUpcomingPopups();

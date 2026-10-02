@@ -15,6 +15,15 @@ import {
   StorefrontConfigSchema,
   verifyOwnerPassword,
 } from "@/lib/storefront-config";
+import {
+  generateOtpCode,
+  isEmailAuthorized,
+  isEmailValid,
+  OTP_TTL_SECONDS,
+  sendOtpEmail,
+  signOtpChallenge,
+  verifyOtpChallenge,
+} from "@/lib/auth-otp";
 import { PopupEventSchema, newEventId } from "@/lib/calendar";
 import { getAllEvents, saveAllEvents, syncEventsFromICS } from "@/lib/calendar.server";
 
@@ -76,6 +85,82 @@ export async function syncCalendarAction(): Promise<
   return { ok: true, synced: result.synced };
 }
 
+export async function requestOtpAction(email: string): Promise<{
+  ok: boolean;
+  error?: string;
+  simulated?: boolean;
+  code?: string;
+  message?: string;
+}> {
+  if (!email || !isEmailValid(email)) {
+    return { ok: false, error: "Please enter a valid email address." };
+  }
+
+  if (!isEmailAuthorized(email)) {
+    return {
+      ok: false,
+      error: "This email address is not authorized to access the editor. Please contact the administrator.",
+    };
+  }
+
+  const code = generateOtpCode();
+  const challengeToken = signOtpChallenge(email, code);
+
+  const cookieStore = await cookies();
+  cookieStore.set("lisa_otp_challenge", challengeToken, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: OTP_TTL_SECONDS,
+  });
+
+  const sendResult = await sendOtpEmail(email, code);
+  return {
+    ok: true,
+    simulated: sendResult.simulated,
+    code: sendResult.simulated ? sendResult.code : undefined,
+    message: sendResult.message,
+  };
+}
+
+export async function verifyOtpAction(
+  email: string,
+  code: string,
+): Promise<{
+  ok: boolean;
+  error?: string;
+}> {
+  if (!email || !isEmailValid(email)) {
+    return { ok: false, error: "Please provide a valid email address." };
+  }
+  if (!code || code.trim().length < 6) {
+    return { ok: false, error: "Please enter the 6-digit verification code." };
+  }
+
+  const cookieStore = await cookies();
+  const challengeToken = cookieStore.get("lisa_otp_challenge")?.value;
+
+  const result = verifyOtpChallenge(challengeToken, email, code);
+  if (!result.valid) {
+    return { ok: false, error: result.error || "Invalid verification code." };
+  }
+
+  // Verification successful! Mint session token
+  cookieStore.set("lisa_owner_session", createOwnerSession(), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: OWNER_SESSION_TTL_SECONDS,
+  });
+
+  // Clean up the challenge cookie
+  cookieStore.delete("lisa_otp_challenge");
+
+  return { ok: true };
+}
+
 export async function loginOwner(formData: FormData) {
   const password = String(formData.get("password") || "");
   if (!ownerPasswordConfigured()) {
@@ -99,7 +184,8 @@ export async function loginOwner(formData: FormData) {
 export async function logoutOwner() {
   const cookieStore = await cookies();
   cookieStore.delete("lisa_owner_session");
-  redirect("/client-editor/login");
+  cookieStore.delete("lisa_otp_challenge");
+  redirect("/editor");
 }
 
 /**

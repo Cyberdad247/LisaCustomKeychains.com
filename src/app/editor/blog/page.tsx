@@ -6,7 +6,7 @@ import BlogEngine from "./BlogEngine";
 export default async function BlogEnginePage() {
   const cookieStore = await cookies();
   if (!isOwnerSessionValid(cookieStore.get("lisa_owner_session")?.value)) {
-    redirect("/client-editor/login");
+    redirect("/editor");
   }
   return <BlogEngine />;
 }

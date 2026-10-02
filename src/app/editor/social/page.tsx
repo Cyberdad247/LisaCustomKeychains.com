@@ -6,7 +6,7 @@ import SocialStudio from "./SocialStudio";
 export default async function SocialStudioPage() {
   const cookieStore = await cookies();
   if (!isOwnerSessionValid(cookieStore.get("lisa_owner_session")?.value)) {
-    redirect("/client-editor/login");
+    redirect("/editor");
   }
   return <SocialStudio />;
 }
