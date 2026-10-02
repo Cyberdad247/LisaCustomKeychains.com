@@ -42,7 +42,12 @@ const STATUS_CONFIG: Record<
 };
 
 function CheckRow({ check }: { check: TriageCheck }) {
-  const cfg = STATUS_CONFIG[check.status];
+  // Business-health metrics can report "unknown" (or future statuses the
+  // triage map doesn't know). Never let an unrecognized status crash the
+  // whole dashboard — fall back to the "unconfigured" presentation.
+  const cfg =
+    (STATUS_CONFIG as Record<string, (typeof STATUS_CONFIG)["ok"]>)[check.status] ??
+    STATUS_CONFIG.unconfigured;
   const Icon = cfg.icon;
   return (
     <div className="flex items-start gap-3 py-2.5 border-b border-gray-100 last:border-0">
