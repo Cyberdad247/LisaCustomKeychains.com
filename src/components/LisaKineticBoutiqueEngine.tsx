@@ -14,6 +14,58 @@ const BOOTH_COORDINATES = {
 
 const VERCEL_EDITOR_ORIGIN = 'https://lisa-custom-keychains-editor.vercel.app';
 
+// ---------------------------------------------------------------------------
+// MOD_01: MACRAME IN MOTION SHOWCASE CONFIG
+// The section stays HIDDEN until real video assets exist — placeholder boxes
+// must never ship to customers. To relaunch:
+//   1. Set enabled: true below
+//   2. Fill in `video` (+ `poster`) URLs per item — 1080x1920, muted loop,
+//      playsinline, compressed <2MB, with a poster frame so it never flashes gray
+//   3. Fill in `href` with the product page for each design (optional)
+// ---------------------------------------------------------------------------
+const MACRAME_SHOWCASE = {
+  enabled: false,
+  instagram: 'https://www.instagram.com/lisascustomkeychains',
+  items: [
+    {
+      id: 'macrame_car_fob_ignition',
+      title: 'Car Fob Ignition',
+      tag: '#WildStyle',
+      colorClass: 'bg-[#F0E6FF] text-[#6A0DAD]',
+      video: '',  // e.g. '/videos/macrame_car_fob_ignition.mp4'
+      poster: '', // e.g. '/videos/macrame_car_fob_ignition.jpg'
+      href: '',   // e.g. product page for this design
+    },
+    {
+      id: 'macrame_canvas_tote_commuter',
+      title: 'Tote Commuter',
+      tag: '#Boutique',
+      colorClass: 'bg-[#1A1A1A] text-[#D4AF37]',
+      video: '',
+      poster: '',
+      href: '',
+    },
+    {
+      id: 'macrame_pastel_denim_seam',
+      title: 'Pastel Denim Loop',
+      tag: '#Pastel',
+      colorClass: 'bg-[#F0E6FF] text-[#6A0DAD]',
+      video: '',
+      poster: '',
+      href: '',
+    },
+    {
+      id: 'macrame_tactile_brass_ring',
+      title: 'Tactile Brass Ring',
+      tag: '#Artisan',
+      colorClass: 'bg-[#1A1A1A] text-[#D4AF37]',
+      video: '',
+      poster: '',
+      href: '',
+    },
+  ],
+};
+
 function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371; // Earth radius in km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -43,6 +95,10 @@ export default function LisaKineticBoutiqueEngine() {
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const showcaseTrackRef = useRef<HTMLDivElement>(null);
+
+  const scrollShowcase = (dir: 1 | -1) =>
+    showcaseTrackRef.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
 
   // ============================================================================
   // MOD_03: SECURE POSTMESSAGE BRIDGE (Strict Origin Verification, No Wildcard)
@@ -196,33 +252,80 @@ export default function LisaKineticBoutiqueEngine() {
   return (
     <div className="bg-[#FFFFFF] text-[#1A1A1A] font-sans antialiased">
       {/* ==================================================================== */}
-      {/* MOD_01: MASONRY MOCKUP CAROUSEL (Infinite Horizontal Track)          */}
+      {/* MOD_01: MACRAME IN MOTION SHOWCASE (hidden until real video assets) */}
       {/* ==================================================================== */}
+      {MACRAME_SHOWCASE.enabled && (
       <section className="py-12 bg-[#FCFCFC] border-b border-[#E5E5E5] overflow-hidden" aria-label="Macrame in Motion Showcase">
-        <div className="max-w-7xl mx-auto px-6 mb-6">
+        <div className="max-w-7xl mx-auto px-6 mb-6 flex items-center justify-between">
           <h2 className="text-xs uppercase tracking-[0.25em] text-[#666666] font-bold">
-            Macrame In Motion @LisasCustomKeychains
+            Macrame In Motion{' '}
+            <a
+              href={MACRAME_SHOWCASE.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#6A0DAD] hover:underline normal-case tracking-normal"
+            >
+              @LisasCustomKeychains
+            </a>
           </h2>
+          <div className="hidden md:flex gap-2">
+            <button
+              type="button"
+              onClick={() => scrollShowcase(-1)}
+              aria-label="Scroll showcase left"
+              className="w-8 h-8 rounded-full border border-[#E5E5E5] bg-white text-[#666666] hover:text-[#6A0DAD] hover:border-[#6A0DAD] transition-colors"
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollShowcase(1)}
+              aria-label="Scroll showcase right"
+              className="w-8 h-8 rounded-full border border-[#E5E5E5] bg-white text-[#666666] hover:text-[#6A0DAD] hover:border-[#6A0DAD] transition-colors"
+            >
+              →
+            </button>
+          </div>
         </div>
-        <div 
+        <div
+          ref={showcaseTrackRef}
           tabIndex={0}
           role="region"
           aria-label="Carousel of featured designs"
           className="flex space-x-6 px-6 overflow-x-auto pb-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6A0DAD] will-change-transform scrollbar-none"
         >
-          {[
-            { id: 'macrame_car_fob_ignition', title: 'Car Fob Ignition', tag: '#WildStyle', colorClass: 'bg-[#F0E6FF] text-[#6A0DAD]' },
-            { id: 'macrame_canvas_tote_commuter', title: 'Tote Commuter', tag: '#Boutique', colorClass: 'bg-[#1A1A1A] text-[#D4AF37]' },
-            { id: 'macrame_pastel_denim_seam', title: 'Pastel Denim Loop', tag: '#Pastel', colorClass: 'bg-[#F0E6FF] text-[#6A0DAD]' },
-            { id: 'macrame_tactile_brass_ring', title: 'Tactile Brass Ring', tag: '#Artisan', colorClass: 'bg-[#1A1A1A] text-[#D4AF37]' },
-          ].map((item) => (
+          {MACRAME_SHOWCASE.items.filter((item) => item.video).map((item) => (
             <article
               key={item.id}
               className="flex-shrink-0 w-72 bg-white border border-[#E5E5E5] p-3.5 rounded-sm shadow-xs transition-transform duration-300 hover:scale-[1.02] will-change-transform"
             >
-              <div className="aspect-square bg-neutral-100 rounded-xs mb-3 flex items-center justify-center font-mono text-xs text-neutral-400">
-                [Asset: {item.id}]
-              </div>
+              {item.href ? (
+                <a href={item.href} aria-label={`${item.title} — view product`}>
+                  <video
+                    className="aspect-square w-full object-cover rounded-xs mb-3 bg-neutral-100"
+                    muted
+                    loop
+                    playsInline
+                    autoPlay
+                    preload="metadata"
+                    poster={item.poster || undefined}
+                  >
+                    <source src={item.video} type="video/mp4" />
+                  </video>
+                </a>
+              ) : (
+                <video
+                  className="aspect-square w-full object-cover rounded-xs mb-3 bg-neutral-100"
+                  muted
+                  loop
+                  playsInline
+                  autoPlay
+                  preload="metadata"
+                  poster={item.poster || undefined}
+                >
+                  <source src={item.video} type="video/mp4" />
+                </video>
+              )}
               <div className="flex justify-between items-center text-xs">
                 <span className="font-semibold text-neutral-800">{item.title}</span>
                 <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded ${item.colorClass}`}>
@@ -233,6 +336,7 @@ export default function LisaKineticBoutiqueEngine() {
           ))}
         </div>
       </section>
+      )}
 
       {/* ==================================================================== */}
       {/* MOD_02: EVENT FEED & SITEMAP DIRECTORY                              */}
