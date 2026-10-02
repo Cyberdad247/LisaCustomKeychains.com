@@ -6,6 +6,7 @@ import { CartProvider } from "../components/CartProvider";
 import { NotificationProvider } from "../components/NotificationSentry";
 import StorefrontShell from "../components/StorefrontShell";
 import SirBobChat from "../components/SirBobChat";
+import LiveChatWidget from "../components/LiveChatWidget";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -40,6 +41,7 @@ export default function RootLayout({
             {children}
             <StorefrontShell />
             <SirBobChat />
+            <LiveChatWidget />
           </CartProvider>
         </NotificationProvider>
       </body>
