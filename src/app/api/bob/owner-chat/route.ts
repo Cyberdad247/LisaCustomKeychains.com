@@ -4,11 +4,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAllProducts } from "@/lib/shopify";
 import { isOwnerSessionValid } from "@/lib/storefront-config";
 import { EDITOR_GUIDE } from "@/lib/editor-guide";
+import { answerEditorQuestion } from "@/lib/bob-editor-fallback";
 
 // Queen Lisa's BoB — chamberlain mode. Owner-gated. Business advice,
 // quote summaries, grounded in the live catalog. Same VPS brain, owner persona.
 
 const GATEWAY = "https://bob.lisascustomkeychains.com";
+
+// A real browser UA: Cloudflare's firewall (error 1010) blocks default
+// server-to-server user agents (node/undici, python-urllib, curl).
+const GATEWAY_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 
 let catalogCache: { at: number; text: string } | null = null;
 
@@ -63,13 +69,15 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "User-Agent": GATEWAY_UA,
       },
       body: JSON.stringify({ messages, catalog, persona: "owner" }),
       signal: AbortSignal.timeout(60_000),
     });
     if (!res.ok) throw new Error(`gateway ${res.status}`);
     const data = await res.json();
-    return NextResponse.json({ reply: data.reply ?? "" });
+    if (data.reply) return NextResponse.json({ reply: data.reply });
+    throw new Error("gateway empty reply");
   } catch (e) {
     console.error("BoB owner gateway error, falling back to sovereign Gemini mesh:", e);
     const geminiKey = process.env.GOOGLE_AI_API_KEY;
@@ -108,8 +116,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Local editor-aware fallback: answer from the handbook so Lisa still
+    // gets real guidance even when the VPS is unreachable. Never a generic greeting.
+    const lastUser = [...messages].reverse().find((m) => m.role === "user");
     return NextResponse.json(
-      { reply: "Greetings, my Queen. I am actively monitoring our catalog and orders. How may I advise your operations today?" },
+      { reply: answerEditorQuestion(lastUser?.content ?? ""), provider: "local-editor-fallback" },
       { status: 200 }
     );
   }
