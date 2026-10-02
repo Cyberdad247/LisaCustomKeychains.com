@@ -9,6 +9,7 @@ import DedicationSection from "../components/DedicationSection";
 import ProductJSONLD from "../components/ProductJSONLD";
 import EventsSection from "../components/EventsSection";
 import SocialFeedSection from "../components/SocialFeedSection";
+import LisaKineticBoutiqueEngine from "../components/LisaKineticBoutiqueEngine";
 import { Metadata } from "next";
 import { SITE_URL } from "@/lib/site";
 import { getSocialPosts } from "@/lib/social";
@@ -138,6 +139,9 @@ export default async function Home() {
             />
           </div>
         </div>
+
+        {/* UKG Kinetic Boutique Engine: 5-Module Event & Geofence Suite */}
+        <LisaKineticBoutiqueEngine />
 
         {/* Pop-up vending and social updates */}
         <EventsSection section={sectionById.get("events")} events={upcomingEvents} />
