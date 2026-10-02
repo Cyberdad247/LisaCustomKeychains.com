@@ -293,7 +293,7 @@ export function ownerPasswordConfigured() {
 export function verifyOwnerPassword(input: string) {
   const password = process.env.OWNER_DASHBOARD_PASSWORD;
   if (!password) return false;
-  return safeEqual(input, password);
+  return safeEqual(input, password) || safeEqual(input.trim(), password);
 }
 
 function getSessionSecret(): string | null {
@@ -342,8 +342,7 @@ export function isOwnerSessionValid(value: string | undefined): boolean {
 }
 
 function safeEqual(left: string, right: string) {
-  const leftBuffer = Buffer.from(left);
-  const rightBuffer = Buffer.from(right);
-  if (leftBuffer.length !== rightBuffer.length) return false;
-  return timingSafeEqual(leftBuffer, rightBuffer);
+  const h1 = createHash("sha256").update(left).digest();
+  const h2 = createHash("sha256").update(right).digest();
+  return timingSafeEqual(h1, h2);
 }
