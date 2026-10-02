@@ -3,18 +3,21 @@
 import { useState } from "react";
 import { Sparkles, Loader2, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { CAMPAIGN_PACKS, type CampaignPack } from "@/lib/campaigns";
+import EditorErrorBanner from "@/components/editor/EditorErrorBanner";
 
 function PackCard({ pack }: { pack: CampaignPack }) {
   const [expanded, setExpanded] = useState(false);
   const [activating, setActivating] = useState(false);
   const [done, setDone] = useState(false);
+  const [activateError, setActivateError] = useState<string | null>(null);
 
   async function activate() {
     if (activating || done) return;
     setActivating(true);
+    setActivateError(null);
     try {
       // Queue the hero + announcement as content items for Lisa's approval
-      await fetch("/api/content-queue", {
+      const queueRes = await fetch("/api/content-queue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -24,9 +27,10 @@ function PackCard({ pack }: { pack: CampaignPack }) {
           status: "pending",
         }),
       });
+      if (!queueRes.ok) throw new Error("Content queue write failed");
       // Create social drafts
       for (const d of pack.socialDrafts) {
-        await fetch("/api/social", {
+        const socialRes = await fetch("/api/social", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -37,10 +41,12 @@ function PackCard({ pack }: { pack: CampaignPack }) {
             scheduledDate: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
           }),
         });
+        if (!socialRes.ok) throw new Error("Social draft write failed");
       }
       setDone(true);
     } catch (e) {
       console.error(e);
+      setActivateError("Couldn't activate this campaign pack — nothing was queued. Try again.");
     } finally {
       setActivating(false);
     }
@@ -48,6 +54,7 @@ function PackCard({ pack }: { pack: CampaignPack }) {
 
   return (
     <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
+      <EditorErrorBanner message={activateError} onDismiss={() => setActivateError(null)} />
       <div className="flex items-start justify-between">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-700">{pack.season}</p>

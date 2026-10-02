@@ -241,10 +241,12 @@ export default function EditorAiCockpit() {
     setIsDraftingWeek(true);
     try {
       const res = await fetch("/api/bob/draft-posts", { method: "POST" });
+      if (!res.ok) throw new Error("Draft generation failed");
       const data = await res.json();
       const drafts = data.drafts || [];
+      let queued = 0;
       for (const draft of drafts) {
-        await fetch("/api/content-queue", {
+        const qres = await fetch("/api/content-queue", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -253,11 +255,16 @@ export default function EditorAiCockpit() {
             body: `${draft.content}\n\n${(draft.hashtags || []).join(" ")}`,
           }),
         });
+        if (qres.ok) queued++;
       }
       window.dispatchEvent(new CustomEvent("content-queue-updated"));
-      showToast(`⚡ Synthesized ${drafts.length} posts directly into Content Queue!`);
+      if (queued < drafts.length) {
+        showToast(`⚠️ Only ${queued} of ${drafts.length} posts reached the queue. Try again for the rest.`);
+      } else {
+        showToast(`⚡ Synthesized ${queued} posts directly into Content Queue!`);
+      }
     } catch {
-      showToast("Error generating posts. Please check network.");
+      showToast("⚠️ Couldn't generate posts — BoB didn't respond. Try again.");
     } finally {
       setIsDraftingWeek(false);
     }
@@ -274,12 +281,11 @@ export default function EditorAiCockpit() {
         setTriageScore(data.score ?? 100);
         showToast(`🩺 Diagnostic complete! Store Health Score: ${data.score ?? 100}%`);
       } else {
-        setTriageScore(95);
-        showToast("Diagnostic check completed (Simulated OK).");
+        // Never fake a passing score — report the failure honestly.
+        showToast("⚠️ Diagnostic check failed — the health service didn't respond. Try again.");
       }
     } catch {
-      setTriageScore(90);
-      showToast("Diagnostic completed.");
+      showToast("⚠️ Diagnostic check failed — couldn't reach the health service. Try again.");
     } finally {
       setIsDiagnosing(false);
     }
@@ -481,11 +487,8 @@ CTA: [action button text]`,
       });
       showToast("🛍️ Storefront proposal synthesized!");
     } catch {
-      setStorefrontProposal({
-        headline: "Handmade in Ohio · Built for Everyday Joy",
-        subheadline: "Artisan macrame cord, polished metal hardware, and customized lucky charms starting at $2.95.",
-        ctaText: "Explore Collection",
-      });
+      // Never silently substitute template copy — Lisa must know BoB didn't write this.
+      showToast("⚠️ Couldn't generate the proposal — BoB didn't respond. Try again.");
     } finally {
       setIsOptimizingStore(false);
     }
@@ -536,11 +539,8 @@ Signage: [Table sign headline and 2 bullet points for the market booth]`,
       });
       showToast("🎪 Pop-up market broadcast synthesized!");
     } catch {
-      setPopupCopy({
-        smsText: `Lisa's Custom Keychains is live at ${popupLocation} ${popupDate}! Stop by our booth for exclusive market specials!`,
-        socialBlurb: `We are setting up at ${popupLocation} ${popupDate}! Come design your custom charm keychain in person.`,
-        tableSignage: `LISA'S HANDCRAFTED KEYCHAINS\n• Made in Ohio\n• Special: ${popupSpecial}`,
-      });
+      // Never silently substitute template copy — Lisa must know BoB didn't write this.
+      showToast("⚠️ Couldn't generate pop-up copy — BoB didn't respond. Try again.");
     } finally {
       setIsGeneratingPopup(false);
     }

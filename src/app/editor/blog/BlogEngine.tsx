@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { hermesStream } from "@/lib/hermes";
+import EditorErrorBanner from "@/components/editor/EditorErrorBanner";
 import type { BlogPost, AffiliateLink } from "@/app/api/blog/route";
 import type { AffiliateProgram } from "@/app/api/blog/affiliates/route";
 
@@ -93,6 +94,7 @@ export default function BlogEngine() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Partial<BlogPost>>(emptyPost());
   const [aiPrompt, setAiPrompt] = useState("");
@@ -153,8 +155,10 @@ export default function BlogEngine() {
       }
       setEditingId(saved.id);
       setDraft({ ...saved });
+      setSaveError(null);
     } catch (err) {
       console.error(err);
+      setSaveError("Couldn't save your post. Check your connection and try again — nothing was lost.");
     } finally {
       setSaving(false);
     }
@@ -162,9 +166,15 @@ export default function BlogEngine() {
 
   async function deletePost(id: string) {
     if (!confirm("Delete this post?")) return;
-    await fetch(`/api/blog?id=${id}`, { method: "DELETE" });
-    setPosts((prev) => prev.filter((p) => p.id !== id));
-    if (editingId === id) startNew();
+    try {
+      const res = await fetch(`/api/blog?id=${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Delete failed");
+      setPosts((prev) => prev.filter((p) => p.id !== id));
+      if (editingId === id) startNew();
+    } catch (err) {
+      console.error(err);
+      setSaveError("Couldn't delete that post. Try again.");
+    }
   }
 
   async function generate() {
@@ -186,7 +196,10 @@ export default function BlogEngine() {
           if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight;
         },
         onDone: () => setGenerating(false),
-        onError: () => setGenerating(false),
+        onError: () => {
+          setGenerating(false);
+          setSaveError("The AI writer failed. Your draft is untouched — try again in a moment.");
+        },
       }
     );
   }
@@ -208,7 +221,10 @@ export default function BlogEngine() {
           setGenerating(false);
           setAffiliateOpen(true);
         },
-        onError: () => setGenerating(false),
+        onError: () => {
+          setGenerating(false);
+          setSaveError("Couldn't generate affiliate suggestions. Try again in a moment.");
+        },
       }
     );
   }
@@ -412,6 +428,7 @@ export default function BlogEngine() {
             </div>
 
             <div className="p-5 space-y-5">
+              <EditorErrorBanner message={saveError} onDismiss={() => setSaveError(null)} />
               {/* Title */}
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500 mb-2">

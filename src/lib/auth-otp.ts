@@ -3,11 +3,16 @@ import { createHmac, randomInt, timingSafeEqual } from "crypto";
 export const OTP_TTL_SECONDS = 60 * 10; // 10 minutes
 
 export function getAuthSecret(): string {
-  return (
-    process.env.OWNER_DASHBOARD_SECRET ||
-    process.env.OWNER_DASHBOARD_PASSWORD ||
-    "lisa-custom-keychains-sovereign-otp-session-secret-2026"
-  );
+  const secret =
+    process.env.OWNER_DASHBOARD_SECRET || process.env.OWNER_DASHBOARD_PASSWORD;
+  if (!secret) {
+    // Fail closed: never sign OTP challenges with a guessable fallback.
+    // Set OWNER_DASHBOARD_SECRET (or OWNER_DASHBOARD_PASSWORD) in the environment.
+    throw new Error(
+      "[auth-otp] OWNER_DASHBOARD_SECRET is not configured. Refusing to issue OTP challenges.",
+    );
+  }
+  return secret;
 }
 
 export function generateOtpCode(): string {
@@ -149,7 +154,7 @@ export async function sendOtpEmail(email: string, code: string): Promise<SendOtp
         body: JSON.stringify({
           from: fromAddr,
           to: normalizedEmail,
-          subject: `Your Lisa Custom Keychains Verification Code: ${code}`,
+          subject: `Your Lisa Custom Keychains verification code`,
           html: `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; border: 1px solid #e2e8f0; border-radius: 16px; background: #ffffff;">
               <div style="text-align: center; margin-bottom: 24px;">
@@ -206,7 +211,7 @@ export async function sendOtpEmail(email: string, code: string): Promise<SendOtp
             email: process.env.EMAIL_FROM || "orders@lisascustomkeychains.com",
             name: "Lisa Custom Keychains",
           },
-          subject: `Your Lisa Custom Keychains Verification Code: ${code}`,
+          subject: `Your Lisa Custom Keychains verification code`,
           content: [
             {
               type: "text/html",
@@ -229,9 +234,24 @@ export async function sendOtpEmail(email: string, code: string): Promise<SendOtp
     }
   }
 
-  // 3. Fallback: Log to console and provide simulated response for immediate access
+  // 3. No email provider configured.
+  // In production this FAILS CLOSED: returning the live code to the browser
+  // would let anyone self-serve owner access ("Sandbox Mode" bypass).
+  // The simulated fallback below is strictly for local development.
+  if (process.env.NODE_ENV === "production") {
+    console.error(
+      "[auth-otp] No email provider configured (RESEND_API_KEY / SENDGRID_API_KEY). Refusing to issue OTP in production.",
+    );
+    return {
+      success: false,
+      simulated: false,
+      message:
+        "Email sending is not configured on this server. Use password login instead, or ask the administrator to configure an email provider.",
+    };
+  }
+
   console.log(`\n==================================================`);
-  console.log(`[LISA-AUTH-OTP] SINGLE-USE CODE FOR: ${normalizedEmail}`);
+  console.log(`[LISA-AUTH-OTP] SINGLE-USE CODE FOR: ${normalizedEmail} (dev sandbox)`);
   console.log(`[LISA-AUTH-OTP] CODE: ${code}`);
   console.log(`==================================================\n`);
 
@@ -239,6 +259,6 @@ export async function sendOtpEmail(email: string, code: string): Promise<SendOtp
     success: true,
     simulated: true,
     code,
-    message: `Verification code dispatched for ${normalizedEmail}`,
+    message: `Verification code dispatched for ${normalizedEmail} (dev sandbox)`,
   };
 }

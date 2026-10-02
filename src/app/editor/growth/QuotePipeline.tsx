@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { RefreshCw, Sparkles, Copy, Check, Loader2 } from "lucide-react";
+import EditorErrorBanner from "@/components/editor/EditorErrorBanner";
 import type { QuoteStage, QuoteStatus } from "@/app/api/bob/quote-status/route";
 
 interface Quote {
@@ -28,6 +29,7 @@ export default function QuotePipeline() {
   const [drafting, setDrafting] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -45,14 +47,18 @@ export default function QuotePipeline() {
   }, []);
 
   const setStage = async (ref: string, stage: QuoteStage) => {
-    const res = await fetch("/api/bob/quote-status", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ref, stage }),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch("/api/bob/quote-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ref, stage }),
+      });
+      if (!res.ok) throw new Error("Stage update failed");
       const s = await res.json();
       setStatus((prev) => ({ ...prev, [ref]: s }));
+      setSaveError(null);
+    } catch {
+      setSaveError("Couldn't update that quote's stage. Try again.");
     }
   };
 
@@ -105,6 +111,7 @@ export default function QuotePipeline() {
 
   return (
     <div>
+      <EditorErrorBanner message={saveError} onDismiss={() => setSaveError(null)} />
       {/* Pipeline summary */}
       <div className="flex flex-wrap items-center gap-2 mb-5">
         {counts.map((s) => (

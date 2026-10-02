@@ -17,6 +17,7 @@ import {
   ImageIcon,
 } from "lucide-react";
 import { hermesStream } from "@/lib/hermes";
+import EditorErrorBanner from "@/components/editor/EditorErrorBanner";
 import type { SocialPost, SocialPlatform, PostStatus } from "@/app/api/social/route";
 
 const PLATFORMS: {
@@ -153,6 +154,7 @@ export default function SocialStudio() {
   const [draft, setDraft] = useState<Partial<SocialPost>>(emptyPost());
   const [aiPrompt, setAiPrompt] = useState("");
   const [bobDrafting, setBobDrafting] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [currentMonth, setCurrentMonth] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -224,8 +226,10 @@ export default function SocialStudio() {
         setPosts((prev) => [saved, ...prev]);
       }
       startNew();
+      setSaveError(null);
     } catch (err) {
       console.error(err);
+      setSaveError("Couldn't save your post. Check your connection and try again — nothing was lost.");
     } finally {
       setSaving(false);
     }
@@ -233,9 +237,15 @@ export default function SocialStudio() {
 
   async function deletePost(id: string) {
     if (!confirm("Delete this post?")) return;
-    await fetch(`/api/social?id=${id}`, { method: "DELETE" });
-    setPosts((prev) => prev.filter((p) => p.id !== id));
-    if (editingId === id) startNew();
+    try {
+      const res = await fetch(`/api/social?id=${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Delete failed");
+      setPosts((prev) => prev.filter((p) => p.id !== id));
+      if (editingId === id) startNew();
+    } catch (err) {
+      console.error(err);
+      setSaveError("Couldn't delete that post. Try again.");
+    }
   }
 
   async function draftWithBob() {
@@ -261,8 +271,10 @@ export default function SocialStudio() {
         });
       }
       await fetchPosts();
+      setSaveError(null);
     } catch (err) {
       console.error(err);
+      setSaveError("BoB couldn't draft posts right now. Try again in a moment.");
     } finally {
       setBobDrafting(false);
     }
@@ -289,7 +301,10 @@ export default function SocialStudio() {
           });
         },
         onDone: () => setGenerating(false),
-        onError: () => setGenerating(false),
+        onError: () => {
+          setGenerating(false);
+          setSaveError("The caption generator failed. Try again in a moment.");
+        },
       }
     );
   }
@@ -488,6 +503,7 @@ export default function SocialStudio() {
             </div>
 
             <div className="p-5 space-y-5">
+              <EditorErrorBanner message={saveError} onDismiss={() => setSaveError(null)} />
               {/* Platform tabs */}
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500 mb-2">

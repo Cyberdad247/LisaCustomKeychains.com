@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Star, Check, RefreshCw } from "lucide-react";
+import EditorErrorBanner from "@/components/editor/EditorErrorBanner";
 import type { ReviewEntry } from "@/app/api/reviews/route";
 
 export default function ReviewTracker() {
@@ -11,6 +12,7 @@ export default function ReviewTracker() {
   const [orderRef, setOrderRef] = useState("");
   const [recording, setRecording] = useState<string | null>(null);
   const [rating, setRating] = useState(5);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [text, setText] = useState("");
 
   const load = async () => {
@@ -29,43 +31,54 @@ export default function ReviewTracker() {
 
   const logRequest = async () => {
     if (!customer.trim()) return;
-    const res = await fetch("/api/reviews", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customer: customer.trim(), orderRef: orderRef.trim() }),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customer: customer.trim(), orderRef: orderRef.trim() }),
+      });
+      if (!res.ok) throw new Error("Log failed");
       const entry = await res.json();
       setReviews((prev) => [entry, ...prev]);
       setCustomer("");
       setOrderRef("");
+      setSaveError(null);
+    } catch {
+      setSaveError("Couldn't log that review request. Try again.");
     }
   };
 
   const saveReview = async (id: string) => {
-    const res = await fetch("/api/reviews", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, rating, text }),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, rating, text }),
+      });
+      if (!res.ok) throw new Error("Save failed");
       const updated = await res.json();
       setReviews((prev) => prev.map((r) => (r.id === id ? updated : r)));
       setRecording(null);
       setText("");
       setRating(5);
+      setSaveError(null);
+    } catch {
+      setSaveError("Couldn't save that review. Try again.");
     }
   };
 
   const toggleApproved = async (r: ReviewEntry) => {
-    const res = await fetch("/api/reviews", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: r.id, approved: !r.approved }),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: r.id, approved: !r.approved }),
+      });
+      if (!res.ok) throw new Error("Update failed");
       const updated = await res.json();
       setReviews((prev) => prev.map((x) => (x.id === r.id ? updated : x)));
+    } catch {
+      setSaveError("Couldn't update approval. Try again.");
     }
   };
 
@@ -85,6 +98,7 @@ export default function ReviewTracker() {
 
   return (
     <div>
+      <EditorErrorBanner message={saveError} onDismiss={() => setSaveError(null)} />
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-5">
         {[

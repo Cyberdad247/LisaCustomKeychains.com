@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Copy, Check, RefreshCw } from "lucide-react";
+import EditorErrorBanner from "@/components/editor/EditorErrorBanner";
 import type { DMKeyword } from "@/app/api/dm-keywords/route";
 
 export default function DMKeywords() {
@@ -10,6 +11,7 @@ export default function DMKeywords() {
   const [keyword, setKeyword] = useState("");
   const [reply, setReply] = useState("");
   const [copied, setCopied] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -27,22 +29,31 @@ export default function DMKeywords() {
 
   const save = async () => {
     if (!keyword.trim() || !reply.trim()) return;
-    const res = await fetch("/api/dm-keywords", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ keyword: keyword.trim(), reply: reply.trim() }),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch("/api/dm-keywords", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keyword: keyword.trim(), reply: reply.trim() }),
+      });
+      if (!res.ok) throw new Error("Save failed");
       setKeyword("");
       setReply("");
+      setSaveError(null);
       load();
+    } catch {
+      setSaveError("Couldn't save that keyword. Try again.");
     }
   };
 
   const remove = async (k: string) => {
     if (!confirm(`Delete keyword "${k}"?`)) return;
-    await fetch(`/api/dm-keywords?keyword=${encodeURIComponent(k)}`, { method: "DELETE" });
-    load();
+    try {
+      const res = await fetch(`/api/dm-keywords?keyword=${encodeURIComponent(k)}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Delete failed");
+      load();
+    } catch {
+      setSaveError("Couldn't delete that keyword. Try again.");
+    }
   };
 
   const exportText = () => {
@@ -62,6 +73,7 @@ export default function DMKeywords() {
 
   return (
     <div>
+      <EditorErrorBanner message={saveError} onDismiss={() => setSaveError(null)} />
       <p className="text-xs text-slate-500 mb-4">
         When a DM contains a keyword, the bot replies automatically. Manage the map here, then paste it into
         ManyChat (or your DM tool of choice).

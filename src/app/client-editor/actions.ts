@@ -116,6 +116,9 @@ export async function requestOtpAction(email: string): Promise<{
   });
 
   const sendResult = await sendOtpEmail(email, code);
+  if (!sendResult.success) {
+    return { ok: false, error: sendResult.message };
+  }
   return {
     ok: true,
     simulated: sendResult.simulated,
