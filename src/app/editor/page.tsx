@@ -3,6 +3,7 @@ import ContentCalendar from "./ContentCalendar";
 import TriagePanel from "./TriagePanel";
 import CampaignPacks from "./CampaignPacks";
 import PopupPrep from "./PopupPrep";
+import OnboardingChecklist from "./OnboardingChecklist";
 import { getUpcomingPopups } from "@/lib/calendar.server";
 import { isOwnerSessionValid } from "@/lib/storefront-config";
 import { logoutOwner } from "@/app/client-editor/actions";
@@ -41,8 +42,13 @@ export default async function OwnerDashboard() {
         </div>
       </header>
 
+      {/* Queen Lisa's onboarding — Sir BoB guides her through the editor */}
+      <OnboardingChecklist />
+
       {/* Sovereign Multi-Agent AI Cockpit & WebMCP Operations */}
-      <EditorAiCockpit />
+      <div id="ai-cockpit" className="scroll-mt-4">
+        <EditorAiCockpit />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">

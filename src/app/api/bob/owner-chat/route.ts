@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { getAllProducts } from "@/lib/shopify";
 import { isOwnerSessionValid } from "@/lib/storefront-config";
+import { EDITOR_GUIDE } from "@/lib/editor-guide";
 
 // Queen Lisa's BoB — chamberlain mode. Owner-gated. Business advice,
 // quote summaries, grounded in the live catalog. Same VPS brain, owner persona.
@@ -25,11 +26,12 @@ async function catalogContext(): Promise<string> {
       const price = node.priceRange?.minVariantPrice;
       return `- ${node.title} [${node.productType || "keychain"}] $${price?.amount ?? "?"} (/${node.handle})`;
     });
-    const text = `LIVE PRODUCT CATALOG (${edges.length} products):\n${lines.join("\n")}`;
+    const text = `LIVE PRODUCT CATALOG (${edges.length} products):\n${lines.join("\n")}\n\n${EDITOR_GUIDE}`;
     catalogCache = { at: Date.now(), text };
     return text;
   } catch {
-    return "Product catalog temporarily unavailable.";
+    // Even without the catalog, BoB keeps his editor handbook.
+    return EDITOR_GUIDE;
   }
 }
 

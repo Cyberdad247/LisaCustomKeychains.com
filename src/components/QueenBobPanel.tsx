@@ -128,6 +128,19 @@ export default function QueenBobPanel() {
             ))}
             {loading && <p className="text-xs text-white/40">BoB is thinking…</p>}
           </div>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {["Show me around the editor", "What should I do first today?"].map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                onClick={() => send(chip)}
+                disabled={loading}
+                className="text-[11px] font-bold border border-white/20 rounded-full px-3 py-1 text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-40 transition-colors"
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
           <form
             onSubmit={(e) => {
               e.preventDefault();

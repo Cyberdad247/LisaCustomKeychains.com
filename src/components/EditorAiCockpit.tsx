@@ -342,6 +342,23 @@ export default function EditorAiCockpit() {
     }
   };
 
+  // Onboarding bridge: the Queen's Onboarding checklist (and other UI) can
+  // ask BoB a question on Lisa's behalf. Switch to the advisor tab and send it.
+  // A ref keeps the listener calling the latest handler (fresh conversation).
+  const sendAdvisorRef = useRef(handleSendAdvisor);
+  sendAdvisorRef.current = handleSendAdvisor;
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const question = (e as CustomEvent<string>).detail;
+      if (typeof question !== "string" || !question.trim()) return;
+      setActiveTab("advisor");
+      // Let the tab switch render before sending.
+      setTimeout(() => sendAdvisorRef.current(question), 60);
+    };
+    window.addEventListener("cockpit-ask-bob", handler);
+    return () => window.removeEventListener("cockpit-ask-bob", handler);
+  }, []);
+
   // Tab 2: Generate Marketing Copy (Streaming via Hermes / Gemini)
   const handleGenerateMarketing = async () => {
     setIsGeneratingCopy(true);
@@ -688,6 +705,7 @@ Signage: [Table sign headline and 2 bullet points for the market booth]`,
                   "Best-sellers review",
                   "Pricing strategy",
                   "Bulk wedding discount",
+                  "Onboarding tour",
                 ].map((chip) => (
                   <button
                     key={chip}
