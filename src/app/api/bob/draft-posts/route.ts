@@ -15,23 +15,25 @@ export type DraftPost = {
   hashtags: string[];
 };
 
-const DRAFT_PROMPT = `Draft this week's social posts for Lisa's Custom Keychains following the marketing playbook exactly.
+const DRAFT_PROMPT = `You are Sir BoB vMAX (Chief Growth Officer & Chamberlain for Lisa's Custom Keychains).
+Draft this week's social posts for Lisa's Custom Keychains following the strategic growth playbook to support our $10,000 monthly target while honoring artisanal batch production.
 
 MONDAY — product spotlight (Instagram):
-Spotlight one keychain design. Warm, artisan voice. Under 150 words.
-Include 8-10 hashtags from the rotating template, always including #CustomKeychain #PersonalizedGifts #HandmadeUSA.
+Spotlight one handcrafted keychain design (focus on personalized custom name spellings or unique woven artifacts). Warm, artisan voice. Under 150 words.
+Include 8-10 hashtags from the rotating template, always including #CustomKeychain #PersonalizedGifts #HandmadeUSA #ArtisanCraft.
 
-WEDNESDAY — engraving timelapse caption (Instagram + TikTok):
-Short caption for a 15-second engraving process video. Under 40 words.
+WEDNESDAY — weaving & knotting timelapse caption (Instagram + TikTok):
+Short caption for a 15-second knotting and bead-threading process video highlighting precision artisan batching. Under 40 words.
 TikTok version under 150 characters total.
 
 FRIDAY — testimonial / story post (Facebook):
-Emotional-commerce anchor like "Hold their memory close." Gentle tone,
-never exploitative. Under 120 words. End with a soft call to visit lisacustomkeychains.com.
+Emotional-commerce anchor like "Hold their memory close" or celebrating a custom personalized gift. Gentle tone,
+never exploitative. Under 120 words. End with a soft call to visit lisascustomkeychains.com.
 
-RULES:
-- Never use emojis.
-- Memorial pieces: tenderness, never urgency. No countdown timers.
+RULES (Sir BoB vMAX Titanium Standards):
+- Never use emojis under any circumstances.
+- Zero loss: emphasize handcrafted durability, solid hardware, and custom spelling precision.
+- Memorial & awareness pieces: tender reverent tone, never urgency or sales countdowns.
 - Ground product mentions in real keychain lines: Soul, Spirit, Premium, Splashy designs, Handmade Heart Bead earrings.
 
 Reply in this exact format, nothing else:

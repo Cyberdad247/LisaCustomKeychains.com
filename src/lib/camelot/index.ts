@@ -126,4 +126,5 @@ export const SQUIRE_CLASS = {
 // EXPORTS
 // ============================================================
 
+export * from "./sir-bob";
 export { z } from "zod";

@@ -74,7 +74,7 @@ export default function EditorAiCockpit() {
     {
       id: "welcome-1",
       role: "bob",
-      text: "At your service, Queen Lisa. I am Sir BoB, your chamberlain and commercial strategist. Our catalog, margins, and custom woven collections are loaded into memory. How shall we expand the boutique today?",
+      text: "At your service, Queen Lisa. I am Sir BoB vMAX, your Chief Growth Officer and operational copilot. Operating under our dynamic OCEAN matrix, 15% budget-guard, and artisanal batch production protocols. How shall we expand the boutique toward our $10,000 monthly goal today?",
       timestamp: "Online",
     },
   ]);
@@ -693,11 +693,16 @@ Signage: [Table sign headline and 2 bullet points for the market booth]`,
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xs uppercase tracking-[0.2em] font-black text-slate-900">
-                  Sir BoB · Sovereign Chamberlain
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xs uppercase tracking-[0.2em] font-black text-slate-900">
+                    Sir BoB vMAX · Chief Growth Officer & Chamberlain
+                  </h3>
+                  <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[9px] font-mono font-medium text-emerald-700">
+                    15% Budget Guard
+                  </span>
+                </div>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Direct strategic advisory grounded in live Shopify inventory, pricing, and craft specs.
+                  Direct strategic advisory grounded in live Shopify inventory, batch production schedules, and $10k/mo targets.
                 </p>
               </div>
               <div className="flex gap-2">
@@ -730,7 +735,7 @@ Signage: [Table sign headline and 2 bullet points for the market booth]`,
                 >
                   <div className="flex items-center gap-1.5 mb-1 px-1">
                     <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                      {msg.role === "user" ? "Queen Lisa" : "Sir BoB (Chamberlain)"}
+                      {msg.role === "user" ? "Queen Lisa" : "Sir BoB vMAX"}
                     </span>
                     <span className="text-[9px] text-slate-400">{msg.timestamp}</span>
                   </div>

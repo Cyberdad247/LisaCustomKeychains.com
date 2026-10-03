@@ -21,7 +21,7 @@ export default function QueenBobPanel() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "bob",
-      text: "At your service, my Queen. Ask me about the business — pricing, quotes, products, marketing — or open the quote inbox to review bulk requests.",
+      text: "At your service, Queen Lisa. I am Sir BoB vMAX, your operational copilot and Chief Growth Officer. Our dynamic OCEAN matrix is calibrated for artisanal batch production, inventory precision, and our $10,000 monthly trajectory. How may I advise your operations today?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -86,11 +86,16 @@ export default function QueenBobPanel() {
     <section className="rounded-xl border border-slate-800 bg-slate-950 text-white p-5 shadow-sm">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">
-            Sir BoB · Chamberlain
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">
+              Sir BoB vMAX · Chief Growth Officer & Chamberlain
+            </p>
+            <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[9px] font-mono font-medium text-emerald-400">
+              15% Budget Guard Active
+            </span>
+          </div>
           <h2 className="mt-1 text-xl font-semibold tracking-tight">
-            Your counsel, my Queen
+            Your counsel, Queen Lisa
           </h2>
         </div>
         <div className="flex gap-2">

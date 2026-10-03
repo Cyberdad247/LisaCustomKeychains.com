@@ -42,6 +42,11 @@ async function catalogContext(): Promise<string> {
   }
 }
 
+import {
+  buildSirBobCustomerSystemPrompt,
+  modulateOceanMatrix,
+} from "@/lib/camelot/sir-bob";
+
 export async function POST(req: NextRequest) {
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -67,14 +72,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No messages" }, { status: 400 });
   }
 
+  const catalog = await catalogContext();
+  const empathyState = modulateOceanMatrix(messages);
+  const systemPrompt = buildSirBobCustomerSystemPrompt({ catalog, empathyState });
+
+  const GATEWAY_UA =
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
+
   try {
-    const catalog = await catalogContext();
     const res = await fetch(`${gateway}/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "User-Agent": GATEWAY_UA,
       },
-      body: JSON.stringify({ messages, catalog }),
+      body: JSON.stringify({
+        messages,
+        catalog,
+        persona: "customer",
+        systemPrompt,
+        ocean: empathyState.activeOcean,
+        empathyScore: empathyState.score,
+      }),
       signal: AbortSignal.timeout(60_000),
     });
     if (!res.ok) {
@@ -83,10 +102,52 @@ export async function POST(req: NextRequest) {
     const data = await res.json();
     return NextResponse.json({ reply: data.reply ?? "" });
   } catch (e) {
-    console.error("BoB gateway error:", e);
+    console.error("BoB customer gateway error, falling back to sovereign Gemini mesh:", e);
+    const geminiKey = process.env.GOOGLE_AI_API_KEY;
+    if (geminiKey) {
+      try {
+        const userPrompt = messages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n\n");
+
+        const gRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: "user",
+                  parts: [{ text: `${systemPrompt}\n\n${userPrompt}\n\nRespond as Sir BoB to the customer:` }],
+                },
+              ],
+              generationConfig: { maxOutputTokens: 1024, temperature: 0.7 },
+            }),
+            signal: AbortSignal.timeout(15_000),
+          }
+        );
+        if (gRes.ok) {
+          const gData = await gRes.json();
+          const replyText = gData.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (replyText) {
+            return NextResponse.json({
+              reply: replyText.trim(),
+              provider: "gemini-sovereign-fallback",
+            });
+          }
+        }
+      } catch (gErr) {
+        console.error("Customer Gemini fallback failed:", gErr);
+      }
+    }
+
     return NextResponse.json(
-      { reply: "I am having trouble reaching my desk just now. Please try again shortly." },
-      { status: 502 }
+      {
+        reply: empathyState.isMemorial
+          ? "Thank you for reaching out to Lisa's Custom Keychains. Lisa treats all memorial and remembrance pieces with utmost care and love. Please leave your note or request, and we will weave it with the gentlest touch."
+          : "Good day. I am temporarily stepping away from my desk, but Queen Lisa handcrafts every custom order right here. Feel free to browse our collection or leave a note with your desired colors and charms.",
+      },
+      { status: 200 }
     );
   }
 }
+

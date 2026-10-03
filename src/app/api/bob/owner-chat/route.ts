@@ -41,6 +41,11 @@ async function catalogContext(): Promise<string> {
   }
 }
 
+import {
+  buildSirBobOwnerSystemPrompt,
+  modulateOceanMatrix,
+} from "@/lib/camelot/sir-bob";
+
 export async function POST(req: NextRequest) {
   const cookieStore = await cookies();
   if (!isOwnerSessionValid(cookieStore.get("lisa_owner_session")?.value)) {
@@ -63,28 +68,42 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No messages" }, { status: 400 });
   }
 
+  const catalog = await catalogContext();
+  const empathyState = modulateOceanMatrix(messages);
+  const systemPrompt = buildSirBobOwnerSystemPrompt({ catalog, empathyState });
+
   try {
-    const catalog = await catalogContext();
     const res = await fetch(`${gateway}/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": GATEWAY_UA,
       },
-      body: JSON.stringify({ messages, catalog, persona: "owner" }),
+      body: JSON.stringify({
+        messages,
+        catalog,
+        persona: "owner",
+        systemPrompt,
+        ocean: empathyState.activeOcean,
+        empathyScore: empathyState.score,
+      }),
       signal: AbortSignal.timeout(60_000),
     });
     if (!res.ok) throw new Error(`gateway ${res.status}`);
     const data = await res.json();
-    if (data.reply) return NextResponse.json({ reply: data.reply });
+    if (data.reply) {
+      return NextResponse.json({
+        reply: data.reply,
+        ocean: empathyState.activeOcean,
+        empathyScore: empathyState.score,
+      });
+    }
     throw new Error("gateway empty reply");
   } catch (e) {
     console.error("BoB owner gateway error, falling back to sovereign Gemini mesh:", e);
     const geminiKey = process.env.GOOGLE_AI_API_KEY;
     if (geminiKey) {
       try {
-        const catalog = await catalogContext();
-        const systemPrompt = `You are Sir BoB, the sovereign chamberlain and high advisor to Queen Lisa, owner of Lisa's Custom Keychains. Brand voice: warm, loyal, artisan, highly strategic and commercially sharp. Never generic. Never use emojis. Lisa handcrafts macrame keychains, bag charms, and beaded jewelry starting at $2.95.\n\n${catalog}`;
         const userPrompt = messages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n\n");
 
         const gRes = await fetch(
@@ -108,7 +127,12 @@ export async function POST(req: NextRequest) {
           const gData = await gRes.json();
           const replyText = gData.candidates?.[0]?.content?.parts?.[0]?.text;
           if (replyText) {
-            return NextResponse.json({ reply: replyText.trim(), provider: "gemini-sovereign-fallback" });
+            return NextResponse.json({
+              reply: replyText.trim(),
+              provider: "gemini-sovereign-fallback",
+              ocean: empathyState.activeOcean,
+              empathyScore: empathyState.score,
+            });
           }
         }
       } catch (gErr) {
@@ -119,9 +143,20 @@ export async function POST(req: NextRequest) {
     // Local editor-aware fallback: answer from the handbook so Lisa still
     // gets real guidance even when the VPS is unreachable. Never a generic greeting.
     const lastUser = [...messages].reverse().find((m) => m.role === "user");
+    const localAnswer = answerEditorQuestion(lastUser?.content ?? "");
+    const reply =
+      localAnswer ||
+      "Greetings, my Queen. I am actively monitoring our catalog and orders under the vMAX matrix. How may I advise your operations today?";
+
     return NextResponse.json(
-      { reply: answerEditorQuestion(lastUser?.content ?? ""), provider: "local-editor-fallback" },
+      {
+        reply,
+        provider: "local-editor-fallback",
+        ocean: empathyState.activeOcean,
+        empathyScore: empathyState.score,
+      },
       { status: 200 }
     );
   }
 }
+
