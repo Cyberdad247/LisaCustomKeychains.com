@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
-import { createSession, getSession, addMessage } from "@/lib/live-chat-store";
 import { corsPreflight, withCors, rateLimited, clientIp } from "@/lib/live-chat-http";
+
+// Public: customer sends a message. Proxied to the VPS gateway (shared store).
+// Body: { sessionId?: string, name?: string, text: string }
+
+const GATEWAY = "https://bob.lisascustomkeychains.com";
+const GATEWAY_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 
 export async function OPTIONS(req: Request) {
   return corsPreflight(req);
 }
 
-/**
- * Customer sends a message. Creates a session on first call.
- * Body: { sessionId?: string, name?: string, text: string }
- */
 export async function POST(req: Request) {
   if (rateLimited(clientIp(req), 20, 60_000)) {
     return withCors(NextResponse.json({ error: "Slow down a touch — try again in a moment." }, { status: 429 }), req);
@@ -27,15 +29,22 @@ export async function POST(req: Request) {
     return withCors(NextResponse.json({ error: "Empty message" }, { status: 400 }), req);
   }
 
-  let session = body.sessionId ? getSession(body.sessionId) : undefined;
-  if (!session) {
-    session = createSession(body.name ?? "Guest");
+  try {
+    const res = await fetch(`${GATEWAY}/live-chat/send`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "User-Agent": GATEWAY_UA },
+      body: JSON.stringify({
+        sessionId: body.sessionId ?? "",
+        name: (body.name ?? "Guest").slice(0, 40),
+        text: text.slice(0, 500),
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) throw new Error(`gateway ${res.status}`);
+    const data = await res.json();
+    return withCors(NextResponse.json(data), req);
+  } catch (e) {
+    console.error("live-chat send proxy error:", e);
+    return withCors(NextResponse.json({ error: "Chat is unavailable right now — please try again." }, { status: 502 }), req);
   }
-
-  const message = addMessage(session.id, "customer", text);
-  if (!message) {
-    return withCors(NextResponse.json({ error: "Could not send" }, { status: 400 }), req);
-  }
-
-  return withCors(NextResponse.json({ sessionId: session.id, message }), req);
 }
