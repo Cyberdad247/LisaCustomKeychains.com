@@ -49,7 +49,7 @@ export default function SirBobChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "bob",
-      text: "Good day. I am BoB, shop assistant to Lisa's Custom Keychains. Ask me about the collection, customization, or bulk orders — every piece is hand-woven by Lisa herself.",
+      text: "Good day. I am Sir BoB, shop assistant to Lisa's Custom Keychains. Ask me about our handcrafted collections, custom name spellings, or bulk orders — every single piece is hand-woven by Queen Lisa herself.",
     },
   ]);
   const [input, setInput] = useState("");

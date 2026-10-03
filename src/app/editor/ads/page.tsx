@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { readFile } from "fs/promises";
 import path from "path";
+import { safeReadJson } from "@/lib/server-storage";
 import { isOwnerSessionValid } from "@/lib/storefront-config";
 import AdGallery from "../AdGallery";
 
@@ -11,8 +11,10 @@ export default async function AdGalleryPage() {
     redirect("/editor");
   }
 
-  const raw = await readFile(path.join(process.cwd(), "data", "ad-mockups.json"), "utf-8");
-  const mockups = JSON.parse(raw);
+  const mockups = await safeReadJson<any[]>(
+    path.join(process.cwd(), "data", "ad-mockups.json"),
+    []
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">

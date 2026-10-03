@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { readFile } from "fs/promises";
 import path from "path";
+import { safeReadJson } from "@/lib/server-storage";
 import { isOwnerSessionValid } from "@/lib/storefront-config";
 
 // Business health snapshot for the Command Center TriagePanel.
@@ -44,8 +44,10 @@ async function quoteCount(): Promise<BusinessMetric> {
 
 async function contentDepth(): Promise<BusinessMetric> {
   try {
-    const raw = await readFile(path.join(process.cwd(), "data", "content-queue.json"), "utf-8");
-    const items = JSON.parse(raw) as { status?: string }[];
+    const items = await safeReadJson<{ status?: string }[]>(
+      path.join(process.cwd(), "data", "content-queue.json"),
+      []
+    );
     const pending = items.filter((i) => i.status === "pending").length;
     return {
       label: "Content awaiting approval",
@@ -60,8 +62,10 @@ async function contentDepth(): Promise<BusinessMetric> {
 
 async function postingStreak(): Promise<BusinessMetric> {
   try {
-    const raw = await readFile(path.join(process.cwd(), "data", "social-calendar.json"), "utf-8");
-    const posts = JSON.parse(raw) as { status?: string; scheduledDate?: string; createdAt?: string }[];
+    const posts = await safeReadJson<{ status?: string; scheduledDate?: string; createdAt?: string }[]>(
+      path.join(process.cwd(), "data", "social-calendar.json"),
+      []
+    );
     const published = posts
       .filter((p) => p.status === "published")
       .map((p) => new Date(p.scheduledDate ?? p.createdAt ?? 0).getTime())

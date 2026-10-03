@@ -105,6 +105,8 @@ export default async function OwnerDashboard() {
             </h2>
             <nav className="space-y-2">
               {[
+                { label: "Growth Engine (Quotes & Reviews)", href: "/editor/growth" },
+                { label: "Live Customer Chat", href: "/editor/chat" },
                 { label: "Social Studio", href: "/editor/social" },
                 { label: "Blog Engine", href: "/editor/blog" },
                 { label: "Ad Gallery", href: "/editor/ads" },
