@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ChatMessage {
@@ -8,11 +8,22 @@ interface ChatMessage {
   text: string;
 }
 
+interface LisaMessage {
+  id: string;
+  sender: "customer" | "lisa";
+  text: string;
+  at: number;
+}
+
 const QUICK_REPLIES = [
   "I need a bulk order quote",
   "What can be customized?",
   "How long does weaving take?",
 ];
+
+// The literal command that switches the widget to the human chat with Lisa.
+const LISA_COMMAND = "talk to lisa";
+const POLL_MS = 3000;
 
 function BobSigil({ size = 56 }: { size?: number }) {
   return (
@@ -46,10 +57,11 @@ function BobSigil({ size = 56 }: { size?: number }) {
 export default function SirBobChat() {
   const [open, setOpen] = useState(false);
   const [quoteMode, setQuoteMode] = useState(false);
+  const [lisaMode, setLisaMode] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "bob",
-      text: "Good day. I am Sir BoB, shop assistant to Lisa's Custom Keychains. Ask me about our handcrafted collections, custom name spellings, or bulk orders — every single piece is hand-woven by Queen Lisa herself.",
+      text: "Good day. I am Sir BoB, shop assistant to Lisa's Custom Keychains. Ask me about our handcrafted collections, custom name spellings, or bulk orders — every single piece is hand-woven by Queen Lisa herself. Type \u201cTalk to Lisa\u201d anytime to reach the maker herself.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -58,13 +70,122 @@ export default function SirBobChat() {
   const [quoteSent, setQuoteSent] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // --- Direct chat with Lisa (human mode) ---
+  const [lisaName, setLisaName] = useState("");
+  const [lisaNameInput, setLisaNameInput] = useState("");
+  const [lisaSessionId, setLisaSessionId] = useState<string | null>(null);
+  const [lisaMessages, setLisaMessages] = useState<LisaMessage[]>([]);
+  const [lisaInput, setLisaInput] = useState("");
+  const [lisaOnline, setLisaOnline] = useState(false);
+  const [lisaSending, setLisaSending] = useState(false);
+  const lisaSinceRef = useRef(0);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, open, quoteMode]);
+  }, [messages, open, quoteMode, lisaMode, lisaMessages]);
+
+  // Restore Lisa chat identity/session across visits (shared with the legacy widget).
+  useEffect(() => {
+    try {
+      const n = localStorage.getItem("lck_chat_name") ?? "";
+      const s = localStorage.getItem("lck_chat_session") ?? "";
+      if (n) setLisaName(n);
+      if (s) setLisaSessionId(s);
+    } catch {
+      /* private mode */
+    }
+  }, []);
+
+  const enterLisaMode = useCallback(() => {
+    setLisaMode(true);
+    setQuoteMode(false);
+    setMessages((m) => [
+      ...m,
+      {
+        role: "bob",
+        text: "Of course — connecting you with Lisa now. She usually replies from her Instagram, so she will see your message there.",
+      },
+    ]);
+  }, []);
+
+  const pollLisa = useCallback(async () => {
+    if (!lisaSessionId) return;
+    try {
+      const res = await fetch(
+        `/api/live-chat/poll?sessionId=${encodeURIComponent(lisaSessionId)}&since=${lisaSinceRef.current}`
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      setLisaOnline(!!data.lisaOnline);
+      const fresh: LisaMessage[] = data.messages ?? [];
+      if (fresh.length > 0) {
+        lisaSinceRef.current = Math.max(...fresh.map((m) => m.at), lisaSinceRef.current);
+        setLisaMessages((prev) => {
+          const ids = new Set(prev.map((m) => m.id));
+          return [...prev, ...fresh.filter((m) => !ids.has(m.id))].sort((a, b) => a.at - b.at);
+        });
+      }
+    } catch {
+      /* chat poll failed — retry next tick */
+    }
+  }, [lisaSessionId]);
+
+  useEffect(() => {
+    if (!open || !lisaMode || !lisaSessionId) return;
+    pollLisa();
+    const t = setInterval(pollLisa, POLL_MS);
+    return () => clearInterval(t);
+  }, [open, lisaMode, lisaSessionId, pollLisa]);
+
+  const startLisaChat = () => {
+    const n = lisaNameInput.trim().slice(0, 40) || "Guest";
+    setLisaName(n);
+    try {
+      localStorage.setItem("lck_chat_name", n);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const sendLisa = async () => {
+    const text = lisaInput.trim();
+    if (!text || lisaSending) return;
+    setLisaSending(true);
+    try {
+      const res = await fetch("/api/live-chat/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: lisaSessionId, name: lisaName, text }),
+      });
+      const data = await res.json();
+      if (data.sessionId && data.sessionId !== lisaSessionId) {
+        setLisaSessionId(data.sessionId);
+        try {
+          localStorage.setItem("lck_chat_session", data.sessionId);
+        } catch {
+          /* ignore */
+        }
+      }
+      if (data.message) {
+        lisaSinceRef.current = Math.max(lisaSinceRef.current, data.message.at);
+        setLisaMessages((prev) => [...prev, data.message].sort((a, b) => a.at - b.at));
+      }
+      setLisaInput("");
+    } catch {
+      /* send failed — keep the text so they can retry */
+    }
+    setLisaSending(false);
+  };
 
   const send = async (text: string) => {
     const clean = text.trim();
     if (!clean || loading) return;
+    // The literal command: "Talk to Lisa" switches to the human chat.
+    if (clean.toLowerCase() === LISA_COMMAND) {
+      enterLisaMode();
+      setInput("");
+      return;
+    }
     setMessages((m) => [...m, { role: "user", text: clean }]);
     setInput("");
     setLoading(true);
@@ -96,7 +217,7 @@ export default function SirBobChat() {
         ...m,
         {
           role: "bob",
-          text: "I am having trouble reaching my desk just now. Please try again shortly, or write to Lisa directly.",
+          text: "I am having trouble reaching my desk just now. Please try again shortly, or type \u201cTalk to Lisa\u201d to reach her directly.",
         },
       ]);
     } finally {
@@ -150,9 +271,32 @@ export default function SirBobChat() {
             <div className="flex items-center gap-3 px-4 py-3 bg-[#1e1b2e] text-white shrink-0">
               <BobSigil size={38} />
               <div className="flex-1 min-w-0">
-                <p className="font-serif font-bold leading-tight">Sir BoB</p>
-                <p className="text-xs text-purple-300">Shop assistant · Lisa's Custom Keychains</p>
+                <p className="font-serif font-bold leading-tight">
+                  {lisaMode ? "Chat with Lisa" : "Sir BoB"}
+                </p>
+                <p className="text-xs text-purple-300">
+                  {lisaMode
+                    ? lisaOnline
+                      ? "Lisa is online now"
+                      : "Lisa is away — she replies from Instagram"
+                    : "Shop assistant · Lisa's Custom Keychains"}
+                </p>
               </div>
+              {lisaMode ? (
+                <button
+                  onClick={() => {
+                    setLisaMode(false);
+                    setMessages((m) => [
+                      ...m,
+                      { role: "bob", text: "Back with me. What else can I help with?" },
+                    ]);
+                  }}
+                  aria-label="Back to Sir BoB"
+                  className="text-xs text-purple-300 hover:text-white border border-purple-500/50 rounded-full px-3 py-1"
+                >
+                  ← BoB
+                </button>
+              ) : null}
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Close chat"
@@ -162,7 +306,86 @@ export default function SirBobChat() {
               </button>
             </div>
 
-            {!quoteMode ? (
+            {lisaMode ? (
+              <>
+                {!lisaName ? (
+                  /* Name gate */
+                  <div className="flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center bg-stone-50">
+                    <p className="text-sm text-slate-600">
+                      Questions about a design, an order, or a custom piece? You&apos;re talking to
+                      the maker herself — she replies from her Instagram.
+                    </p>
+                    <input
+                      value={lisaNameInput}
+                      onChange={(e) => setLisaNameInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && startLisaChat()}
+                      placeholder="What should Lisa call you?"
+                      maxLength={40}
+                      className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={startLisaChat}
+                      className="rounded-lg bg-purple-700 text-white text-sm font-semibold px-6 py-2 hover:bg-purple-800"
+                    >
+                      Start chatting
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Lisa messages */}
+                    <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 bg-[#FCFCFC]">
+                      {lisaMessages.length === 0 && (
+                        <p className="text-xs text-slate-400 text-center mt-6">
+                          Say hello — {lisaOnline ? "Lisa usually replies within a minute." : "leave a message and Lisa will get back to you from Instagram."}
+                        </p>
+                      )}
+                      {lisaMessages.map((m) => (
+                        <div key={m.id} className={`flex ${m.sender === "customer" ? "justify-end" : "justify-start"}`}>
+                          <div
+                            className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
+                              m.sender === "customer"
+                                ? "bg-purple-700 text-white rounded-br-sm"
+                                : "bg-white border border-stone-200 text-slate-800 rounded-bl-sm"
+                            }`}
+                          >
+                            {m.sender === "lisa" && (
+                              <p className="text-[10px] font-bold text-purple-700 mb-0.5">Lisa</p>
+                            )}
+                            <p className="whitespace-pre-wrap break-words">{m.text}</p>
+                          </div>
+                        </div>
+                      ))}
+                      <div ref={bottomRef} />
+                    </div>
+
+                    {/* Lisa input */}
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        sendLisa();
+                      }}
+                      className="p-3 flex gap-2 shrink-0 bg-white border-t border-stone-200"
+                    >
+                      <input
+                        value={lisaInput}
+                        onChange={(e) => setLisaInput(e.target.value)}
+                        placeholder="Type your message…"
+                        maxLength={500}
+                        className="flex-1 text-sm border border-stone-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                      <button
+                        type="submit"
+                        disabled={lisaSending || !lisaInput.trim()}
+                        className="bg-purple-700 text-white text-sm rounded-full px-4 py-2 hover:bg-purple-800 disabled:opacity-40"
+                      >
+                        Send
+                      </button>
+                    </form>
+                  </>
+                )}
+              </>
+            ) : !quoteMode ? (
               <>
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-stone-50">
@@ -208,6 +431,12 @@ export default function SirBobChat() {
                       {q}
                     </button>
                   ))}
+                  <button
+                    onClick={() => send("Talk to Lisa")}
+                    className="whitespace-nowrap text-xs border border-amber-400 text-amber-800 rounded-full px-3 py-1.5 hover:bg-amber-50 shrink-0 font-semibold"
+                  >
+                    Talk to Lisa
+                  </button>
                   <button
                     onClick={() => setQuoteMode(true)}
                     className="whitespace-nowrap text-xs bg-purple-700 text-white rounded-full px-3 py-1.5 hover:bg-purple-800 shrink-0"
@@ -261,8 +490,8 @@ export default function SirBobChat() {
                   <div className="bg-white border border-stone-200 rounded-xl p-4 text-sm">
                     {quoteSent === "error" ? (
                       <p className="text-red-700">
-                        Something went wrong sending your request. Please try again, or
-                        contact Lisa directly.
+                        Something went wrong sending your request. Please try again, or type
+                        “Talk to Lisa” to reach her directly.
                       </p>
                     ) : (
                       <p className="text-slate-700">
